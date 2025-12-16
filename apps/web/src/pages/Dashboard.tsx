@@ -1,26 +1,14 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { getBookmarks, getStats, type Bookmark as BookmarkType } from '@/lib/storage'
 
-interface BookmarkWithDetails {
-  id: string
-  title: string
-  summary: string | null
-  url: string | null
-  type: string
-  created_at: string
-  is_favorite: boolean
-  categories: { id: string; name: string }[]
-  tags: { id: string; name: string }[]
-}
+interface BookmarkWithDetails extends BookmarkType {}
 
 export function Dashboard() {
-  const { user, signOut } = useAuth()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [bookmarks, setBookmarks] = useState<BookmarkWithDetails[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,84 +19,11 @@ export function Dashboard() {
     thisWeek: 0,
   })
 
-  const fetchBookmarks = async () => {
-    if (!user) return
-
+  const fetchBookmarks = () => {
     try {
-      // Fetch bookmarks with categories and tags
-      const { data: bookmarksData, error } = await supabase
-        .from('bookmarks')
-        .select(`
-          id,
-          title,
-          summary,
-          url,
-          type,
-          created_at,
-          is_favorite,
-          bookmark_categories (
-            category:categories (
-              id,
-              name
-            )
-          ),
-          bookmark_tags (
-            tag:tags (
-              id,
-              name
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      // Transform the data to flatten categories and tags
-      const transformedBookmarks: BookmarkWithDetails[] = (bookmarksData || []).map((bookmark: any) => ({
-        id: bookmark.id,
-        title: bookmark.title,
-        summary: bookmark.summary,
-        url: bookmark.url,
-        type: bookmark.type,
-        created_at: bookmark.created_at,
-        is_favorite: bookmark.is_favorite,
-        categories: bookmark.bookmark_categories?.map((bc: any) => bc.category).filter(Boolean) || [],
-        tags: bookmark.bookmark_tags?.map((bt: any) => bt.tag).filter(Boolean) || [],
-      }))
-
-      setBookmarks(transformedBookmarks)
-
-      // Fetch stats
-      const { count: totalCount } = await supabase
-        .from('bookmarks')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-
-      const { count: categoriesCount } = await supabase
-        .from('categories')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-
-      const { count: tagsCount } = await supabase
-        .from('tags')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      const { count: thisWeekCount } = await supabase
-        .from('bookmarks')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .gte('created_at', weekAgo.toISOString())
-
-      setStats({
-        total: totalCount || 0,
-        categories: categoriesCount || 0,
-        tags: tagsCount || 0,
-        thisWeek: thisWeekCount || 0,
-      })
+      const bookmarksData = getBookmarks()
+      setBookmarks(bookmarksData)
+      setStats(getStats())
     } catch (error) {
       console.error('Error fetching bookmarks:', error)
     } finally {
@@ -118,7 +33,7 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchBookmarks()
-  }, [user])
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -142,9 +57,6 @@ export function Dashboard() {
                 <Plus className="w-4 h-4" />
                 Add Bookmark
               </Button>
-              <Button variant="ghost" size="sm" onClick={signOut}>
-                Sign Out
-              </Button>
             </div>
           </div>
         </div>
@@ -155,10 +67,10 @@ export function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.user_metadata?.full_name || 'there'}! 👋
+            Welcome to BookSmart 👋
           </h1>
           <p className="text-gray-600 mt-2">
-            Your AI-powered bookmark collection is ready
+            Your smart bookmark collection - saved locally in your browser
           </p>
         </div>
 
@@ -197,7 +109,7 @@ export function Dashboard() {
               Start Your Collection
             </h2>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Save your first bookmark and let AI organize it for you. It's magic! ✨
+              Save your first bookmark and organize it with categories and tags
             </p>
             <Button size="lg" onClick={() => setShowAddDialog(true)}>
               <Plus className="w-5 h-5" />
@@ -229,9 +141,9 @@ export function Dashboard() {
 
                 {bookmark.categories.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
-                    {bookmark.categories.map((cat) => (
-                      <Badge key={cat.id} variant="secondary" className="text-xs">
-                        {cat.name}
+                    {bookmark.categories.map((cat, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs">
+                        {cat}
                       </Badge>
                     ))}
                   </div>
@@ -239,9 +151,9 @@ export function Dashboard() {
 
                 {bookmark.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
-                    {bookmark.tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag.id} variant="outline" className="text-xs">
-                        {tag.name}
+                    {bookmark.tags.slice(0, 3).map((tag, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {tag}
                       </Badge>
                     ))}
                     {bookmark.tags.length > 3 && (
