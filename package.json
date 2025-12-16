@@ -1,0 +1,26 @@
+{
+  "name": "alex-via-tr-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered bookmark manager",
+  "scripts": {
+    "dev": "pnpm --filter @alexvia/web dev",
+    "build": "pnpm --filter @alexvia/web build",
+    "preview": "pnpm --filter @alexvia/web preview",
+    "lint": "pnpm --recursive lint",
+    "type-check": "pnpm --recursive type-check"
+  },
+  "keywords": [
+    "bookmark",
+    "ai",
+    "organization",
+    "content-management"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
