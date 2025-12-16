@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { saveBookmark, addCategory, addTag } from '@/lib/storage'
+import { saveBookmark } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
 import {
   Dialog,
@@ -12,8 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, X, Download } from 'lucide-react'
+import { Loader2, Link as LinkIcon, FileText } from 'lucide-react'
 
 interface AddBookmarkDialogProps {
   open: boolean
@@ -26,58 +25,31 @@ export function AddBookmarkDialog({
   onOpenChange,
   onSuccess,
 }: AddBookmarkDialogProps) {
+  const [mode, setMode] = useState<'url' | 'text'>('url')
   const [loading, setLoading] = useState(false)
   const [fetchingMetadata, setFetchingMetadata] = useState(false)
   const [error, setError] = useState('')
 
   const [url, setUrl] = useState('')
-  const [title, setTitle] = useState('')
-  const [summary, setSummary] = useState('')
   const [notes, setNotes] = useState('')
+  const [textContent, setTextContent] = useState('')
+
+  // Auto-fetched metadata
+  const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
-  const [categoryInput, setCategoryInput] = useState('')
-  const [tagInput, setTagInput] = useState('')
-  const [categories, setCategories] = useState<string[]>([])
-  const [tags, setTags] = useState<string[]>([])
-  const [type, setType] = useState<'link' | 'image' | 'text' | 'document' | 'video' | 'other'>('link')
 
   const reset = () => {
+    setMode('url')
     setUrl('')
-    setTitle('')
-    setSummary('')
     setNotes('')
+    setTextContent('')
+    setTitle('')
     setImageUrl('')
     setMetaDescription('')
-    setCategoryInput('')
-    setTagInput('')
-    setCategories([])
-    setTags([])
-    setType('link')
     setError('')
     setLoading(false)
     setFetchingMetadata(false)
-  }
-
-  const handleFetchMetadata = async () => {
-    if (!url) return
-
-    setFetchingMetadata(true)
-    setError('')
-
-    try {
-      const metadata = await fetchURLMetadata(url)
-
-      // Only set if fields are empty
-      if (!title) setTitle(metadata.title)
-      if (!metaDescription) setMetaDescription(metadata.description)
-      if (!imageUrl && metadata.image) setImageUrl(metadata.image)
-    } catch (err) {
-      console.error('Failed to fetch metadata:', err)
-      setError('Could not fetch URL metadata. You can still add the bookmark manually.')
-    } finally {
-      setFetchingMetadata(false)
-    }
   }
 
   const handleClose = () => {
@@ -85,40 +57,36 @@ export function AddBookmarkDialog({
     onOpenChange(false)
   }
 
-  const handleAddCategory = () => {
-    const trimmed = categoryInput.trim()
-    if (trimmed && !categories.includes(trimmed)) {
-      setCategories([...categories, trimmed])
-      setCategoryInput('')
+  const handleUrlChange = async (newUrl: string) => {
+    setUrl(newUrl)
+
+    // Auto-fetch metadata when URL is valid
+    if (newUrl && newUrl.startsWith('http')) {
+      setFetchingMetadata(true)
+      setError('')
+
+      try {
+        const metadata = await fetchURLMetadata(newUrl)
+        setTitle(metadata.title)
+        setMetaDescription(metadata.description)
+        if (metadata.image) setImageUrl(metadata.image)
+      } catch (err) {
+        console.error('Failed to fetch metadata:', err)
+        // Don't show error, just fail silently
+      } finally {
+        setFetchingMetadata(false)
+      }
     }
-  }
-
-  const handleAddTag = () => {
-    const trimmed = tagInput.trim()
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed])
-      setTagInput('')
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent, handler: () => void) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handler()
-    }
-  }
-
-  const removeCategory = (cat: string) => {
-    setCategories(categories.filter((c) => c !== cat))
-  }
-
-  const removeTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag))
   }
 
   const handleSave = () => {
-    if (!title.trim()) {
-      setError('Please enter a title')
+    if (mode === 'url' && !url.trim()) {
+      setError('Please enter a URL')
+      return
+    }
+
+    if (mode === 'text' && !textContent.trim()) {
+      setError('Please enter some text')
       return
     }
 
@@ -126,23 +94,35 @@ export function AddBookmarkDialog({
     setError('')
 
     try {
-      // Save bookmark to localStorage
-      saveBookmark({
-        title: title.trim(),
-        summary: summary.trim(),
-        notes: notes.trim(),
-        url: url.trim() || null,
-        type,
-        is_favorite: false,
-        categories,
-        tags,
-        image_url: imageUrl.trim() || null,
-        meta_description: metaDescription.trim() || null,
-      })
-
-      // Save categories and tags to their respective lists
-      categories.forEach(cat => addCategory(cat))
-      tags.forEach(tag => addTag(tag))
+      if (mode === 'url') {
+        // Save URL bookmark
+        saveBookmark({
+          title: title || url,
+          summary: metaDescription || '',
+          notes: notes.trim(),
+          url: url.trim(),
+          type: 'link',
+          is_favorite: false,
+          categories: [],
+          tags: [],
+          image_url: imageUrl || null,
+          meta_description: metaDescription || null,
+        })
+      } else {
+        // Save text bookmark
+        saveBookmark({
+          title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
+          summary: textContent,
+          notes: notes.trim(),
+          url: null,
+          type: 'text',
+          is_favorite: false,
+          categories: [],
+          tags: [],
+          image_url: null,
+          meta_description: null,
+        })
+      }
 
       handleClose()
       onSuccess()
@@ -156,214 +136,148 @@ export function AddBookmarkDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="add-bookmark-dialog">
         <DialogHeader>
           <DialogTitle>Add Bookmark</DialogTitle>
           <DialogDescription>
-            Add a new bookmark to your collection
+            Save a link or text snippet to your collection
           </DialogDescription>
         </DialogHeader>
 
-        <div className="add-bookmark-form space-y-4 p-6 pt-0">
+        <div className="bookmark-mode-selector flex gap-2 mb-4">
+          <Button
+            type="button"
+            variant={mode === 'url' ? 'default' : 'outline'}
+            onClick={() => setMode('url')}
+            className="flex-1"
+          >
+            <LinkIcon className="w-4 h-4 mr-2" />
+            URL
+          </Button>
+          <Button
+            type="button"
+            variant={mode === 'text' ? 'default' : 'outline'}
+            onClick={() => setMode('text')}
+            className="flex-1"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Text
+          </Button>
+        </div>
+
+        <div className="add-bookmark-form space-y-4">
           {error && (
             <div className="error-message bg-destructive/10 text-destructive text-sm p-3 rounded-md">
               {error}
             </div>
           )}
 
-          <div className="url-field space-y-2">
-            <label htmlFor="url" className="text-sm font-medium">
-              URL
-            </label>
-            <div className="flex gap-2">
-              <Input
-                id="url"
-                type="url"
-                placeholder="https://example.com"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                disabled={loading || fetchingMetadata}
-                className="bookmark-url-input"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleFetchMetadata}
-                disabled={!url || loading || fetchingMetadata}
-                className="fetch-metadata-btn"
-                title="Fetch metadata from URL"
-              >
-                {fetchingMetadata ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
+          {mode === 'url' ? (
+            <>
+              <div className="url-field space-y-2">
+                <label htmlFor="url" className="text-sm font-medium">
+                  URL *
+                </label>
+                <Input
+                  id="url"
+                  type="url"
+                  placeholder="https://example.com"
+                  value={url}
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  disabled={loading}
+                  className="bookmark-url-input"
+                />
+                {fetchingMetadata && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Fetching metadata...
+                  </p>
                 )}
-              </Button>
-            </div>
-            {imageUrl && (
-              <div className="mt-2">
-                <img
-                  src={imageUrl}
-                  alt="Preview"
-                  className="bookmark-image-preview w-full h-32 object-cover rounded border"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                  }}
+              </div>
+
+              {imageUrl && (
+                <div className="bookmark-preview">
+                  <img
+                    src={imageUrl}
+                    alt="Preview"
+                    className="bookmark-image-preview w-full h-32 object-cover rounded border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                </div>
+              )}
+
+              {title && (
+                <div className="fetched-title">
+                  <p className="text-sm font-medium text-gray-700">{title}</p>
+                </div>
+              )}
+
+              {metaDescription && (
+                <div className="fetched-description">
+                  <p className="text-xs text-gray-500 italic">{metaDescription}</p>
+                </div>
+              )}
+
+              <div className="notes-field space-y-2">
+                <label htmlFor="notes" className="text-sm font-medium">
+                  Notes (optional)
+                </label>
+                <Textarea
+                  id="notes"
+                  placeholder="Your thoughts, why you saved this, context..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  disabled={loading}
+                  rows={4}
+                  className="bookmark-notes-input"
                 />
               </div>
-            )}
-            {metaDescription && (
-              <p className="text-xs text-gray-500 italic mt-2">
-                {metaDescription}
-              </p>
-            )}
-          </div>
+            </>
+          ) : (
+            <>
+              <div className="text-content-field space-y-2">
+                <label htmlFor="textContent" className="text-sm font-medium">
+                  Text Content *
+                </label>
+                <Textarea
+                  id="textContent"
+                  placeholder="Paste or type your text snippet here..."
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  disabled={loading}
+                  rows={6}
+                  className="bookmark-text-input"
+                />
+              </div>
 
-          <div className="title-field space-y-2">
-            <label htmlFor="title" className="text-sm font-medium">
-              Title *
-            </label>
-            <Input
-              id="title"
-              placeholder="My awesome bookmark"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={loading}
-              className="bookmark-title-input"
-            />
-          </div>
-
-          <div className="summary-field space-y-2">
-            <label htmlFor="summary" className="text-sm font-medium">
-              Summary
-            </label>
-            <Textarea
-              id="summary"
-              placeholder="Your brief summary..."
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              disabled={loading}
-              rows={2}
-              className="bookmark-summary-input"
-            />
-          </div>
-
-          <div className="notes-field space-y-2">
-            <label htmlFor="notes" className="text-sm font-medium">
-              Notes
-            </label>
-            <Textarea
-              id="notes"
-              placeholder="Your personal notes about this bookmark..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              disabled={loading}
-              rows={3}
-              className="bookmark-notes-input"
-            />
-          </div>
-
-          <div className="type-field space-y-2">
-            <label htmlFor="type" className="text-sm font-medium">
-              Type
-            </label>
-            <select
-              id="type"
-              value={type}
-              onChange={(e) => setType(e.target.value as any)}
-              disabled={loading}
-              className="bookmark-type-select w-full px-3 py-2 border border-input rounded-md text-sm"
-            >
-              <option value="link">Link</option>
-              <option value="image">Image</option>
-              <option value="text">Text</option>
-              <option value="document">Document</option>
-              <option value="video">Video</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div className="categories-field space-y-2">
-            <label className="text-sm font-medium">Categories</label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add category"
-                value={categoryInput}
-                onChange={(e) => setCategoryInput(e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, handleAddCategory)}
-                disabled={loading}
-                className="category-input"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddCategory}
-                disabled={loading}
-                className="add-category-btn"
-              >
-                Add
-              </Button>
-            </div>
-            <div className="categories-list flex flex-wrap gap-2 mt-2">
-              {categories.map((cat) => (
-                <Badge key={cat} variant="secondary" className="category-badge gap-1">
-                  {cat}
-                  <button
-                    onClick={() => removeCategory(cat)}
-                    className="remove-category-btn ml-1 hover:text-destructive"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="tags-field space-y-2">
-            <label className="text-sm font-medium">Tags</label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add tag"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, handleAddTag)}
-                disabled={loading}
-                className="tag-input"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddTag}
-                disabled={loading}
-                className="add-tag-btn"
-              >
-                Add
-              </Button>
-            </div>
-            <div className="tags-list flex flex-wrap gap-2 mt-2">
-              {tags.map((tag) => (
-                <Badge key={tag} variant="outline" className="tag-badge gap-1">
-                  {tag}
-                  <button
-                    onClick={() => removeTag(tag)}
-                    className="remove-tag-btn ml-1 hover:text-destructive"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          </div>
+              <div className="notes-field space-y-2">
+                <label htmlFor="notes-text" className="text-sm font-medium">
+                  Notes (optional)
+                </label>
+                <Textarea
+                  id="notes-text"
+                  placeholder="Context, source, or additional thoughts..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  disabled={loading}
+                  rows={3}
+                  className="bookmark-notes-input"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button onClick={handleSave} disabled={loading || fetchingMetadata}>
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 Saving...
               </>
             ) : (
