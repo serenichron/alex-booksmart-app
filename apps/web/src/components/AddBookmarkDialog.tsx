@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { saveBookmark, addCategory, addTag } from '@/lib/storage'
+import { fetchURLMetadata } from '@/lib/metadata'
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, X } from 'lucide-react'
+import { Loader2, X, Download } from 'lucide-react'
 
 interface AddBookmarkDialogProps {
   open: boolean
@@ -26,11 +27,15 @@ export function AddBookmarkDialog({
   onSuccess,
 }: AddBookmarkDialogProps) {
   const [loading, setLoading] = useState(false)
+  const [fetchingMetadata, setFetchingMetadata] = useState(false)
   const [error, setError] = useState('')
 
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const [summary, setSummary] = useState('')
+  const [notes, setNotes] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [metaDescription, setMetaDescription] = useState('')
   const [categoryInput, setCategoryInput] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [categories, setCategories] = useState<string[]>([])
@@ -41,6 +46,9 @@ export function AddBookmarkDialog({
     setUrl('')
     setTitle('')
     setSummary('')
+    setNotes('')
+    setImageUrl('')
+    setMetaDescription('')
     setCategoryInput('')
     setTagInput('')
     setCategories([])
@@ -48,6 +56,28 @@ export function AddBookmarkDialog({
     setType('link')
     setError('')
     setLoading(false)
+    setFetchingMetadata(false)
+  }
+
+  const handleFetchMetadata = async () => {
+    if (!url) return
+
+    setFetchingMetadata(true)
+    setError('')
+
+    try {
+      const metadata = await fetchURLMetadata(url)
+
+      // Only set if fields are empty
+      if (!title) setTitle(metadata.title)
+      if (!metaDescription) setMetaDescription(metadata.description)
+      if (!imageUrl && metadata.image) setImageUrl(metadata.image)
+    } catch (err) {
+      console.error('Failed to fetch metadata:', err)
+      setError('Could not fetch URL metadata. You can still add the bookmark manually.')
+    } finally {
+      setFetchingMetadata(false)
+    }
   }
 
   const handleClose = () => {
@@ -100,11 +130,14 @@ export function AddBookmarkDialog({
       saveBookmark({
         title: title.trim(),
         summary: summary.trim(),
+        notes: notes.trim(),
         url: url.trim() || null,
         type,
         is_favorite: false,
         categories,
         tags,
+        image_url: imageUrl.trim() || null,
+        meta_description: metaDescription.trim() || null,
       })
 
       // Save categories and tags to their respective lists
@@ -131,14 +164,44 @@ export function AddBookmarkDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 p-6 pt-0">
+        <div className="add-bookmark-form space-y-4 p-6 pt-0">
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+            <div className="error-message bg-destructive/10 text-destructive text-sm p-3 rounded-md">
               {error}
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className="url-field space-y-2">
+            <label htmlFor="url" className="text-sm font-medium">
+              URL
+            </label>
+            <div className="flex gap-2">
+              <Input
+                id="url"
+                type="url"
+                placeholder="https://example.com"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                disabled={loading || fetchingMetadata}
+                className="bookmark-url-input"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFetchMetadata}
+                disabled={!url || loading || fetchingMetadata}
+                className="fetch-metadata-btn"
+              >
+                {fetchingMetadata ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+
+          <div className="title-field space-y-2">
             <label htmlFor="title" className="text-sm font-medium">
               Title *
             </label>
@@ -148,38 +211,81 @@ export function AddBookmarkDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               disabled={loading}
+              className="bookmark-title-input"
             />
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="url" className="text-sm font-medium">
-              URL
+          <div className="image-url-field space-y-2">
+            <label htmlFor="imageUrl" className="text-sm font-medium">
+              Image URL
             </label>
             <Input
-              id="url"
+              id="imageUrl"
               type="url"
-              placeholder="https://example.com"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
               disabled={loading}
+              className="bookmark-image-input"
+            />
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt="Preview"
+                className="bookmark-image-preview w-full h-32 object-cover rounded border"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            )}
+          </div>
+
+          <div className="meta-description-field space-y-2">
+            <label htmlFor="metaDescription" className="text-sm font-medium">
+              Meta Description
+            </label>
+            <Textarea
+              id="metaDescription"
+              placeholder="Description from the website..."
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              disabled={loading}
+              rows={2}
+              className="bookmark-meta-input"
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="summary-field space-y-2">
             <label htmlFor="summary" className="text-sm font-medium">
               Summary
             </label>
             <Textarea
               id="summary"
-              placeholder="Brief description or notes..."
+              placeholder="Your brief summary..."
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               disabled={loading}
-              rows={3}
+              rows={2}
+              className="bookmark-summary-input"
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="notes-field space-y-2">
+            <label htmlFor="notes" className="text-sm font-medium">
+              Notes
+            </label>
+            <Textarea
+              id="notes"
+              placeholder="Your personal notes about this bookmark..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              disabled={loading}
+              rows={3}
+              className="bookmark-notes-input"
+            />
+          </div>
+
+          <div className="type-field space-y-2">
             <label htmlFor="type" className="text-sm font-medium">
               Type
             </label>
@@ -188,7 +294,7 @@ export function AddBookmarkDialog({
               value={type}
               onChange={(e) => setType(e.target.value as any)}
               disabled={loading}
-              className="w-full px-3 py-2 border border-input rounded-md text-sm"
+              className="bookmark-type-select w-full px-3 py-2 border border-input rounded-md text-sm"
             >
               <option value="link">Link</option>
               <option value="image">Image</option>
@@ -199,7 +305,7 @@ export function AddBookmarkDialog({
             </select>
           </div>
 
-          <div className="space-y-2">
+          <div className="categories-field space-y-2">
             <label className="text-sm font-medium">Categories</label>
             <div className="flex gap-2">
               <Input
@@ -208,23 +314,25 @@ export function AddBookmarkDialog({
                 onChange={(e) => setCategoryInput(e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, handleAddCategory)}
                 disabled={loading}
+                className="category-input"
               />
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleAddCategory}
                 disabled={loading}
+                className="add-category-btn"
               >
                 Add
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="categories-list flex flex-wrap gap-2 mt-2">
               {categories.map((cat) => (
-                <Badge key={cat} variant="secondary" className="gap-1">
+                <Badge key={cat} variant="secondary" className="category-badge gap-1">
                   {cat}
                   <button
                     onClick={() => removeCategory(cat)}
-                    className="ml-1 hover:text-destructive"
+                    className="remove-category-btn ml-1 hover:text-destructive"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -233,7 +341,7 @@ export function AddBookmarkDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="tags-field space-y-2">
             <label className="text-sm font-medium">Tags</label>
             <div className="flex gap-2">
               <Input
@@ -242,23 +350,25 @@ export function AddBookmarkDialog({
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, handleAddTag)}
                 disabled={loading}
+                className="tag-input"
               />
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleAddTag}
                 disabled={loading}
+                className="add-tag-btn"
               >
                 Add
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="tags-list flex flex-wrap gap-2 mt-2">
               {tags.map((tag) => (
-                <Badge key={tag} variant="outline" className="gap-1">
+                <Badge key={tag} variant="outline" className="tag-badge gap-1">
                   {tag}
                   <button
                     onClick={() => removeTag(tag)}
-                    className="ml-1 hover:text-destructive"
+                    className="remove-tag-btn ml-1 hover:text-destructive"
                   >
                     <X className="w-3 h-3" />
                   </button>

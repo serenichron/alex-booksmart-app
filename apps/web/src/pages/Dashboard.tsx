@@ -118,68 +118,100 @@ export function Dashboard() {
           </div>
         ) : (
           /* Bookmarks Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bookmarks-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {bookmarks.map((bookmark) => (
               <div
                 key={bookmark.id}
-                className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-shadow"
+                className="bookmark-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 line-clamp-2 flex-1">
-                    {bookmark.title}
-                  </h3>
-                  {bookmark.is_favorite && (
-                    <Heart className="w-4 h-4 text-red-500 fill-current flex-shrink-0 ml-2" />
-                  )}
-                </div>
-
-                {bookmark.summary && (
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {bookmark.summary}
-                  </p>
-                )}
-
-                {bookmark.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {bookmark.categories.map((cat, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs">
-                        {cat}
-                      </Badge>
-                    ))}
+                {bookmark.image_url && (
+                  <div className="bookmark-image-container">
+                    <img
+                      src={bookmark.image_url}
+                      alt={bookmark.title}
+                      className="bookmark-image w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.parentElement!.style.display = 'none'
+                      }}
+                    />
                   </div>
                 )}
 
-                {bookmark.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {bookmark.tags.slice(0, 3).map((tag, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {bookmark.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{bookmark.tags.length - 3}
-                      </Badge>
+                <div className="bookmark-content p-5">
+                  <div className="bookmark-header flex items-start justify-between mb-3">
+                    <h3 className="bookmark-title font-semibold text-gray-900 line-clamp-2 flex-1">
+                      {bookmark.title}
+                    </h3>
+                    {bookmark.is_favorite && (
+                      <Heart className="bookmark-favorite-icon w-4 h-4 text-red-500 fill-current flex-shrink-0 ml-2" />
                     )}
                   </div>
-                )}
 
-                <div className="flex items-center justify-between text-xs text-gray-500 mt-4">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {formatDistanceToNow(new Date(bookmark.created_at), { addSuffix: true })}
-                  </div>
-                  {bookmark.url && (
-                    <a
-                      href={bookmark.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-primary hover:underline"
-                    >
-                      Visit
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                  {bookmark.meta_description && (
+                    <p className="bookmark-meta-description text-sm text-gray-500 mb-2 line-clamp-2 italic">
+                      {bookmark.meta_description}
+                    </p>
                   )}
+
+                  {bookmark.summary && (
+                    <p className="bookmark-summary text-sm text-gray-600 mb-3 line-clamp-2">
+                      {bookmark.summary}
+                    </p>
+                  )}
+
+                  {bookmark.notes && (
+                    <div className="bookmark-notes bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">
+                      <p className="bookmark-notes-label text-xs font-medium text-blue-900 mb-1">
+                        Your Notes:
+                      </p>
+                      <p className="bookmark-notes-text text-sm text-blue-800 line-clamp-3">
+                        {bookmark.notes}
+                      </p>
+                    </div>
+                  )}
+
+                  {bookmark.categories.length > 0 && (
+                    <div className="bookmark-categories flex flex-wrap gap-1.5 mb-3">
+                      {bookmark.categories.map((cat, idx) => (
+                        <Badge key={idx} variant="secondary" className="bookmark-category text-xs">
+                          {cat}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {bookmark.tags.length > 0 && (
+                    <div className="bookmark-tags flex flex-wrap gap-1.5 mb-3">
+                      {bookmark.tags.slice(0, 3).map((tag, idx) => (
+                        <Badge key={idx} variant="outline" className="bookmark-tag text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {bookmark.tags.length > 3 && (
+                        <Badge variant="outline" className="bookmark-tags-more text-xs">
+                          +{bookmark.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="bookmark-footer flex items-center justify-between text-xs text-gray-500 mt-4">
+                    <div className="bookmark-timestamp flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {formatDistanceToNow(new Date(bookmark.created_at), { addSuffix: true })}
+                    </div>
+                    {bookmark.url && (
+                      <a
+                        href={bookmark.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bookmark-visit-link flex items-center gap-1 text-primary hover:underline"
+                      >
+                        Visit
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

@@ -10,6 +10,9 @@ export interface Bookmark {
   is_favorite: boolean
   categories: string[]
   tags: string[]
+  image_url: string | null
+  meta_description: string | null
+  notes: string
 }
 
 const STORAGE_KEY = 'booksmart_bookmarks'
