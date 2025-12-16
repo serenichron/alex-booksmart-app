@@ -36,7 +36,7 @@ export function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
             <Bookmark className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Alex Via</h1>
+          <h1 className="text-3xl font-bold text-gray-900">BookSmart</h1>
           <p className="text-gray-600 mt-2">Your AI-powered bookmark manager</p>
         </div>
 

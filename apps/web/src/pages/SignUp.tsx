@@ -47,7 +47,7 @@ export function SignUp() {
           <CardHeader>
             <CardTitle className="text-center">Account Created! 🎉</CardTitle>
             <CardDescription className="text-center">
-              Welcome to Alex Via! Redirecting you to your dashboard...
+              Welcome to BookSmart! Redirecting you to your dashboard...
             </CardDescription>
           </CardHeader>
         </Card>
@@ -62,7 +62,7 @@ export function SignUp() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
             <Bookmark className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Alex Via</h1>
+          <h1 className="text-3xl font-bold text-gray-900">BookSmart</h1>
           <p className="text-gray-600 mt-2">Start organizing smarter with AI</p>
         </div>
 

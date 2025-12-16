@@ -1,4 +1,4 @@
-# Alex Via - AI Bookmark Manager
+# BookSmart - AI Bookmark Manager
 
 > Save anything, organize effortlessly, discover endlessly.
 

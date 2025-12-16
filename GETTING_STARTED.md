@@ -322,7 +322,7 @@ Before our next session, please:
 2. **Involvement**: Do you want to learn coding, or just design + test?
 3. **Design**: Do you have design skills? Want to do mockups?
 4. **Priority**: What's the #1 feature you want working first?
-5. **Name**: Love "Alex Via"? (Or want alternatives?)
+5. **Name**: Love "BookSmart"? (Or want alternatives?)
 6. **Users**: Who's your target user? (Students, designers, developers?)
 
 ---
