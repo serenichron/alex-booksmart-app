@@ -191,6 +191,7 @@ export function AddBookmarkDialog({
                 onClick={handleFetchMetadata}
                 disabled={!url || loading || fetchingMetadata}
                 className="fetch-metadata-btn"
+                title="Fetch metadata from URL"
               >
                 {fetchingMetadata ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -199,6 +200,23 @@ export function AddBookmarkDialog({
                 )}
               </Button>
             </div>
+            {imageUrl && (
+              <div className="mt-2">
+                <img
+                  src={imageUrl}
+                  alt="Preview"
+                  className="bookmark-image-preview w-full h-32 object-cover rounded border"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              </div>
+            )}
+            {metaDescription && (
+              <p className="text-xs text-gray-500 italic mt-2">
+                {metaDescription}
+              </p>
+            )}
           </div>
 
           <div className="title-field space-y-2">
@@ -212,46 +230,6 @@ export function AddBookmarkDialog({
               onChange={(e) => setTitle(e.target.value)}
               disabled={loading}
               className="bookmark-title-input"
-            />
-          </div>
-
-          <div className="image-url-field space-y-2">
-            <label htmlFor="imageUrl" className="text-sm font-medium">
-              Image URL
-            </label>
-            <Input
-              id="imageUrl"
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              disabled={loading}
-              className="bookmark-image-input"
-            />
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt="Preview"
-                className="bookmark-image-preview w-full h-32 object-cover rounded border"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
-            )}
-          </div>
-
-          <div className="meta-description-field space-y-2">
-            <label htmlFor="metaDescription" className="text-sm font-medium">
-              Meta Description
-            </label>
-            <Textarea
-              id="metaDescription"
-              placeholder="Description from the website..."
-              value={metaDescription}
-              onChange={(e) => setMetaDescription(e.target.value)}
-              disabled={loading}
-              rows={2}
-              className="bookmark-meta-input"
             />
           </div>
 
