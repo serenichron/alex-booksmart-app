@@ -63,7 +63,7 @@ Respond ONLY with valid JSON in this exact format:
   return suggestion
 }
 
-export async function generateEmbedding(text: string): Promise<number[]> {
+export async function generateEmbedding(_text: string): Promise<number[]> {
   // For now, return a dummy embedding
   // In production, you'd call Voyage AI or OpenAI embeddings API
   // This is a placeholder - we'll implement real embeddings later
