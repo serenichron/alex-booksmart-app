@@ -136,15 +136,15 @@ export function AddBookmarkDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="add-bookmark-dialog">
+      <DialogContent className="add-bookmark-dialog sm:max-w-[600px] p-8">
         <DialogHeader>
-          <DialogTitle>Add Bookmark</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl">Add Bookmark</DialogTitle>
+          <DialogDescription className="text-base">
             Save a link or text snippet to your collection
           </DialogDescription>
         </DialogHeader>
 
-        <div className="bookmark-mode-selector flex gap-2 mb-4">
+        <div className="bookmark-mode-selector flex gap-2 mb-6 mt-4">
           <Button
             type="button"
             variant={mode === 'url' ? 'default' : 'outline'}
@@ -195,28 +195,34 @@ export function AddBookmarkDialog({
                 )}
               </div>
 
-              {imageUrl && (
-                <div className="bookmark-preview">
-                  <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="bookmark-image-preview w-full h-32 object-cover rounded border"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
-                  />
-                </div>
-              )}
+              {(title || imageUrl || metaDescription) && (
+                <div className="metadata-preview bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200 space-y-3">
+                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Preview</p>
 
-              {title && (
-                <div className="fetched-title">
-                  <p className="text-sm font-medium text-gray-700">{title}</p>
-                </div>
-              )}
+                  {imageUrl && (
+                    <div className="bookmark-preview-image">
+                      <img
+                        src={imageUrl}
+                        alt="Preview"
+                        className="w-full h-40 object-cover rounded-lg border border-gray-300"
+                        onError={(e) => {
+                          e.currentTarget.parentElement!.style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
 
-              {metaDescription && (
-                <div className="fetched-description">
-                  <p className="text-xs text-gray-500 italic">{metaDescription}</p>
+                  {title && (
+                    <div className="fetched-title">
+                      <p className="font-semibold text-gray-900">{title}</p>
+                    </div>
+                  )}
+
+                  {metaDescription && (
+                    <div className="fetched-description">
+                      <p className="text-sm text-gray-600 italic leading-relaxed">{metaDescription}</p>
+                    </div>
+                  )}
                 </div>
               )}
 

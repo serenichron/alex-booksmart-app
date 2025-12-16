@@ -36,9 +36,9 @@ export function Dashboard() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
@@ -76,21 +76,21 @@ export function Dashboard() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="text-sm text-gray-600 mb-1">Total Bookmarks</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="text-sm text-blue-100 mb-1">Total Bookmarks</div>
+            <div className="text-3xl font-bold text-white">{stats.total}</div>
           </div>
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="text-sm text-gray-600 mb-1">Categories</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.categories}</div>
+          <div className="stats-card bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="text-sm text-purple-100 mb-1">Categories</div>
+            <div className="text-3xl font-bold text-white">{stats.categories}</div>
           </div>
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="text-sm text-gray-600 mb-1">Tags</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.tags}</div>
+          <div className="stats-card bg-gradient-to-br from-pink-500 to-pink-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="text-sm text-pink-100 mb-1">Tags</div>
+            <div className="text-3xl font-bold text-white">{stats.tags}</div>
           </div>
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="text-sm text-gray-600 mb-1">This Week</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.thisWeek}</div>
+          <div className="stats-card bg-gradient-to-br from-indigo-500 to-indigo-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="text-sm text-indigo-100 mb-1">This Week</div>
+            <div className="text-3xl font-bold text-white">{stats.thisWeek}</div>
           </div>
         </div>
 
@@ -118,11 +118,11 @@ export function Dashboard() {
           </div>
         ) : (
           /* Bookmarks Grid */
-          <div className="bookmarks-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bookmarks-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {bookmarks.map((bookmark) => (
               <div
                 key={bookmark.id}
-                className="bookmark-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                className="bookmark-card bg-white rounded-xl border border-gray-200/60 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
               >
                 {bookmark.image_url && (
                   <div className="bookmark-image-container">
@@ -138,6 +138,20 @@ export function Dashboard() {
                 )}
 
                 <div className="bookmark-content p-5">
+                  {bookmark.url && (
+                    <div className="bookmark-url-display mb-2">
+                      <a
+                        href={bookmark.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 truncate"
+                      >
+                        <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{bookmark.url}</span>
+                      </a>
+                    </div>
+                  )}
+
                   <div className="bookmark-header flex items-start justify-between mb-3">
                     <h3 className="bookmark-title font-semibold text-gray-900 line-clamp-2 flex-1">
                       {bookmark.title}
@@ -160,9 +174,9 @@ export function Dashboard() {
                   )}
 
                   {bookmark.notes && (
-                    <div className="bookmark-notes bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">
+                    <div className="bookmark-notes bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 mb-3 rounded-r">
                       <p className="bookmark-notes-label text-xs font-medium text-blue-900 mb-1">
-                        Your Notes:
+                        📝 Your Notes:
                       </p>
                       <p className="bookmark-notes-text text-sm text-blue-800 line-clamp-3">
                         {bookmark.notes}
