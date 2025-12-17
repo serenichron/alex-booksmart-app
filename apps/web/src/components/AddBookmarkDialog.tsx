@@ -141,10 +141,20 @@ export function AddBookmarkDialog({
     const urlPattern = /^https?:\/\/[^\s]+\.[^\s]+$/
 
     if (urlPattern.test(normalizedUrl)) {
-      // Debounce: wait 800ms after user stops typing
-      fetchTimeoutRef.current = setTimeout(() => {
-        fetchMetadata(normalizedUrl)
-      }, 800)
+      // Check if it's an image URL
+      if (isImageUrl(normalizedUrl)) {
+        // For image URLs, set the image directly and keep title empty
+        setImageUrl(normalizedUrl)
+        setTitle('')
+        setMetaDescription('')
+        setTitleEdited(false)
+        lastFetchedUrlRef.current = normalizedUrl
+      } else {
+        // Debounce: wait 800ms after user stops typing for regular URLs
+        fetchTimeoutRef.current = setTimeout(() => {
+          fetchMetadata(normalizedUrl)
+        }, 800)
+      }
     }
   }
 
@@ -244,9 +254,22 @@ export function AddBookmarkDialog({
         // Detect if it's an image URL
         const bookmarkType = isImageUrl(normalizedUrl) ? 'image' : 'link'
 
+        // For image URLs, use filename or "Image" as default title
+        let bookmarkTitle = title
+        if (!bookmarkTitle) {
+          if (bookmarkType === 'image') {
+            // Extract filename from URL
+            const urlPath = normalizedUrl.split('?')[0] // Remove query params
+            const filename = urlPath.substring(urlPath.lastIndexOf('/') + 1)
+            bookmarkTitle = filename || 'Image'
+          } else {
+            bookmarkTitle = normalizedUrl
+          }
+        }
+
         // Save URL bookmark
         saveBookmark({
-          title: title || normalizedUrl,
+          title: bookmarkTitle,
           summary: metaDescription || '',
           notes: notesArray,
           url: normalizedUrl,
@@ -288,7 +311,7 @@ export function AddBookmarkDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="add-bookmark-dialog sm:max-w-[600px] p-8">
+      <DialogContent className="add-bookmark-dialog w-[600px] max-w-[95vw] p-8">
         <DialogHeader>
           <DialogTitle className="text-2xl">Add Bookmark</DialogTitle>
           <DialogDescription className="text-base">
@@ -410,6 +433,9 @@ export function AddBookmarkDialog({
                 </div>
               )}
 
+              {/* Only show notes and categories after URL is entered */}
+              {url.trim() && (
+              <>
               <div className="notes-field space-y-2">
                 <label className="text-sm font-medium">
                   Notes (optional)
@@ -524,7 +550,10 @@ export function AddBookmarkDialog({
                         <button
                           key={cat}
                           type="button"
-                          onClick={() => handleSelectCategory(cat)}
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            handleSelectCategory(cat)
+                          }}
                           className="w-full text-left px-3 py-2 hover:bg-purple-50 text-sm"
                         >
                           {cat}
@@ -534,6 +563,8 @@ export function AddBookmarkDialog({
                   )}
                 </div>
               </div>
+              </>
+              )}
             </>
           ) : (
             <>
@@ -680,7 +711,10 @@ export function AddBookmarkDialog({
                         <button
                           key={cat}
                           type="button"
-                          onClick={() => handleSelectCategory(cat)}
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            handleSelectCategory(cat)
+                          }}
                           className="w-full text-left px-3 py-2 hover:bg-purple-50 text-sm"
                         >
                           {cat}

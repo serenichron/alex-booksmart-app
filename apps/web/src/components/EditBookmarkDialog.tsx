@@ -279,21 +279,6 @@ export function EditBookmarkDialog({
             </div>
           )}
 
-          {!imageUrl && bookmark.url && (
-            <div className="refetch-image-section">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRefetchMetadata}
-                disabled={fetchingMetadata}
-                className="w-full"
-              >
-                <ImageIcon className="w-4 h-4 mr-2" />
-                {fetchingMetadata ? 'Fetching...' : 'Fetch Image from URL'}
-              </Button>
-            </div>
-          )}
-
           {/* Title Section */}
           <div className="title-section space-y-2">
             <label htmlFor="edit-title" className="text-sm font-medium flex items-center gap-2">
@@ -514,7 +499,10 @@ export function EditBookmarkDialog({
                     <button
                       key={cat}
                       type="button"
-                      onClick={() => handleSelectCategory(cat)}
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleSelectCategory(cat)
+                      }}
                       className="w-full text-left px-3 py-2 hover:bg-purple-50 text-sm"
                     >
                       {cat}
