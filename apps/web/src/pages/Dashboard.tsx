@@ -6,13 +6,13 @@ import { Input } from '@/components/ui/input'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare } from 'lucide-react'
 import { format } from 'date-fns'
-import { getBookmarks, getStats, deleteBookmark, type Bookmark as BookmarkType, type Note } from '@/lib/storage'
+import { getBookmarks, getStats, deleteBookmark, toggleTodoItem, type Bookmark as BookmarkType, type Note, type TodoItem } from '@/lib/storage'
 
 interface BookmarkWithDetails extends BookmarkType {}
 
-type BookmarkTypeFilter = 'text' | 'link' | 'image'
+type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo'
 
 export function Dashboard() {
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -30,7 +30,7 @@ export function Dashboard() {
     tags: 0,
     thisWeek: 0,
   })
-  const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image']))
+  const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image', 'todo']))
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
 
@@ -131,7 +131,7 @@ export function Dashboard() {
   }
 
   const handleSelectAllTypes = () => {
-    setSelectedTypes(new Set(['text', 'link', 'image']))
+    setSelectedTypes(new Set(['text', 'link', 'image', 'todo']))
   }
 
   const handleUnselectAllTypes = () => {
@@ -177,6 +177,10 @@ export function Dashboard() {
       // Priority 7: Summary/text content match
       else if (bookmark.summary && bookmark.summary.toLowerCase().includes(lowerQuery)) {
         priority = 7
+      }
+      // Priority 8: Todo items match
+      else if (bookmark.todo_items && bookmark.todo_items.some(item => item.text.toLowerCase().includes(lowerQuery))) {
+        priority = 8
       }
 
       // Only include bookmarks that match the search
@@ -297,6 +301,15 @@ export function Dashboard() {
                 />
                 <ImageIcon className="w-4 h-4 text-green-600" />
                 <span className="text-sm text-gray-700">Images</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                <Checkbox
+                  checked={selectedTypes.has('todo')}
+                  onCheckedChange={() => handleToggleType('todo')}
+                />
+                <CheckSquare className="w-4 h-4 text-purple-600" />
+                <span className="text-sm text-gray-700">To-dos</span>
               </label>
             </div>
 

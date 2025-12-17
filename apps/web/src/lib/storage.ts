@@ -6,12 +6,19 @@ export interface Note {
   created_at: string
 }
 
+export interface TodoItem {
+  id: string
+  text: string
+  completed: boolean
+  created_at: string
+}
+
 export interface Bookmark {
   id: string
   title: string
   summary: string
   url: string | null
-  type: 'link' | 'image' | 'text' | 'document' | 'video' | 'other'
+  type: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'other'
   created_at: string
   updated_at: string
   is_favorite: boolean
@@ -21,6 +28,7 @@ export interface Bookmark {
   meta_description: string | null
   show_meta_description?: boolean
   notes: Note[]
+  todo_items?: TodoItem[]
 }
 
 const STORAGE_KEY = 'booksmart_bookmarks'
@@ -139,6 +147,65 @@ export function updateNoteInBookmark(bookmarkId: string, noteId: string, content
     const note = bookmark.notes.find(n => n.id === noteId)
     if (note) {
       note.content = content
+      bookmark.updated_at = new Date().toISOString()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+    }
+  }
+}
+
+// Todo items management
+export function toggleTodoItem(bookmarkId: string, todoId: string): void {
+  const bookmarks = getBookmarks()
+  const bookmark = bookmarks.find(b => b.id === bookmarkId)
+  if (bookmark && bookmark.todo_items) {
+    const todoItem = bookmark.todo_items.find(t => t.id === todoId)
+    if (todoItem) {
+      todoItem.completed = !todoItem.completed
+      bookmark.updated_at = new Date().toISOString()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+    }
+  }
+}
+
+export function addTodoItem(bookmarkId: string, text: string): TodoItem {
+  const todoItem: TodoItem = {
+    id: crypto.randomUUID(),
+    text,
+    completed: false,
+    created_at: new Date().toISOString()
+  }
+
+  const bookmarks = getBookmarks()
+  const bookmark = bookmarks.find(b => b.id === bookmarkId)
+  if (bookmark) {
+    if (!bookmark.todo_items) {
+      bookmark.todo_items = []
+    }
+    bookmark.todo_items.push(todoItem)
+    bookmark.updated_at = new Date().toISOString()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  }
+
+  return todoItem
+}
+
+export function deleteTodoItem(bookmarkId: string, todoId: string): void {
+  const bookmarks = getBookmarks()
+  const bookmark = bookmarks.find(b => b.id === bookmarkId)
+  if (bookmark && bookmark.todo_items) {
+    bookmark.todo_items = bookmark.todo_items.filter(t => t.id !== todoId)
+    bookmark.updated_at = new Date().toISOString()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  }
+}
+
+export function updateTodoItem(bookmarkId: string, todoId: string, text: string): void {
+  const bookmarks = getBookmarks()
+  const bookmark = bookmarks.find(b => b.id === bookmarkId)
+  if (bookmark && bookmark.todo_items) {
+    const todoItem = bookmark.todo_items.find(t => t.id === todoId)
+    if (todoItem) {
+      todoItem.text = text
       bookmark.updated_at = new Date().toISOString()
       localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
     }

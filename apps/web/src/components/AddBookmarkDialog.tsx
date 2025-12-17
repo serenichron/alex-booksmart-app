@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { saveBookmark, getCategories, addCategory, getBookmarks, updateBookmark, type Note } from '@/lib/storage'
+import { saveBookmark, getCategories, addCategory, getBookmarks, updateBookmark, type Note, type TodoItem } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
 import { normalizeUrl, isImageUrl } from '@/lib/urlUtils'
 import {
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, Link as LinkIcon, FileText, Pencil, X, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Link as LinkIcon, FileText, Pencil, X, Plus, Trash2, CheckSquare } from 'lucide-react'
 
 interface AddBookmarkDialogProps {
   open: boolean
@@ -27,7 +27,7 @@ export function AddBookmarkDialog({
   onOpenChange,
   onSuccess,
 }: AddBookmarkDialogProps) {
-  const [mode, setMode] = useState<'url' | 'text'>('url')
+  const [mode, setMode] = useState<'url' | 'text' | 'todo'>('url')
   const [loading, setLoading] = useState(false)
   const [fetchingMetadata, setFetchingMetadata] = useState(false)
   const [error, setError] = useState('')
@@ -37,6 +37,8 @@ export function AddBookmarkDialog({
   const [currentNoteInput, setCurrentNoteInput] = useState('')
   const [textContent, setTextContent] = useState('')
   const [textTitle, setTextTitle] = useState('')
+  const [todoTitle, setTodoTitle] = useState('')
+  const [todoItemsInput, setTodoItemsInput] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [categoryInput, setCategoryInput] = useState('')
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
@@ -65,6 +67,8 @@ export function AddBookmarkDialog({
     setCurrentNoteInput('')
     setTextContent('')
     setTextTitle('')
+    setTodoTitle('')
+    setTodoItemsInput('')
     setTitle('')
     setImageUrl('')
     setMetaDescription('')
@@ -94,6 +98,22 @@ export function AddBookmarkDialog({
 
   const handleRemoveNote = (index: number) => {
     setNotes(notes.filter((_, i) => i !== index))
+  }
+
+  const handleTodoItemsChange = (value: string) => {
+    // Automatically add bullet points to each line
+    const lines = value.split('\n')
+    const formattedLines = lines.map((line, index) => {
+      // Skip adding bullet if line is empty or already has one
+      if (line.trim() === '') return line
+      if (line.trim().match(/^[•\-\*]\s/)) return line
+      // Only add bullet to the current line being typed (last line)
+      if (index === lines.length - 1 && !line.startsWith('• ')) {
+        return '• ' + line
+      }
+      return line
+    })
+    setTodoItemsInput(formattedLines.join('\n'))
   }
 
   const handleClose = () => {
@@ -221,6 +241,11 @@ export function AddBookmarkDialog({
       return
     }
 
+    if (mode === 'todo' && !todoItemsInput.trim()) {
+      setError('Please enter at least one to-do item')
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -280,7 +305,7 @@ export function AddBookmarkDialog({
           meta_description: metaDescription || null,
           show_meta_description: showMetaDescription,
         })
-      } else {
+      } else if (mode === 'text') {
         // Save text bookmark with optional title (no auto-generation)
         const bookmarkTitle = textTitle.trim()
 
@@ -295,6 +320,32 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: null,
           meta_description: null,
+        })
+      } else if (mode === 'todo') {
+        // Parse todo items from textarea (each line becomes a todo item)
+        const todoItems: TodoItem[] = todoItemsInput
+          .split('\n')
+          .map(line => line.replace(/^[•\-\*]\s*/, '').trim()) // Remove bullet points
+          .filter(text => text.length > 0) // Remove empty lines
+          .map(text => ({
+            id: crypto.randomUUID(),
+            text,
+            completed: false,
+            created_at: now
+          }))
+
+        saveBookmark({
+          title: todoTitle.trim(),
+          summary: '',
+          notes: notesArray,
+          url: null,
+          type: 'todo',
+          is_favorite: false,
+          categories: selectedCategories,
+          tags: [],
+          image_url: null,
+          meta_description: null,
+          todo_items: todoItems,
         })
       }
 
@@ -314,7 +365,7 @@ export function AddBookmarkDialog({
         <DialogHeader>
           <DialogTitle className="text-2xl">Add Bookmark</DialogTitle>
           <DialogDescription className="text-base">
-            Save a link or text snippet to your collection
+            Save a link, text snippet, or to-do list to your collection
           </DialogDescription>
         </DialogHeader>
 
@@ -336,6 +387,15 @@ export function AddBookmarkDialog({
           >
             <FileText className="w-4 h-4 mr-2" />
             Text
+          </Button>
+          <Button
+            type="button"
+            variant={mode === 'todo' ? 'default' : 'outline'}
+            onClick={() => setMode('todo')}
+            className="flex-1"
+          >
+            <CheckSquare className="w-4 h-4 mr-2" />
+            To-do
           </Button>
         </div>
 
@@ -565,7 +625,7 @@ export function AddBookmarkDialog({
               </>
               )}
             </>
-          ) : (
+          ) : mode === 'text' ? (
             <>
               <div className="text-title-field space-y-2">
                 <label htmlFor="textTitle" className="text-sm font-medium">
@@ -594,6 +654,167 @@ export function AddBookmarkDialog({
                   rows={6}
                   className="bookmark-text-input"
                 />
+              </div>
+
+              <div className="notes-field space-y-2">
+                <label className="text-sm font-medium">
+                  Notes (optional)
+                </label>
+
+                {notes.length > 0 && (
+                  <div className="notes-list space-y-2 mb-2">
+                    {notes.map((note, idx) => (
+                      <div key={idx} className="note-item flex items-start gap-2 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <p className="flex-1 text-sm text-gray-800">{note.content}</p>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNote(idx)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <Textarea
+                  placeholder="Add a note..."
+                  value={currentNoteInput}
+                  onChange={(e) => setCurrentNoteInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                      e.preventDefault()
+                      handleAddNote()
+                    }
+                  }}
+                  disabled={loading}
+                  rows={3}
+                  className="bookmark-notes-input"
+                />
+
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAddNote}
+                    disabled={loading || !currentNoteInput.trim()}
+                    className="h-8"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Note
+                  </Button>
+                </div>
+              </div>
+
+              <div className="categories-field space-y-2">
+                <label className="text-sm font-medium">
+                  Categories (optional)
+                </label>
+
+                {/* Selected Categories */}
+                {selectedCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedCategories.map((cat) => (
+                      <div key={cat} className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                        {cat}
+                        <button
+                          onClick={() => handleRemoveCategory(cat)}
+                          className="hover:text-purple-900"
+                          type="button"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Autocomplete Input */}
+                <div className="relative">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Type to filter or add category..."
+                      value={categoryInput}
+                      onChange={(e) => {
+                        setCategoryInput(e.target.value)
+                        setShowCategoryDropdown(true)
+                      }}
+                      onFocus={() => setShowCategoryDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowCategoryDropdown(false), 200)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddNewCategory()
+                        }
+                      }}
+                      disabled={loading}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleAddNewCategory}
+                      disabled={loading || !categoryInput.trim()}
+                    >
+                      Add Category
+                    </Button>
+                  </div>
+
+                  {/* Dropdown with filtered categories */}
+                  {showCategoryDropdown && filteredCategories.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-auto">
+                      {filteredCategories.map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            handleSelectCategory(cat)
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-purple-50 text-sm"
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* To-do Mode */}
+              <div className="todo-title-field space-y-2">
+                <label htmlFor="todoTitle" className="text-sm font-medium">
+                  Title (optional)
+                </label>
+                <Input
+                  id="todoTitle"
+                  placeholder="Optional title for your to-do list..."
+                  value={todoTitle}
+                  onChange={(e) => setTodoTitle(e.target.value)}
+                  disabled={loading}
+                  className="todo-title-input"
+                />
+              </div>
+
+              <div className="todo-items-field space-y-2">
+                <label htmlFor="todoItems" className="text-sm font-medium">
+                  To-do Items *
+                </label>
+                <Textarea
+                  id="todoItems"
+                  placeholder="Enter each to-do item on a new line...&#10;Bullet points will be added automatically"
+                  value={todoItemsInput}
+                  onChange={(e) => handleTodoItemsChange(e.target.value)}
+                  disabled={loading}
+                  rows={8}
+                  className="todo-items-input font-mono text-sm"
+                />
+                <p className="text-xs text-gray-500">Each line will become a separate to-do item</p>
               </div>
 
               <div className="notes-field space-y-2">
