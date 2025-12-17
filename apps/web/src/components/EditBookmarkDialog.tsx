@@ -313,6 +313,16 @@ export function EditBookmarkDialog({
             )}
           </div>
 
+          {/* Text Content Section (for text bookmarks) */}
+          {!bookmark.url && bookmark.summary && (
+            <div className="text-content-section space-y-2">
+              <label className="text-sm font-medium">Text Content</label>
+              <div className="text-sm text-gray-700 p-3 bg-yellow-50 rounded-lg border border-yellow-200 max-h-60 overflow-y-auto whitespace-pre-wrap">
+                {bookmark.summary}
+              </div>
+            </div>
+          )}
+
           {/* Meta Description Section */}
           {bookmark.meta_description && (
             <div className="meta-description-section space-y-2">

@@ -251,8 +251,8 @@ export function Dashboard() {
                         }}
                       />
                       {/* Overlay for title and footer */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
-                        <h3 className="text-white font-semibold text-lg mb-2 drop-shadow-lg">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
+                        <h3 className="text-white font-semibold text-lg mb-1.5 drop-shadow-lg">
                           {bookmark.title}
                         </h3>
                         <div className="flex items-center gap-2 text-[10px] text-white/90">
@@ -327,8 +327,8 @@ export function Dashboard() {
                       )}
                     </div>
 
-                    {/* For text bookmarks, show summary (text content) */}
-                    {isTextBookmark && bookmark.summary && (
+                    {/* For text bookmarks, show summary (text content) only if title is not auto-generated */}
+                    {isTextBookmark && bookmark.summary && !bookmark.title.endsWith('...') && (
                       <p className="bookmark-text-content text-xs text-gray-700 mb-2 line-clamp-3 leading-snug">
                         {bookmark.summary}
                       </p>
