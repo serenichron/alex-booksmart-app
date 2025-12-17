@@ -125,16 +125,21 @@ export function Dashboard() {
                 className="bookmark-card bg-white rounded-xl border border-gray-200/60 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
               >
                 {bookmark.image_url && (
-                  <div className="bookmark-image-container">
+                  <a
+                    href={bookmark.url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bookmark-image-container block"
+                  >
                     <img
                       src={bookmark.image_url}
                       alt={bookmark.title}
-                      className="bookmark-image w-full h-48 object-cover"
+                      className="bookmark-image w-full h-48 object-cover hover:opacity-90 transition-opacity cursor-pointer"
                       onError={(e) => {
-                        e.currentTarget.parentElement!.style.display = 'none'
+                        e.currentTarget.parentElement!.parentElement!.style.display = 'none'
                       }}
                     />
-                  </div>
+                  </a>
                 )}
 
                 <div className="bookmark-content p-5">
@@ -153,9 +158,20 @@ export function Dashboard() {
                   )}
 
                   <div className="bookmark-header flex items-start justify-between mb-3">
-                    <h3 className="bookmark-title font-semibold text-gray-900 line-clamp-2 flex-1">
-                      {bookmark.title}
-                    </h3>
+                    {bookmark.url ? (
+                      <a
+                        href={bookmark.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bookmark-title font-semibold text-gray-900 line-clamp-2 flex-1 hover:text-blue-600 transition-colors cursor-pointer"
+                      >
+                        {bookmark.title}
+                      </a>
+                    ) : (
+                      <h3 className="bookmark-title font-semibold text-gray-900 line-clamp-2 flex-1">
+                        {bookmark.title}
+                      </h3>
+                    )}
                     {bookmark.is_favorite && (
                       <Heart className="bookmark-favorite-icon w-4 h-4 text-red-500 fill-current flex-shrink-0 ml-2" />
                     )}
