@@ -194,14 +194,8 @@ export function Dashboard() {
                   </div>
 
                   {bookmark.meta_description && (
-                    <p className="bookmark-meta-description text-sm text-gray-500 mb-2 line-clamp-2 italic">
+                    <p className="bookmark-meta-description text-sm text-gray-500 mb-3 line-clamp-2 italic">
                       {bookmark.meta_description}
-                    </p>
-                  )}
-
-                  {bookmark.summary && (
-                    <p className="bookmark-summary text-sm text-gray-600 mb-3 line-clamp-2">
-                      {bookmark.summary}
                     </p>
                   )}
 

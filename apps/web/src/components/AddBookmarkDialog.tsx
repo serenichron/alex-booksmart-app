@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { saveBookmark } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
 import {
@@ -38,6 +38,9 @@ export function AddBookmarkDialog({
   const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
+  const [titleEdited, setTitleEdited] = useState(false)
+
+  const fetchTimeoutRef = useRef<NodeJS.Timeout>()
 
   const reset = () => {
     setMode('url')
@@ -47,9 +50,13 @@ export function AddBookmarkDialog({
     setTitle('')
     setImageUrl('')
     setMetaDescription('')
+    setTitleEdited(false)
     setError('')
     setLoading(false)
     setFetchingMetadata(false)
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current)
+    }
   }
 
   const handleClose = () => {
@@ -57,27 +64,49 @@ export function AddBookmarkDialog({
     onOpenChange(false)
   }
 
-  const handleUrlChange = async (newUrl: string) => {
-    setUrl(newUrl)
+  const fetchMetadata = async (urlToFetch: string) => {
+    setFetchingMetadata(true)
+    setError('')
 
-    // Auto-fetch metadata when URL is valid
-    if (newUrl && newUrl.startsWith('http')) {
-      setFetchingMetadata(true)
-      setError('')
-
-      try {
-        const metadata = await fetchURLMetadata(newUrl)
-        setTitle(metadata.title)
-        setMetaDescription(metadata.description)
-        if (metadata.image) setImageUrl(metadata.image)
-      } catch (err) {
-        console.error('Failed to fetch metadata:', err)
-        // Don't show error, just fail silently
-      } finally {
-        setFetchingMetadata(false)
-      }
+    try {
+      const metadata = await fetchURLMetadata(urlToFetch)
+      setTitle(metadata.title)
+      setMetaDescription(metadata.description)
+      if (metadata.image) setImageUrl(metadata.image)
+      setTitleEdited(false)
+    } catch (err) {
+      console.error('Failed to fetch metadata:', err)
+    } finally {
+      setFetchingMetadata(false)
     }
   }
+
+  const handleUrlChange = (newUrl: string) => {
+    setUrl(newUrl)
+
+    // Clear previous timeout
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current)
+    }
+
+    // Only fetch if URL looks complete (has protocol and domain with TLD)
+    const urlPattern = /^https?:\/\/[^\s]+\.[^\s]+$/
+    if (urlPattern.test(newUrl)) {
+      // Debounce: wait 800ms after user stops typing
+      fetchTimeoutRef.current = setTimeout(() => {
+        fetchMetadata(newUrl)
+      }, 800)
+    }
+  }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const handleSave = () => {
     if (mode === 'url' && !url.trim()) {
@@ -213,8 +242,20 @@ export function AddBookmarkDialog({
                   )}
 
                   {title && (
-                    <div className="fetched-title">
-                      <p className="font-semibold text-gray-900">{title}</p>
+                    <div className="fetched-title space-y-2">
+                      <label htmlFor="title-edit" className="text-xs font-medium text-gray-600">
+                        Title (click to edit)
+                      </label>
+                      <Input
+                        id="title-edit"
+                        value={title}
+                        onChange={(e) => {
+                          setTitle(e.target.value)
+                          setTitleEdited(true)
+                        }}
+                        className="font-semibold"
+                        placeholder="Enter title"
+                      />
                     </div>
                   )}
 
