@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { saveBookmark } from '@/lib/storage'
+import { saveBookmark, getCategories, addCategory } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
 import {
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Link as LinkIcon, FileText, Pencil } from 'lucide-react'
+import { Loader2, Link as LinkIcon, FileText, Pencil, X } from 'lucide-react'
 
 interface AddBookmarkDialogProps {
   open: boolean
@@ -33,6 +33,8 @@ export function AddBookmarkDialog({
   const [url, setUrl] = useState('')
   const [notes, setNotes] = useState('')
   const [textContent, setTextContent] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [newCategoryInput, setNewCategoryInput] = useState('')
 
   // Auto-fetched metadata
   const [title, setTitle] = useState('')
@@ -42,6 +44,11 @@ export function AddBookmarkDialog({
 
   const fetchTimeoutRef = useRef<NodeJS.Timeout>()
   const lastFetchedUrlRef = useRef<string>('')
+  const [availableCategories, setAvailableCategories] = useState<string[]>([])
+
+  useEffect(() => {
+    setAvailableCategories(getCategories())
+  }, [open])
 
   const reset = () => {
     setMode('url')
@@ -52,6 +59,8 @@ export function AddBookmarkDialog({
     setImageUrl('')
     setMetaDescription('')
     setTitleEdited(false)
+    setSelectedCategories([])
+    setNewCategoryInput('')
     setError('')
     setLoading(false)
     setFetchingMetadata(false)
@@ -120,6 +129,28 @@ export function AddBookmarkDialog({
     }
   }, [])
 
+  const handleAddCategory = () => {
+    const trimmed = newCategoryInput.trim()
+    if (trimmed && !selectedCategories.includes(trimmed)) {
+      setSelectedCategories([...selectedCategories, trimmed])
+      if (!availableCategories.includes(trimmed)) {
+        addCategory(trimmed)
+        setAvailableCategories([...availableCategories, trimmed])
+      }
+      setNewCategoryInput('')
+    }
+  }
+
+  const handleRemoveCategory = (category: string) => {
+    setSelectedCategories(selectedCategories.filter(c => c !== category))
+  }
+
+  const handleSelectCategory = (category: string) => {
+    if (!selectedCategories.includes(category)) {
+      setSelectedCategories([...selectedCategories, category])
+    }
+  }
+
   const handleSave = () => {
     if (mode === 'url' && !url.trim()) {
       setError('Please enter a URL')
@@ -135,6 +166,9 @@ export function AddBookmarkDialog({
     setError('')
 
     try {
+      // Add selected categories to storage
+      selectedCategories.forEach(cat => addCategory(cat))
+
       if (mode === 'url') {
         // Save URL bookmark
         saveBookmark({
@@ -144,7 +178,7 @@ export function AddBookmarkDialog({
           url: url.trim(),
           type: 'link',
           is_favorite: false,
-          categories: [],
+          categories: selectedCategories,
           tags: [],
           image_url: imageUrl || null,
           meta_description: metaDescription || null,
@@ -158,7 +192,7 @@ export function AddBookmarkDialog({
           url: null,
           type: 'text',
           is_favorite: false,
-          categories: [],
+          categories: selectedCategories,
           tags: [],
           image_url: null,
           meta_description: null,
@@ -276,7 +310,10 @@ export function AddBookmarkDialog({
                   )}
 
                   {metaDescription && (
-                    <div className="fetched-description">
+                    <div className="fetched-description space-y-2">
+                      <label className="text-xs font-medium text-gray-600">
+                        Description
+                      </label>
                       <p className="text-sm text-gray-600 italic leading-relaxed">{metaDescription}</p>
                     </div>
                   )}
@@ -296,6 +333,76 @@ export function AddBookmarkDialog({
                   rows={4}
                   className="bookmark-notes-input"
                 />
+              </div>
+
+              <div className="categories-field space-y-2">
+                <label className="text-sm font-medium">
+                  Categories (optional)
+                </label>
+
+                {/* Selected Categories */}
+                {selectedCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedCategories.map((cat) => (
+                      <div key={cat} className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                        {cat}
+                        <button
+                          onClick={() => handleRemoveCategory(cat)}
+                          className="hover:text-purple-900"
+                          type="button"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Category Selection Dropdown */}
+                {availableCategories.length > 0 && (
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleSelectCategory(e.target.value)
+                        e.target.value = ''
+                      }
+                    }}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    disabled={loading}
+                  >
+                    <option value="">Select existing category...</option>
+                    {availableCategories
+                      .filter(cat => !selectedCategories.includes(cat))
+                      .map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                  </select>
+                )}
+
+                {/* Add New Category */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Or create new category..."
+                    value={newCategoryInput}
+                    onChange={(e) => setNewCategoryInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleAddCategory()
+                      }
+                    }}
+                    disabled={loading}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddCategory}
+                    disabled={loading || !newCategoryInput.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
               </div>
             </>
           ) : (
@@ -328,6 +435,76 @@ export function AddBookmarkDialog({
                   rows={3}
                   className="bookmark-notes-input"
                 />
+              </div>
+
+              <div className="categories-field space-y-2">
+                <label className="text-sm font-medium">
+                  Categories (optional)
+                </label>
+
+                {/* Selected Categories */}
+                {selectedCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedCategories.map((cat) => (
+                      <div key={cat} className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                        {cat}
+                        <button
+                          onClick={() => handleRemoveCategory(cat)}
+                          className="hover:text-purple-900"
+                          type="button"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Category Selection Dropdown */}
+                {availableCategories.length > 0 && (
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleSelectCategory(e.target.value)
+                        e.target.value = ''
+                      }
+                    }}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    disabled={loading}
+                  >
+                    <option value="">Select existing category...</option>
+                    {availableCategories
+                      .filter(cat => !selectedCategories.includes(cat))
+                      .map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                  </select>
+                )}
+
+                {/* Add New Category */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Or create new category..."
+                    value={newCategoryInput}
+                    onChange={(e) => setNewCategoryInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleAddCategory()
+                      }
+                    }}
+                    disabled={loading}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddCategory}
+                    disabled={loading || !newCategoryInput.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
               </div>
             </>
           )}
