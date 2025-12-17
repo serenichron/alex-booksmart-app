@@ -353,19 +353,8 @@ export function AddBookmarkDialog({
               )}
 
               <div className="notes-field space-y-2">
-                <label className="text-sm font-medium flex items-center justify-between">
-                  <span>Notes (optional)</span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleAddNote}
-                    disabled={loading || !currentNoteInput.trim()}
-                    className="h-8"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Note
-                  </Button>
+                <label className="text-sm font-medium">
+                  Notes (optional)
                 </label>
 
                 {notes.length > 0 && (
@@ -399,7 +388,21 @@ export function AddBookmarkDialog({
                   rows={3}
                   className="bookmark-notes-input"
                 />
-                <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
+
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAddNote}
+                    disabled={loading || !currentNoteInput.trim()}
+                    className="h-8"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Note
+                  </Button>
+                </div>
               </div>
 
               <div className="categories-field space-y-2">
@@ -492,19 +495,8 @@ export function AddBookmarkDialog({
               </div>
 
               <div className="notes-field space-y-2">
-                <label className="text-sm font-medium flex items-center justify-between">
-                  <span>Notes (optional)</span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleAddNote}
-                    disabled={loading || !currentNoteInput.trim()}
-                    className="h-8"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Note
-                  </Button>
+                <label className="text-sm font-medium">
+                  Notes (optional)
                 </label>
 
                 {notes.length > 0 && (
@@ -538,7 +530,21 @@ export function AddBookmarkDialog({
                   rows={3}
                   className="bookmark-notes-input"
                 />
-                <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
+
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAddNote}
+                    disabled={loading || !currentNoteInput.trim()}
+                    className="h-8"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Note
+                  </Button>
+                </div>
               </div>
 
               <div className="categories-field space-y-2">
