@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
+import { NoteDialog } from '@/components/NoteDialog'
 import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { getBookmarks, getStats, deleteBookmark, type Bookmark as BookmarkType, type Note } from '@/lib/storage'
@@ -13,6 +14,9 @@ export function Dashboard() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingBookmark, setEditingBookmark] = useState<BookmarkType | null>(null)
+  const [showNoteDialog, setShowNoteDialog] = useState(false)
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+  const [selectedNoteBookmarkId, setSelectedNoteBookmarkId] = useState<string>('')
   const [bookmarks, setBookmarks] = useState<BookmarkWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -86,6 +90,12 @@ export function Dashboard() {
     } catch (err) {
       console.error('Error sharing:', err)
     }
+  }
+
+  const handleNoteClick = (note: Note, bookmarkId: string) => {
+    setSelectedNote(note)
+    setSelectedNoteBookmarkId(bookmarkId)
+    setShowNoteDialog(true)
   }
 
   useEffect(() => {
@@ -330,7 +340,12 @@ export function Dashboard() {
                         <label className="text-xs font-semibold text-gray-700 mb-2 block">Notes</label>
                         <div className="space-y-2">
                           {bookmark.notes.slice(0, 3).map((note) => (
-                            <div key={note.id} className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r relative group">
+                            <div
+                              key={note.id}
+                              className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r relative group cursor-pointer hover:shadow-md transition-shadow"
+                              onClick={() => handleNoteClick(note, bookmark.id)}
+                              title="Click to view full note"
+                            >
                               <p className="bookmark-note-text text-sm text-blue-800 line-clamp-3 mb-1">
                                 {note.content}
                               </p>
@@ -456,6 +471,15 @@ export function Dashboard() {
         onOpenChange={setShowEditDialog}
         onSuccess={fetchBookmarks}
         bookmark={editingBookmark}
+      />
+
+      {/* Note Dialog */}
+      <NoteDialog
+        open={showNoteDialog}
+        onOpenChange={setShowNoteDialog}
+        note={selectedNote}
+        bookmarkId={selectedNoteBookmarkId}
+        onSuccess={fetchBookmarks}
       />
     </div>
   )
