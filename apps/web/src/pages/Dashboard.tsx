@@ -235,25 +235,23 @@ export function Dashboard() {
 
                   {/* Image Bookmark - Special Design */}
                   {isImageBookmark && bookmark.url ? (
-                    <div className="block relative">
-                      <a
-                        href={bookmark.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block"
-                      >
-                        <img
-                          src={bookmark.url}
-                          alt={bookmark.title}
-                          className="w-full h-auto object-contain"
-                          style={{ maxHeight: '600px' }}
-                          onError={(e) => {
-                            e.currentTarget.src = bookmark.image_url || ''
-                          }}
-                        />
-                      </a>
+                    <a
+                      href={bookmark.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block relative"
+                    >
+                      <img
+                        src={bookmark.url}
+                        alt={bookmark.title}
+                        className="w-full h-auto object-contain"
+                        style={{ maxHeight: '600px' }}
+                        onError={(e) => {
+                          e.currentTarget.src = bookmark.image_url || ''
+                        }}
+                      />
 
-                      {/* Title overlay - only show if title exists */}
+                      {/* Title overlay at top - only show if title exists */}
                       {bookmark.title && (
                         <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent p-3">
                           <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg">
@@ -262,23 +260,25 @@ export function Dashboard() {
                         </div>
                       )}
 
-                      {/* Timestamps footer - always show */}
-                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 pt-1.5 pb-2 px-3 border-t border-gray-100 bg-gray-50/50">
-                        <div className="bookmark-timestamp flex items-center gap-1">
-                          <Clock className="w-2 h-2" />
-                          <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
+                      {/* Timestamps overlay at bottom - always show */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                        <div className="flex items-center gap-2 text-[9px] text-white/90">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-2 h-2" />
+                            <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
+                          </div>
+                          {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
+                            <>
+                              <span className="text-white/60">•</span>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-2 h-2" />
+                                <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
+                              </div>
+                            </>
+                          )}
                         </div>
-                        {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                          <>
-                            <span className="text-gray-400">•</span>
-                            <div className="bookmark-edited flex items-center gap-1">
-                              <Clock className="w-2 h-2" />
-                              <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                            </div>
-                          </>
-                        )}
                       </div>
-                    </div>
+                    </a>
                   ) : bookmark.image_url && !isImageBookmark && (
                     <a
                       href={bookmark.url || '#'}
