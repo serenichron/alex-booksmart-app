@@ -330,9 +330,12 @@ export function Dashboard() {
                         <label className="text-xs font-semibold text-gray-700 mb-2 block">Notes</label>
                         <div className="space-y-2">
                           {bookmark.notes.slice(0, 3).map((note) => (
-                            <div key={note.id} className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r">
-                              <p className="bookmark-note-text text-sm text-blue-800 line-clamp-3">
+                            <div key={note.id} className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r relative group">
+                              <p className="bookmark-note-text text-sm text-blue-800 line-clamp-3 mb-1">
                                 {note.content}
+                              </p>
+                              <p className="text-[9px] text-blue-600/70">
+                                {format(new Date(note.created_at), 'MMM d, yy HH:mm')}
                               </p>
                             </div>
                           ))}

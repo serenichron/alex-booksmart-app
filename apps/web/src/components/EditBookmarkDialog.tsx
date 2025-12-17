@@ -10,6 +10,7 @@ import {
   type Note
 } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
+import { format } from 'date-fns'
 import {
   Dialog,
   DialogContent,
@@ -357,26 +358,31 @@ export function EditBookmarkDialog({
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-start gap-2">
-                        <p className="flex-1 text-sm text-gray-800">{note.content}</p>
-                        <div className="flex gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleStartEditNote(note)}
-                            className="text-blue-600 hover:text-blue-800"
-                            title="Edit note"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteNote(note.id)}
-                            className="text-red-500 hover:text-red-700"
-                            title="Delete note"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                      <div className="space-y-1">
+                        <div className="flex items-start gap-2">
+                          <p className="flex-1 text-sm text-gray-800">{note.content}</p>
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleStartEditNote(note)}
+                              className="text-blue-600 hover:text-blue-800"
+                              title="Edit note"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteNote(note.id)}
+                              className="text-red-500 hover:text-red-700"
+                              title="Delete note"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
+                        <p className="text-[9px] text-gray-500">
+                          {format(new Date(note.created_at), 'MMM d, yy HH:mm')}
+                        </p>
                       </div>
                     )}
                   </div>
