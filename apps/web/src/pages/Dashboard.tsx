@@ -17,6 +17,7 @@ export function Dashboard() {
   const [showNoteDialog, setShowNoteDialog] = useState(false)
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [selectedNoteBookmarkId, setSelectedNoteBookmarkId] = useState<string>('')
+  const [expandedNotesBookmarks, setExpandedNotesBookmarks] = useState<Set<string>>(new Set())
   const [bookmarks, setBookmarks] = useState<BookmarkWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -96,6 +97,18 @@ export function Dashboard() {
     setSelectedNote(note)
     setSelectedNoteBookmarkId(bookmarkId)
     setShowNoteDialog(true)
+  }
+
+  const handleToggleOlderNotes = (bookmarkId: string) => {
+    setExpandedNotesBookmarks(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(bookmarkId)) {
+        newSet.delete(bookmarkId)
+      } else {
+        newSet.add(bookmarkId)
+      }
+      return newSet
+    })
   }
 
   useEffect(() => {
@@ -339,7 +352,10 @@ export function Dashboard() {
                       <div className="bookmark-notes-container mb-3">
                         <label className="text-xs font-semibold text-gray-700 mb-2 block">Notes</label>
                         <div className="space-y-2">
-                          {bookmark.notes.slice(0, 3).map((note) => (
+                          {(expandedNotesBookmarks.has(bookmark.id)
+                            ? bookmark.notes
+                            : bookmark.notes.slice(0, 3)
+                          ).map((note) => (
                             <div
                               key={note.id}
                               className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r relative group cursor-pointer hover:shadow-md transition-shadow"
@@ -355,8 +371,14 @@ export function Dashboard() {
                             </div>
                           ))}
                           {bookmark.notes.length > 3 && (
-                            <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                              + {bookmark.notes.length - 3} older notes
+                            <button
+                              onClick={() => handleToggleOlderNotes(bookmark.id)}
+                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              {expandedNotesBookmarks.has(bookmark.id)
+                                ? '- Show fewer notes'
+                                : `+ ${bookmark.notes.length - 3} older notes`
+                              }
                             </button>
                           )}
                         </div>
