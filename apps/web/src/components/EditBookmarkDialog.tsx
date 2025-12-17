@@ -48,6 +48,7 @@ export function EditBookmarkDialog({
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [currentNoteInput, setCurrentNoteInput] = useState('')
   const [showOlderNotes, setShowOlderNotes] = useState(false)
+  const [localNotes, setLocalNotes] = useState<Note[]>([])
 
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
@@ -58,6 +59,7 @@ export function EditBookmarkDialog({
       setTitle(bookmark.title)
       setImageUrl(bookmark.image_url)
       setSelectedCategories([...bookmark.categories])
+      setLocalNotes([...bookmark.notes])
       setAvailableCategories(getCategories())
       setError('')
       setShowOlderNotes(false)
@@ -139,7 +141,8 @@ export function EditBookmarkDialog({
     if (!bookmark) return
     const trimmed = currentNoteInput.trim()
     if (trimmed) {
-      addNoteToBookmark(bookmark.id, trimmed)
+      const newNote = addNoteToBookmark(bookmark.id, trimmed)
+      setLocalNotes([newNote, ...localNotes])
       setCurrentNoteInput('')
       onSuccess()
     }
@@ -149,6 +152,7 @@ export function EditBookmarkDialog({
     if (!bookmark) return
     if (confirm('Delete this note?')) {
       deleteNoteFromBookmark(bookmark.id, noteId)
+      setLocalNotes(localNotes.filter(n => n.id !== noteId))
       onSuccess()
     }
   }
@@ -163,6 +167,9 @@ export function EditBookmarkDialog({
     const trimmed = editingNoteContent.trim()
     if (trimmed) {
       updateNoteInBookmark(bookmark.id, editingNoteId, trimmed)
+      setLocalNotes(localNotes.map(n =>
+        n.id === editingNoteId ? { ...n, content: trimmed } : n
+      ))
       setEditingNoteId(null)
       setEditingNoteContent('')
       onSuccess()
@@ -212,7 +219,7 @@ export function EditBookmarkDialog({
 
   if (!bookmark) return null
 
-  const visibleNotes = showOlderNotes ? bookmark.notes : bookmark.notes.slice(0, 3)
+  const visibleNotes = showOlderNotes ? localNotes : localNotes.slice(0, 3)
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -318,22 +325,9 @@ export function EditBookmarkDialog({
 
           {/* Notes Section */}
           <div className="notes-section space-y-2">
-            <label className="text-sm font-medium flex items-center justify-between">
-              <span>Notes</span>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={handleAddNote}
-                disabled={loading || !currentNoteInput.trim()}
-                className="h-8"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add Note
-              </Button>
-            </label>
+            <label className="text-sm font-medium">Notes</label>
 
-            {bookmark.notes.length > 0 && (
+            {localNotes.length > 0 && (
               <div className="notes-list space-y-2 mb-2">
                 {visibleNotes.map((note) => (
                   <div key={note.id} className="note-item bg-blue-50 p-3 rounded-lg border border-blue-200">
@@ -388,13 +382,13 @@ export function EditBookmarkDialog({
                   </div>
                 ))}
 
-                {bookmark.notes.length > 3 && !showOlderNotes && (
+                {localNotes.length > 3 && !showOlderNotes && (
                   <button
                     type="button"
                     onClick={() => setShowOlderNotes(true)}
                     className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                   >
-                    + {bookmark.notes.length - 3} older notes
+                    + {localNotes.length - 3} older notes
                   </button>
                 )}
               </div>
@@ -413,7 +407,21 @@ export function EditBookmarkDialog({
               disabled={loading}
               rows={3}
             />
-            <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
+
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleAddNote}
+                disabled={loading || !currentNoteInput.trim()}
+                className="h-8"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Note
+              </Button>
+            </div>
           </div>
 
           {/* Categories Section */}
