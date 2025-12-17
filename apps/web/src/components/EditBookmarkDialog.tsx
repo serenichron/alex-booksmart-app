@@ -239,7 +239,7 @@ export function EditBookmarkDialog({
                 <img
                   src={imageUrl}
                   alt={title}
-                  className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                  className="w-full h-36 object-cover rounded-lg border border-gray-300"
                   onError={() => setImageUrl(null)}
                 />
                 <div className="absolute top-2 right-2 flex gap-2">

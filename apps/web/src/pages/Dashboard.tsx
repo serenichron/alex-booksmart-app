@@ -191,29 +191,29 @@ export function Dashboard() {
                   }`}
                 >
                   {/* Action Buttons */}
-                  <div className="absolute top-2 right-2 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-2 right-2 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg shadow-lg"
+                        className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
                         title="Share bookmark"
                       >
-                        <Share2 className="w-4 h-4" />
+                        <Share2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg shadow-lg"
+                      className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
                       title="Edit bookmark"
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-lg"
+                      className="bg-rose-500/90 hover:bg-rose-600 text-white p-1.5 rounded-md shadow-md"
                       title="Delete bookmark"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
@@ -227,7 +227,7 @@ export function Dashboard() {
                       <img
                         src={bookmark.image_url}
                         alt={bookmark.title}
-                        className="bookmark-image w-full h-48 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                        className="bookmark-image w-full h-36 object-cover hover:opacity-90 transition-opacity cursor-pointer"
                         onError={(e) => {
                           e.currentTarget.parentElement!.parentElement!.style.display = 'none'
                         }}
@@ -271,25 +271,28 @@ export function Dashboard() {
                     </div>
 
                     {bookmark.meta_description && (
-                      <p className="bookmark-meta-description text-sm text-gray-500 mb-3 line-clamp-2 italic">
+                      <p className="bookmark-meta-description text-sm text-gray-500 mb-3 line-clamp-3 italic">
                         {bookmark.meta_description}
                       </p>
                     )}
 
                     {bookmark.notes.length > 0 && (
-                      <div className="bookmark-notes-container mb-3 space-y-2">
-                        {bookmark.notes.slice(0, 3).map((note) => (
-                          <div key={note.id} className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r">
-                            <p className="bookmark-note-text text-sm text-blue-800">
-                              {note.content}
-                            </p>
-                          </div>
-                        ))}
-                        {bookmark.notes.length > 3 && (
-                          <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                            + {bookmark.notes.length - 3} older notes
-                          </button>
-                        )}
+                      <div className="bookmark-notes-container mb-3">
+                        <label className="text-xs font-semibold text-gray-700 mb-2 block">Notes</label>
+                        <div className="space-y-2">
+                          {bookmark.notes.slice(0, 3).map((note) => (
+                            <div key={note.id} className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r">
+                              <p className="bookmark-note-text text-sm text-blue-800 line-clamp-3">
+                                {note.content}
+                              </p>
+                            </div>
+                          ))}
+                          {bookmark.notes.length > 3 && (
+                            <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                              + {bookmark.notes.length - 3} older notes
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
 
@@ -318,27 +321,14 @@ export function Dashboard() {
                       </div>
                     )}
 
-                    <div className="bookmark-footer flex flex-col gap-1.5 text-xs text-gray-500 mt-4 pt-3 border-t border-gray-100 bg-gray-50/50 -mx-5 px-5 -mb-5 pb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="bookmark-timestamp flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
-                        </div>
-                        {bookmark.url && (
-                          <a
-                            href={bookmark.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bookmark-visit-link flex items-center gap-1 text-primary hover:underline"
-                          >
-                            Visit
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
+                    <div className="bookmark-footer flex flex-col gap-1 text-[10px] text-gray-500 mt-3 pt-2 border-t border-gray-100 bg-gray-50/50 -mx-5 px-5 -mb-5 pb-3">
+                      <div className="bookmark-timestamp flex items-center gap-1">
+                        <Clock className="w-2.5 h-2.5" />
+                        <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
                       </div>
                       {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
                         <div className="bookmark-edited flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                          <Clock className="w-2.5 h-2.5" />
                           <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
                         </div>
                       )}
