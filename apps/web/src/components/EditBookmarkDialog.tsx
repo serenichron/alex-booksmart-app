@@ -328,8 +328,37 @@ export function EditBookmarkDialog({
           <div className="notes-section space-y-2">
             <label className="text-sm font-medium">Notes</label>
 
+            <Textarea
+              placeholder="Add a new note..."
+              value={currentNoteInput}
+              onChange={(e) => setCurrentNoteInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  e.preventDefault()
+                  handleAddNote()
+                }
+              }}
+              disabled={loading}
+              rows={3}
+            />
+
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleAddNote}
+                disabled={loading || !currentNoteInput.trim()}
+                className="h-8"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Note
+              </Button>
+            </div>
+
             {localNotes.length > 0 && (
-              <div className="notes-list space-y-2 mb-2">
+              <div className="notes-list space-y-2 mt-4">
                 {visibleNotes.map((note) => (
                   <div key={note.id} className="note-item bg-blue-50 p-3 rounded-lg border border-blue-200">
                     {editingNoteId === note.id ? (
@@ -399,35 +428,6 @@ export function EditBookmarkDialog({
                 )}
               </div>
             )}
-
-            <Textarea
-              placeholder="Add a new note..."
-              value={currentNoteInput}
-              onChange={(e) => setCurrentNoteInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                  e.preventDefault()
-                  handleAddNote()
-                }
-              }}
-              disabled={loading}
-              rows={3}
-            />
-
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-500">Press Ctrl+Enter to add</p>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={handleAddNote}
-                disabled={loading || !currentNoteInput.trim()}
-                className="h-8"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add Note
-              </Button>
-            </div>
           </div>
 
           {/* Categories Section */}
