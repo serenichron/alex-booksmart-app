@@ -45,6 +45,7 @@ export function EditBookmarkDialog({
   // Editable fields
   const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [textContent, setTextContent] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [categoryInput, setCategoryInput] = useState('')
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
@@ -61,6 +62,7 @@ export function EditBookmarkDialog({
     if (open && bookmark) {
       setTitle(bookmark.title)
       setImageUrl(bookmark.image_url)
+      setTextContent(bookmark.summary || '')
       setSelectedCategories([...bookmark.categories])
       setLocalNotes([...bookmark.notes])
       setShowMetaDescription(bookmark.show_meta_description ?? true)
@@ -205,12 +207,19 @@ export function EditBookmarkDialog({
     try {
       selectedCategories.forEach(cat => addCategory(cat))
 
-      updateBookmark(bookmark.id, {
+      const updates: Partial<Bookmark> = {
         title: title.trim(),
         categories: selectedCategories,
         image_url: imageUrl,
         show_meta_description: showMetaDescription,
-      })
+      }
+
+      // For text bookmarks, also update summary (text content)
+      if (!bookmark.url) {
+        updates.summary = textContent.trim()
+      }
+
+      updateBookmark(bookmark.id, updates)
 
       handleClose()
       onSuccess()
@@ -228,7 +237,7 @@ export function EditBookmarkDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="edit-bookmark-dialog sm:max-w-[700px] p-8 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="edit-bookmark-dialog w-[600px] max-w-[95vw] p-8 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">Edit Bookmark</DialogTitle>
           <DialogDescription className="text-base">
@@ -314,12 +323,17 @@ export function EditBookmarkDialog({
           </div>
 
           {/* Text Content Section (for text bookmarks) */}
-          {!bookmark.url && bookmark.summary && (
+          {!bookmark.url && (
             <div className="text-content-section space-y-2">
               <label className="text-sm font-medium">Text Content</label>
-              <div className="text-sm text-gray-700 p-3 bg-yellow-50 rounded-lg border border-yellow-200 max-h-60 overflow-y-auto whitespace-pre-wrap">
-                {bookmark.summary}
-              </div>
+              <Textarea
+                value={textContent}
+                onChange={(e) => setTextContent(e.target.value)}
+                disabled={loading}
+                rows={8}
+                className="text-sm bg-yellow-50 border-yellow-200 focus:border-yellow-400"
+                placeholder="Enter your text content..."
+              />
             </div>
           )}
 
