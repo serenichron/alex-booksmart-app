@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { getBookmarks, getStats, deleteBookmark, type Bookmark as BookmarkType, type Note } from '@/lib/storage'
 
@@ -30,6 +31,8 @@ export function Dashboard() {
     thisWeek: 0,
   })
   const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image']))
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSearchInput, setShowSearchInput] = useState(false)
 
   const fetchBookmarks = () => {
     try {
@@ -135,11 +138,74 @@ export function Dashboard() {
     setSelectedTypes(new Set())
   }
 
-  // Filter bookmarks based on selected types
-  const filteredBookmarks = bookmarks.filter(bookmark => {
-    if (selectedTypes.size === 0) return false
-    return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
-  })
+  // Search function with priority: URL > Title > Meta Description > Notes > Categories > Tags > Summary
+  const searchBookmarks = (bookmarks: BookmarkWithDetails[], query: string): BookmarkWithDetails[] => {
+    if (!query.trim()) return bookmarks
+
+    const lowerQuery = query.toLowerCase().trim()
+
+    // Create a map to store bookmarks with their search priority
+    const bookmarkPriority = new Map<string, { bookmark: BookmarkWithDetails; priority: number }>()
+
+    bookmarks.forEach(bookmark => {
+      let priority = 0
+
+      // Priority 1: URL match (highest)
+      if (bookmark.url && bookmark.url.toLowerCase().includes(lowerQuery)) {
+        priority = 1
+      }
+      // Priority 2: Title match
+      else if (bookmark.title && bookmark.title.toLowerCase().includes(lowerQuery)) {
+        priority = 2
+      }
+      // Priority 3: Meta description match
+      else if (bookmark.meta_description && bookmark.meta_description.toLowerCase().includes(lowerQuery)) {
+        priority = 3
+      }
+      // Priority 4: Notes match
+      else if (bookmark.notes.some(note => note.content.toLowerCase().includes(lowerQuery))) {
+        priority = 4
+      }
+      // Priority 5: Categories match
+      else if (bookmark.categories.some(cat => cat.toLowerCase().includes(lowerQuery))) {
+        priority = 5
+      }
+      // Priority 6: Tags match
+      else if (bookmark.tags.some(tag => tag.toLowerCase().includes(lowerQuery))) {
+        priority = 6
+      }
+      // Priority 7: Summary/text content match
+      else if (bookmark.summary && bookmark.summary.toLowerCase().includes(lowerQuery)) {
+        priority = 7
+      }
+
+      // Only include bookmarks that match the search
+      if (priority > 0) {
+        bookmarkPriority.set(bookmark.id, { bookmark, priority })
+      }
+    })
+
+    // Sort by priority (lower number = higher priority)
+    return Array.from(bookmarkPriority.values())
+      .sort((a, b) => a.priority - b.priority)
+      .map(item => item.bookmark)
+  }
+
+  // Filter bookmarks based on selected types and search query
+  const filteredBookmarks = (() => {
+    // First filter by type
+    let filtered = bookmarks.filter(bookmark => {
+      if (selectedTypes.size === 0) return false
+      return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
+    })
+
+    // Then apply search
+    if (searchQuery.trim()) {
+      filtered = searchBookmarks(filtered, searchQuery)
+    }
+
+    return filtered
+  })()
 
   useEffect(() => {
     fetchBookmarks()
@@ -147,9 +213,9 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
+      {/* Header - Full Width */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-xl">
@@ -159,10 +225,33 @@ export function Dashboard() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm">
-                <Search className="w-4 h-4" />
-                Search
-              </Button>
+              {showSearchInput ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Search bookmarks..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-64"
+                    autoFocus
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery('')
+                      setShowSearchInput(false)
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="ghost" size="sm" onClick={() => setShowSearchInput(true)}>
+                  <Search className="w-4 h-4" />
+                  Search
+                </Button>
+              )}
               <Button size="sm" onClick={() => setShowAddDialog(true)}>
                 <Plus className="w-4 h-4" />
                 Add Bookmark
@@ -278,17 +367,28 @@ export function Dashboard() {
             </Button>
           </div>
         ) : filteredBookmarks.length === 0 ? (
-          /* No results for current filter */
+          /* No results for current filter or search */
           <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-              <Filter className="w-8 h-8 text-gray-400" />
+              {searchQuery ? <Search className="w-8 h-8 text-gray-400" /> : <Filter className="w-8 h-8 text-gray-400" />}
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               No Bookmarks Found
             </h2>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              No bookmarks match the selected filters. Try selecting different bookmark types.
+              {searchQuery
+                ? `No bookmarks match "${searchQuery}". Try a different search term.`
+                : "No bookmarks match the selected filters. Try selecting different bookmark types."
+              }
             </p>
+            {searchQuery && (
+              <Button
+                variant="outline"
+                onClick={() => setSearchQuery('')}
+              >
+                Clear Search
+              </Button>
+            )}
           </div>
         ) : (
           /* Bookmarks Organized by Category */
