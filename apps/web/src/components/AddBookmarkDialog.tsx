@@ -254,15 +254,14 @@ export function AddBookmarkDialog({
         // Detect if it's an image URL
         const bookmarkType = isImageUrl(normalizedUrl) ? 'image' : 'link'
 
-        // For image URLs, use filename or "Image" as default title
+        // Determine title based on bookmark type
         let bookmarkTitle = title
         if (!bookmarkTitle) {
           if (bookmarkType === 'image') {
-            // Extract filename from URL
-            const urlPath = normalizedUrl.split('?')[0] // Remove query params
-            const filename = urlPath.substring(urlPath.lastIndexOf('/') + 1)
-            bookmarkTitle = filename || 'Image'
+            // For image bookmarks, title is optional - leave empty
+            bookmarkTitle = ''
           } else {
+            // For regular link bookmarks, use URL as fallback
             bookmarkTitle = normalizedUrl
           }
         }
@@ -282,8 +281,8 @@ export function AddBookmarkDialog({
           show_meta_description: showMetaDescription,
         })
       } else {
-        // Save text bookmark with optional title
-        const bookmarkTitle = textTitle.trim() || textContent.substring(0, 50) + (textContent.length > 50 ? '...' : '')
+        // Save text bookmark with optional title (no auto-generation)
+        const bookmarkTitle = textTitle.trim()
 
         saveBookmark({
           title: bookmarkTitle,

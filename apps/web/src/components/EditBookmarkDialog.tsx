@@ -190,13 +190,17 @@ export function EditBookmarkDialog({
   const handleSave = async () => {
     if (!bookmark) return
 
-    // Auto-refetch title if empty
-    if (!title.trim() && bookmark.url) {
-      await handleRefetchTitle()
-      return
-    }
+    // Only validate title for regular link bookmarks
+    // Text bookmarks and image bookmarks can have empty titles
+    const isTextBookmark = !bookmark.url
+    const isImageBookmark = bookmark.type === 'image'
 
-    if (!title.trim()) {
+    if (!title.trim() && !isTextBookmark && !isImageBookmark) {
+      // For regular link bookmarks, auto-refetch title if empty
+      if (bookmark.url) {
+        await handleRefetchTitle()
+        return
+      }
       setError('Title is required')
       return
     }
@@ -292,7 +296,7 @@ export function EditBookmarkDialog({
           <div className="title-section space-y-2">
             <label htmlFor="edit-title" className="text-sm font-medium flex items-center gap-2">
               <Pencil className="w-3 h-3" />
-              Title
+              Title {(!bookmark.url || bookmark.type === 'image') && '(optional)'}
             </label>
             <div className="flex gap-2">
               <Input
@@ -301,9 +305,9 @@ export function EditBookmarkDialog({
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={loading}
                 className="flex-1"
-                placeholder="Enter title"
+                placeholder={!bookmark.url || bookmark.type === 'image' ? "Optional title..." : "Enter title"}
               />
-              {bookmark.url && (
+              {bookmark.url && bookmark.type !== 'image' && (
                 <Button
                   type="button"
                   variant="outline"
@@ -315,7 +319,7 @@ export function EditBookmarkDialog({
                 </Button>
               )}
             </div>
-            {!title.trim() && bookmark.url && (
+            {!title.trim() && bookmark.url && bookmark.type !== 'image' && (
               <p className="text-xs text-muted-foreground">
                 Leave empty and save to auto-fetch from URL
               </p>

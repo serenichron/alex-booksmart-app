@@ -250,27 +250,29 @@ export function Dashboard() {
                           e.currentTarget.src = bookmark.image_url || ''
                         }}
                       />
-                      {/* Overlay for title and footer */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
-                        <h3 className="text-white font-semibold text-lg mb-1.5 drop-shadow-lg">
-                          {bookmark.title}
-                        </h3>
-                        <div className="flex items-center gap-2 text-[10px] text-white/90">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-2.5 h-2.5" />
-                            <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
+                      {/* Overlay for title and footer - only show if title exists */}
+                      {bookmark.title && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
+                          <h3 className="text-white font-semibold text-lg mb-1.5 drop-shadow-lg">
+                            {bookmark.title}
+                          </h3>
+                          <div className="flex items-center gap-2 text-[10px] text-white/90">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-2.5 h-2.5" />
+                              <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
+                            </div>
+                            {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
+                              <>
+                                <span className="text-white/60">•</span>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
+                                </div>
+                              </>
+                            )}
                           </div>
-                          {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                            <>
-                              <span className="text-white/60">•</span>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-2.5 h-2.5" />
-                                <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                              </div>
-                            </>
-                          )}
                         </div>
-                      </div>
+                      )}
                     </a>
                   ) : bookmark.image_url && !isImageBookmark && (
                     <a
@@ -307,33 +309,31 @@ export function Dashboard() {
                       </div>
                     )}
 
-                    <div className="bookmark-header flex items-start justify-between mb-2">
-                      {bookmark.url ? (
-                        <a
-                          href={bookmark.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 hover:text-blue-600 transition-colors cursor-pointer leading-tight"
-                        >
-                          {bookmark.title}
-                        </a>
-                      ) : (
-                        <h3 className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 leading-tight">
-                          {bookmark.title}
-                        </h3>
-                      )}
-                      {bookmark.is_favorite && (
-                        <Heart className="bookmark-favorite-icon w-3.5 h-3.5 text-red-500 fill-current flex-shrink-0 ml-2" />
-                      )}
-                    </div>
+                    {/* Only show title if it exists */}
+                    {bookmark.title && (
+                      <div className="bookmark-header flex items-start justify-between mb-2">
+                        {bookmark.url ? (
+                          <a
+                            href={bookmark.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 hover:text-blue-600 transition-colors cursor-pointer leading-tight"
+                          >
+                            {bookmark.title}
+                          </a>
+                        ) : (
+                          <h3 className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 leading-tight">
+                            {bookmark.title}
+                          </h3>
+                        )}
+                        {bookmark.is_favorite && (
+                          <Heart className="bookmark-favorite-icon w-3.5 h-3.5 text-red-500 fill-current flex-shrink-0 ml-2" />
+                        )}
+                      </div>
+                    )}
 
-                    {/* For text bookmarks, show summary (text content) only if title is not auto-generated from summary */}
-                    {isTextBookmark && bookmark.summary && (() => {
-                      // Check if title is auto-generated (first 50 chars of summary + optional '...')
-                      const autoTitle = bookmark.summary.substring(0, 50) + (bookmark.summary.length > 50 ? '...' : '')
-                      const isAutoGenerated = bookmark.title === autoTitle
-                      return !isAutoGenerated
-                    })() && (
+                    {/* For text bookmarks, show summary (text content) when no title or when title is provided */}
+                    {isTextBookmark && bookmark.summary && (
                       <p className="bookmark-text-content text-xs text-gray-700 mb-2 line-clamp-3 leading-snug">
                         {bookmark.summary}
                       </p>
