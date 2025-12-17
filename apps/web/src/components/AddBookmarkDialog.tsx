@@ -433,8 +433,8 @@ export function AddBookmarkDialog({
                 </div>
               )}
 
-              {/* Only show notes and categories after URL is entered */}
-              {url.trim() && (
+              {/* Only show notes and categories after metadata is fetched */}
+              {(title || imageUrl || metaDescription) && (
               <>
               <div className="notes-field space-y-2">
                 <label className="text-sm font-medium">

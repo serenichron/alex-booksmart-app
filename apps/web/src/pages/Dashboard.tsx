@@ -144,32 +144,22 @@ export function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome to BookSmart 👋
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Your smart bookmark collection - saved locally in your browser
-          </p>
-        </div>
-
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-            <div className="text-sm text-blue-100 mb-1">Total Bookmarks</div>
+          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
+            <div className="text-sm text-blue-100">Total Bookmarks</div>
             <div className="text-3xl font-bold text-white">{stats.total}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-            <div className="text-sm text-purple-100 mb-1">Categories</div>
+          <div className="stats-card bg-gradient-to-br from-purple-500 to-purple-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
+            <div className="text-sm text-purple-100">Categories</div>
             <div className="text-3xl font-bold text-white">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-pink-500 to-pink-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-            <div className="text-sm text-pink-100 mb-1">Tags</div>
+          <div className="stats-card bg-gradient-to-br from-pink-500 to-pink-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
+            <div className="text-sm text-pink-100">Tags</div>
             <div className="text-3xl font-bold text-white">{stats.tags}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-indigo-500 to-indigo-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-            <div className="text-sm text-indigo-100 mb-1">This Week</div>
+          <div className="stats-card bg-gradient-to-br from-indigo-500 to-indigo-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
+            <div className="text-sm text-indigo-100">This Week</div>
             <div className="text-3xl font-bold text-white">{stats.thisWeek}</div>
           </div>
         </div>
@@ -265,16 +255,19 @@ export function Dashboard() {
                         <h3 className="text-white font-semibold text-lg mb-2 drop-shadow-lg">
                           {bookmark.title}
                         </h3>
-                        <div className="flex flex-col gap-1 text-[10px] text-white/90">
+                        <div className="flex items-center gap-2 text-[10px] text-white/90">
                           <div className="flex items-center gap-1">
                             <Clock className="w-2.5 h-2.5" />
                             <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
                           </div>
                           {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-2.5 h-2.5" />
-                              <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                            </div>
+                            <>
+                              <span className="text-white/60">•</span>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-2.5 h-2.5" />
+                                <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
+                              </div>
+                            </>
                           )}
                         </div>
                       </div>
@@ -407,16 +400,19 @@ export function Dashboard() {
                       </div>
                     )}
 
-                    <div className="bookmark-footer flex flex-col gap-0.5 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
+                    <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
                       <div className="bookmark-timestamp flex items-center gap-1">
                         <Clock className="w-2 h-2" />
                         <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
                       </div>
                       {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                        <div className="bookmark-edited flex items-center gap-1">
-                          <Clock className="w-2 h-2" />
-                          <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                        </div>
+                        <>
+                          <span className="text-gray-400">•</span>
+                          <div className="bookmark-edited flex items-center gap-1">
+                            <Clock className="w-2 h-2" />
+                            <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
