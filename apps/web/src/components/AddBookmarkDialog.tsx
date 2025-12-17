@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Link as LinkIcon, FileText } from 'lucide-react'
+import { Loader2, Link as LinkIcon, FileText, Pencil } from 'lucide-react'
 
 interface AddBookmarkDialogProps {
   open: boolean
@@ -41,6 +41,7 @@ export function AddBookmarkDialog({
   const [titleEdited, setTitleEdited] = useState(false)
 
   const fetchTimeoutRef = useRef<NodeJS.Timeout>()
+  const lastFetchedUrlRef = useRef<string>('')
 
   const reset = () => {
     setMode('url')
@@ -54,6 +55,7 @@ export function AddBookmarkDialog({
     setError('')
     setLoading(false)
     setFetchingMetadata(false)
+    lastFetchedUrlRef.current = ''
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current)
     }
@@ -74,6 +76,7 @@ export function AddBookmarkDialog({
       setMetaDescription(metadata.description)
       if (metadata.image) setImageUrl(metadata.image)
       setTitleEdited(false)
+      lastFetchedUrlRef.current = urlToFetch
     } catch (err) {
       console.error('Failed to fetch metadata:', err)
     } finally {
@@ -83,6 +86,15 @@ export function AddBookmarkDialog({
 
   const handleUrlChange = (newUrl: string) => {
     setUrl(newUrl)
+
+    // Clear fetched data if user is typing a completely different URL
+    if (lastFetchedUrlRef.current && !newUrl.startsWith(lastFetchedUrlRef.current.substring(0, 20))) {
+      setTitle('')
+      setImageUrl('')
+      setMetaDescription('')
+      setTitleEdited(false)
+      lastFetchedUrlRef.current = ''
+    }
 
     // Clear previous timeout
     if (fetchTimeoutRef.current) {
@@ -243,19 +255,23 @@ export function AddBookmarkDialog({
 
                   {title && (
                     <div className="fetched-title space-y-2">
-                      <label htmlFor="title-edit" className="text-xs font-medium text-gray-600">
+                      <label htmlFor="title-edit" className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                        <Pencil className="w-3 h-3" />
                         Title (click to edit)
                       </label>
-                      <Input
-                        id="title-edit"
-                        value={title}
-                        onChange={(e) => {
-                          setTitle(e.target.value)
-                          setTitleEdited(true)
-                        }}
-                        className="font-semibold"
-                        placeholder="Enter title"
-                      />
+                      <div className="relative">
+                        <Input
+                          id="title-edit"
+                          value={title}
+                          onChange={(e) => {
+                            setTitle(e.target.value)
+                            setTitleEdited(true)
+                          }}
+                          className="font-semibold pr-10"
+                          placeholder="Enter title"
+                        />
+                        <Pencil className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
                   )}
 
