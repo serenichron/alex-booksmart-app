@@ -172,71 +172,69 @@ export function Dashboard() {
         </div>
       </header>
 
-      {/* Main Layout with Sidebar */}
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-4rem)] p-4 sticky top-16">
-          <div className="space-y-6">
-            {/* Bookmark Type Filter */}
-            <div className="filter-section">
-              <div className="flex items-center gap-2 mb-3">
-                <Filter className="w-4 h-4 text-gray-600" />
-                <h3 className="text-sm font-semibold text-gray-900">Bookmark Types</h3>
-              </div>
+      {/* Sidebar - Fixed Position */}
+      <aside className="fixed left-0 top-16 w-64 bg-white border-r border-gray-200 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40">
+        <div className="space-y-6">
+          {/* Bookmark Type Filter */}
+          <div className="filter-section">
+            <div className="flex items-center gap-2 mb-3">
+              <Filter className="w-4 h-4 text-gray-600" />
+              <h3 className="text-sm font-semibold text-gray-900">Bookmark Types</h3>
+            </div>
 
-              <div className="space-y-2 mb-3">
-                <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                  <Checkbox
-                    checked={selectedTypes.has('link')}
-                    onCheckedChange={() => handleToggleType('link')}
-                  />
-                  <LinkIcon className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm text-gray-700">Links</span>
-                </label>
+            <div className="space-y-2 mb-3">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                <Checkbox
+                  checked={selectedTypes.has('link')}
+                  onCheckedChange={() => handleToggleType('link')}
+                />
+                <LinkIcon className="w-4 h-4 text-blue-600" />
+                <span className="text-sm text-gray-700">Links</span>
+              </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                  <Checkbox
-                    checked={selectedTypes.has('text')}
-                    onCheckedChange={() => handleToggleType('text')}
-                  />
-                  <FileText className="w-4 h-4 text-yellow-600" />
-                  <span className="text-sm text-gray-700">Text</span>
-                </label>
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                <Checkbox
+                  checked={selectedTypes.has('text')}
+                  onCheckedChange={() => handleToggleType('text')}
+                />
+                <FileText className="w-4 h-4 text-yellow-600" />
+                <span className="text-sm text-gray-700">Text</span>
+              </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                  <Checkbox
-                    checked={selectedTypes.has('image')}
-                    onCheckedChange={() => handleToggleType('image')}
-                  />
-                  <ImageIcon className="w-4 h-4 text-green-600" />
-                  <span className="text-sm text-gray-700">Images</span>
-                </label>
-              </div>
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                <Checkbox
+                  checked={selectedTypes.has('image')}
+                  onCheckedChange={() => handleToggleType('image')}
+                />
+                <ImageIcon className="w-4 h-4 text-green-600" />
+                <span className="text-sm text-gray-700">Images</span>
+              </label>
+            </div>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSelectAllTypes}
-                  className="flex-1 text-xs"
-                >
-                  Select All
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleUnselectAllTypes}
-                  className="flex-1 text-xs"
-                >
-                  Unselect All
-                </Button>
-              </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAllTypes}
+                className="flex-1 text-xs"
+              >
+                Select All
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUnselectAllTypes}
+                className="flex-1 text-xs"
+              >
+                Unselect All
+              </Button>
             </div>
           </div>
-        </aside>
+        </div>
+      </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content - With left margin for sidebar */}
+      <main className="ml-64 px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
@@ -588,7 +586,6 @@ export function Dashboard() {
           </div>
         )}
       </main>
-      </div>
 
       {/* Add Bookmark Dialog */}
       <AddBookmarkDialog
