@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { saveBookmark, getCategories, addCategory, type Note } from '@/lib/storage'
+import { saveBookmark, getCategories, addCategory, getBookmarks, updateBookmark, type Note } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
+import { normalizeUrl, isImageUrl } from '@/lib/urlUtils'
 import {
   Dialog,
   DialogContent,
@@ -34,9 +35,12 @@ export function AddBookmarkDialog({
   const [notes, setNotes] = useState<Omit<Note, 'id' | 'created_at'>[]>([])
   const [currentNoteInput, setCurrentNoteInput] = useState('')
   const [textContent, setTextContent] = useState('')
+  const [textTitle, setTextTitle] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [categoryInput, setCategoryInput] = useState('')
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [duplicateBookmark, setDuplicateBookmark] = useState<any>(null)
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
 
   // Auto-fetched metadata
   const [title, setTitle] = useState('')
@@ -58,6 +62,7 @@ export function AddBookmarkDialog({
     setNotes([])
     setCurrentNoteInput('')
     setTextContent('')
+    setTextTitle('')
     setTitle('')
     setImageUrl('')
     setMetaDescription('')
@@ -68,6 +73,8 @@ export function AddBookmarkDialog({
     setError('')
     setLoading(false)
     setFetchingMetadata(false)
+    setDuplicateBookmark(null)
+    setShowDuplicateDialog(false)
     lastFetchedUrlRef.current = ''
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current)
@@ -126,12 +133,14 @@ export function AddBookmarkDialog({
       clearTimeout(fetchTimeoutRef.current)
     }
 
-    // Only fetch if URL looks complete (has protocol and domain with TLD)
+    // Normalize and check for complete URL
+    const normalizedUrl = normalizeUrl(newUrl)
     const urlPattern = /^https?:\/\/[^\s]+\.[^\s]+$/
-    if (urlPattern.test(newUrl)) {
+
+    if (urlPattern.test(normalizedUrl)) {
       // Debounce: wait 800ms after user stops typing
       fetchTimeoutRef.current = setTimeout(() => {
-        fetchMetadata(newUrl)
+        fetchMetadata(normalizedUrl)
       }, 800)
     }
   }
@@ -175,6 +184,19 @@ export function AddBookmarkDialog({
     cat.toLowerCase().includes(categoryInput.toLowerCase())
   )
 
+  const handleBringToTop = () => {
+    if (duplicateBookmark) {
+      // Update the bookmark's created_at to now, which brings it to top
+      updateBookmark(duplicateBookmark.id, {
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      setShowDuplicateDialog(false)
+      handleClose()
+      onSuccess()
+    }
+  }
+
   const handleSave = () => {
     if (mode === 'url' && !url.trim()) {
       setError('Please enter a URL')
@@ -202,13 +224,30 @@ export function AddBookmarkDialog({
       }))
 
       if (mode === 'url') {
+        // Normalize URL
+        const normalizedUrl = normalizeUrl(url.trim())
+
+        // Check for duplicate
+        const existingBookmarks = getBookmarks()
+        const duplicate = existingBookmarks.find(b => b.url === normalizedUrl)
+
+        if (duplicate) {
+          setDuplicateBookmark(duplicate)
+          setShowDuplicateDialog(true)
+          setLoading(false)
+          return
+        }
+
+        // Detect if it's an image URL
+        const bookmarkType = isImageUrl(normalizedUrl) ? 'image' : 'link'
+
         // Save URL bookmark
         saveBookmark({
-          title: title || url,
+          title: title || normalizedUrl,
           summary: metaDescription || '',
           notes: notesArray,
-          url: url.trim(),
-          type: 'link',
+          url: normalizedUrl,
+          type: bookmarkType,
           is_favorite: false,
           categories: selectedCategories,
           tags: [],
@@ -216,9 +255,11 @@ export function AddBookmarkDialog({
           meta_description: metaDescription || null,
         })
       } else {
-        // Save text bookmark
+        // Save text bookmark with optional title
+        const bookmarkTitle = textTitle.trim() || textContent.substring(0, 50) + (textContent.length > 50 ? '...' : '')
+
         saveBookmark({
-          title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
+          title: bookmarkTitle,
           summary: textContent,
           notes: notesArray,
           url: null,
@@ -479,6 +520,20 @@ export function AddBookmarkDialog({
             </>
           ) : (
             <>
+              <div className="text-title-field space-y-2">
+                <label htmlFor="textTitle" className="text-sm font-medium">
+                  Title (optional)
+                </label>
+                <Input
+                  id="textTitle"
+                  placeholder="Optional title for your text bookmark..."
+                  value={textTitle}
+                  onChange={(e) => setTextTitle(e.target.value)}
+                  disabled={loading}
+                  className="text-title-input"
+                />
+              </div>
+
               <div className="text-content-field space-y-2">
                 <label htmlFor="textContent" className="text-sm font-medium">
                   Text Content *
@@ -638,6 +693,64 @@ export function AddBookmarkDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Duplicate Detection Dialog */}
+      {showDuplicateDialog && duplicateBookmark && (
+        <Dialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Bookmark Already Exists</DialogTitle>
+              <DialogDescription>
+                This URL is already bookmarked. What would you like to do?
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-gray-900 mb-1">{duplicateBookmark.title}</p>
+                <p className="text-xs text-gray-600 truncate">{duplicateBookmark.url}</p>
+                {duplicateBookmark.categories.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {duplicateBookmark.categories.map((cat: string, idx: number) => (
+                      <span key={idx} className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <DialogFooter className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDuplicateDialog(false)
+                  setDuplicateBookmark(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDuplicateDialog(false)
+                  setDuplicateBookmark(null)
+                  // Scroll to the bookmark in the dashboard
+                  handleClose()
+                }}
+              >
+                View Existing
+              </Button>
+              <Button
+                onClick={handleBringToTop}
+              >
+                Bring to Top
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   )
 }

@@ -181,12 +181,15 @@ export function Dashboard() {
 
               const renderBookmarkCard = (bookmark: BookmarkWithDetails) => {
                 const isTextBookmark = !bookmark.url
+                const isImageBookmark = bookmark.type === 'image'
                 return (
                 <div
                   key={bookmark.id}
                   className={`bookmark-card rounded-xl border overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200 break-inside-avoid mb-6 relative group ${
                     isTextBookmark
                       ? 'bg-gradient-to-br from-yellow-100 via-yellow-50 to-yellow-100 border-yellow-300 shadow-md'
+                      : isImageBookmark
+                      ? 'bg-black border-gray-800'
                       : 'bg-white border-gray-200/60'
                   }`}
                 >
@@ -217,7 +220,43 @@ export function Dashboard() {
                     </button>
                   </div>
 
-                  {bookmark.image_url && (
+                  {/* Image Bookmark - Special Design */}
+                  {isImageBookmark && bookmark.url ? (
+                    <a
+                      href={bookmark.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block relative"
+                    >
+                      <img
+                        src={bookmark.url}
+                        alt={bookmark.title}
+                        className="w-full h-auto object-contain"
+                        style={{ maxHeight: '600px' }}
+                        onError={(e) => {
+                          e.currentTarget.src = bookmark.image_url || ''
+                        }}
+                      />
+                      {/* Overlay for title and footer */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
+                        <h3 className="text-white font-semibold text-lg mb-2 drop-shadow-lg">
+                          {bookmark.title}
+                        </h3>
+                        <div className="flex flex-col gap-1 text-[10px] text-white/90">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-2.5 h-2.5" />
+                            <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
+                          </div>
+                          {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-2.5 h-2.5" />
+                              <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </a>
+                  ) : bookmark.image_url && !isImageBookmark && (
                     <a
                       href={bookmark.url || '#'}
                       target="_blank"
