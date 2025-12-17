@@ -64,7 +64,7 @@ export function NoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] p-6">
         <DialogHeader>
           <DialogTitle>Note Details</DialogTitle>
           <DialogDescription>

@@ -208,12 +208,12 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-xl border overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200 break-inside-avoid mb-6 relative group ${
+                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg hover:scale-[1.01] transition-all duration-200 break-inside-avoid mb-4 relative group ${
                     isTextBookmark
-                      ? 'bg-gradient-to-br from-yellow-100 via-yellow-50 to-yellow-100 border-yellow-300 shadow-md'
+                      ? 'bg-gradient-to-br from-yellow-100 via-yellow-50 to-yellow-100 border-yellow-300 shadow-sm'
                       : isImageBookmark
                       ? 'bg-black border-gray-800'
-                      : 'bg-white border-gray-200/60'
+                      : 'bg-white border-gray-200/60 shadow-sm'
                   }`}
                 >
                   {/* Action Buttons */}
@@ -299,81 +299,78 @@ export function Dashboard() {
 
                   {/* Regular bookmark content (not for image bookmarks) */}
                   {!isImageBookmark && (
-                  <div className="bookmark-content p-5">
+                  <div className="bookmark-content p-3">
                     {bookmark.url && (
-                      <div className="bookmark-url-display mb-2">
+                      <div className="bookmark-url-display mb-1.5">
                         <a
                           href={bookmark.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 truncate"
+                          className="text-[11px] text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 truncate leading-tight"
                         >
-                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                          <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
                           <span className="truncate">{bookmark.url}</span>
                         </a>
                       </div>
                     )}
 
-                    <div className="bookmark-header flex items-start justify-between mb-3">
+                    <div className="bookmark-header flex items-start justify-between mb-2">
                       {bookmark.url ? (
                         <a
                           href={bookmark.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="bookmark-title font-semibold text-gray-900 line-clamp-2 flex-1 hover:text-blue-600 transition-colors cursor-pointer"
+                          className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 hover:text-blue-600 transition-colors cursor-pointer leading-tight"
                         >
                           {bookmark.title}
                         </a>
                       ) : (
-                        <h3 className="bookmark-title font-semibold text-gray-900 line-clamp-2 flex-1">
+                        <h3 className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 leading-tight">
                           {bookmark.title}
                         </h3>
                       )}
                       {bookmark.is_favorite && (
-                        <Heart className="bookmark-favorite-icon w-4 h-4 text-red-500 fill-current flex-shrink-0 ml-2" />
+                        <Heart className="bookmark-favorite-icon w-3.5 h-3.5 text-red-500 fill-current flex-shrink-0 ml-2" />
                       )}
                     </div>
 
                     {/* For text bookmarks, show summary (text content) */}
                     {isTextBookmark && bookmark.summary && (
-                      <p className="bookmark-text-content text-sm text-gray-700 mb-3 line-clamp-4">
+                      <p className="bookmark-text-content text-xs text-gray-700 mb-2 line-clamp-3 leading-snug">
                         {bookmark.summary}
                       </p>
                     )}
 
                     {/* For URL bookmarks, show meta description if enabled */}
                     {!isTextBookmark && bookmark.meta_description && bookmark.show_meta_description !== false && (
-                      <p className="bookmark-meta-description text-sm text-gray-500 mb-3 line-clamp-3 italic">
+                      <p className="bookmark-meta-description text-xs text-gray-500 mb-2 line-clamp-2 italic leading-snug">
                         {bookmark.meta_description}
                       </p>
                     )}
 
                     {bookmark.notes.length > 0 && (
-                      <div className="bookmark-notes-container mb-3">
-                        <label className="text-xs font-semibold text-gray-700 mb-2 block">Notes</label>
-                        <div className="space-y-2">
+                      <div className="bookmark-notes-container mb-2">
+                        <label className="text-[10px] font-semibold text-gray-700 mb-1.5 block">Notes</label>
+                        <div className="space-y-1.5">
                           {(expandedNotesBookmarks.has(bookmark.id)
                             ? bookmark.notes
                             : bookmark.notes.slice(0, 3)
                           ).map((note) => (
                             <div
                               key={note.id}
-                              className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r relative group cursor-pointer hover:shadow-md transition-shadow"
+                              className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-500 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                               onClick={() => handleNoteClick(note, bookmark.id)}
                               title="Click to view full note"
                             >
-                              <p className="bookmark-note-text text-sm text-blue-800 line-clamp-3 mb-1">
+                              <p className="bookmark-note-text text-xs text-blue-800 line-clamp-2 leading-snug">
                                 {note.content}
-                              </p>
-                              <p className="text-[9px] text-blue-600/70">
-                                {format(new Date(note.created_at), 'MMM d, yy HH:mm')}
                               </p>
                             </div>
                           ))}
                           {bookmark.notes.length > 3 && (
                             <button
                               onClick={() => handleToggleOlderNotes(bookmark.id)}
-                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                              className="text-[10px] text-blue-600 hover:text-blue-800 font-medium"
                             >
                               {expandedNotesBookmarks.has(bookmark.id)
                                 ? '- Show fewer notes'
@@ -386,9 +383,9 @@ export function Dashboard() {
                     )}
 
                     {bookmark.categories.length > 0 && (
-                      <div className="bookmark-categories flex flex-wrap gap-1.5 mb-3">
+                      <div className="bookmark-categories flex flex-wrap gap-1 mb-2">
                         {bookmark.categories.map((cat, idx) => (
-                          <Badge key={idx} variant="secondary" className="bookmark-category text-xs">
+                          <Badge key={idx} variant="secondary" className="bookmark-category text-[10px] py-0 h-5">
                             {cat}
                           </Badge>
                         ))}
@@ -396,28 +393,28 @@ export function Dashboard() {
                     )}
 
                     {bookmark.tags.length > 0 && (
-                      <div className="bookmark-tags flex flex-wrap gap-1.5 mb-3">
+                      <div className="bookmark-tags flex flex-wrap gap-1 mb-2">
                         {bookmark.tags.slice(0, 3).map((tag, idx) => (
-                          <Badge key={idx} variant="outline" className="bookmark-tag text-xs">
+                          <Badge key={idx} variant="outline" className="bookmark-tag text-[10px] py-0 h-5">
                             {tag}
                           </Badge>
                         ))}
                         {bookmark.tags.length > 3 && (
-                          <Badge variant="outline" className="bookmark-tags-more text-xs">
+                          <Badge variant="outline" className="bookmark-tags-more text-[10px] py-0 h-5">
                             +{bookmark.tags.length - 3}
                           </Badge>
                         )}
                       </div>
                     )}
 
-                    <div className="bookmark-footer flex flex-col gap-1 text-[10px] text-gray-500 mt-3 pt-2 border-t border-gray-100 bg-gray-50/50 -mx-5 px-5 -mb-5 pb-3">
+                    <div className="bookmark-footer flex flex-col gap-0.5 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
                       <div className="bookmark-timestamp flex items-center gap-1">
-                        <Clock className="w-2.5 h-2.5" />
+                        <Clock className="w-2 h-2" />
                         <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
                       </div>
                       {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
                         <div className="bookmark-edited flex items-center gap-1">
-                          <Clock className="w-2.5 h-2.5" />
+                          <Clock className="w-2 h-2" />
                           <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
                         </div>
                       )}
