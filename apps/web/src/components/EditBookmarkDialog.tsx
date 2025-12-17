@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Pencil, X, Plus, Trash2, RefreshCw, Image as ImageIcon } from 'lucide-react'
 
 interface EditBookmarkDialogProps {
@@ -50,6 +51,7 @@ export function EditBookmarkDialog({
   const [currentNoteInput, setCurrentNoteInput] = useState('')
   const [showOlderNotes, setShowOlderNotes] = useState(false)
   const [localNotes, setLocalNotes] = useState<Note[]>([])
+  const [showMetaDescription, setShowMetaDescription] = useState(true)
 
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
@@ -61,6 +63,7 @@ export function EditBookmarkDialog({
       setImageUrl(bookmark.image_url)
       setSelectedCategories([...bookmark.categories])
       setLocalNotes([...bookmark.notes])
+      setShowMetaDescription(bookmark.show_meta_description ?? true)
       setAvailableCategories(getCategories())
       setError('')
       setShowOlderNotes(false)
@@ -206,6 +209,7 @@ export function EditBookmarkDialog({
         title: title.trim(),
         categories: selectedCategories,
         image_url: imageUrl,
+        show_meta_description: showMetaDescription,
       })
 
       handleClose()
@@ -323,6 +327,29 @@ export function EditBookmarkDialog({
               </p>
             )}
           </div>
+
+          {/* Meta Description Section */}
+          {bookmark.meta_description && (
+            <div className="meta-description-section space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <p className="text-sm text-gray-600 italic leading-relaxed p-3 bg-gray-50 rounded-lg border border-gray-200">
+                {bookmark.meta_description}
+              </p>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show-meta-desc-edit"
+                  checked={showMetaDescription}
+                  onCheckedChange={(checked) => setShowMetaDescription(checked as boolean)}
+                />
+                <label
+                  htmlFor="show-meta-desc-edit"
+                  className="text-xs text-gray-600 cursor-pointer"
+                >
+                  Show description in bookmark card
+                </label>
+              </div>
+            </div>
+          )}
 
           {/* Notes Section */}
           <div className="notes-section space-y-2">

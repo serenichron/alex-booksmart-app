@@ -19,6 +19,7 @@ export interface Bookmark {
   tags: string[]
   image_url: string | null
   meta_description: string | null
+  show_meta_description?: boolean
   notes: Note[]
 }
 
@@ -45,6 +46,11 @@ function migrateBookmark(bookmark: any): Bookmark {
     bookmark.updated_at = bookmark.created_at
   }
 
+  // Add show_meta_description default if missing
+  if (bookmark.show_meta_description === undefined) {
+    bookmark.show_meta_description = true
+  }
+
   return bookmark as Bookmark
 }
 
@@ -58,7 +64,7 @@ export function getBookmarks(): Bookmark[] {
   const migrated = bookmarks.map(migrateBookmark)
 
   // Save migrated data back if needed
-  if (bookmarks.some((b: any) => typeof b.notes === 'string' || !b.updated_at)) {
+  if (bookmarks.some((b: any) => typeof b.notes === 'string' || !b.updated_at || b.show_meta_description === undefined)) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
   }
 

@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Link as LinkIcon, FileText, Pencil, X, Plus, Trash2 } from 'lucide-react'
 
 interface AddBookmarkDialogProps {
@@ -46,6 +47,7 @@ export function AddBookmarkDialog({
   const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
+  const [showMetaDescription, setShowMetaDescription] = useState(true)
   const [titleEdited, setTitleEdited] = useState(false)
 
   const fetchTimeoutRef = useRef<NodeJS.Timeout>()
@@ -66,6 +68,7 @@ export function AddBookmarkDialog({
     setTitle('')
     setImageUrl('')
     setMetaDescription('')
+    setShowMetaDescription(true)
     setTitleEdited(false)
     setSelectedCategories([])
     setCategoryInput('')
@@ -253,6 +256,7 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: imageUrl || null,
           meta_description: metaDescription || null,
+          show_meta_description: showMetaDescription,
         })
       } else {
         // Save text bookmark with optional title
@@ -388,6 +392,19 @@ export function AddBookmarkDialog({
                         Description
                       </label>
                       <p className="text-sm text-gray-600 italic leading-relaxed">{metaDescription}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Checkbox
+                          id="show-meta-desc"
+                          checked={showMetaDescription}
+                          onCheckedChange={(checked) => setShowMetaDescription(checked as boolean)}
+                        />
+                        <label
+                          htmlFor="show-meta-desc"
+                          className="text-xs text-gray-600 cursor-pointer"
+                        >
+                          Show description in bookmark card
+                        </label>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -341,8 +341,8 @@ export function Dashboard() {
                       </p>
                     )}
 
-                    {/* For URL bookmarks, show meta description */}
-                    {!isTextBookmark && bookmark.meta_description && (
+                    {/* For URL bookmarks, show meta description if enabled */}
+                    {!isTextBookmark && bookmark.meta_description && bookmark.show_meta_description !== false && (
                       <p className="bookmark-meta-description text-sm text-gray-500 mb-3 line-clamp-3 italic">
                         {bookmark.meta_description}
                       </p>
