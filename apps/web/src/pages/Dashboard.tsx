@@ -118,6 +118,11 @@ export function Dashboard() {
     })
   }
 
+  const handleToggleTodo = (bookmarkId: string, todoId: string) => {
+    toggleTodoItem(bookmarkId, todoId)
+    fetchBookmarks()
+  }
+
   const handleToggleType = (type: BookmarkTypeFilter) => {
     setSelectedTypes(prev => {
       const newSet = new Set(prev)
@@ -410,13 +415,26 @@ export function Dashboard() {
               const { uncategorized, categorizedMap, sortedCategories } = groupedByCategory()
 
               const renderBookmarkCard = (bookmark: BookmarkWithDetails) => {
-                const isTextBookmark = !bookmark.url
+                const isTextBookmark = !bookmark.url && bookmark.type === 'text'
                 const isImageBookmark = bookmark.type === 'image'
+                const isTodoBookmark = bookmark.type === 'todo'
+
+                // Calculate completion percentage for todos
+                const todoCompletion = isTodoBookmark && bookmark.todo_items
+                  ? {
+                      completed: bookmark.todo_items.filter(item => item.completed).length,
+                      total: bookmark.todo_items.length,
+                      percentage: Math.round((bookmark.todo_items.filter(item => item.completed).length / bookmark.todo_items.length) * 100)
+                    }
+                  : null
+
                 return (
                 <div
                   key={bookmark.id}
                   className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg hover:scale-[1.01] transition-all duration-200 break-inside-avoid mb-4 relative group ${
-                    isTextBookmark
+                    isTodoBookmark
+                      ? 'bg-gradient-to-br from-purple-100 via-purple-50 to-purple-100 border-purple-300 shadow-sm'
+                      : isTextBookmark
                       ? 'bg-gradient-to-br from-yellow-100 via-yellow-50 to-yellow-100 border-yellow-300 shadow-sm'
                       : isImageBookmark
                       ? 'bg-black border-gray-800'
@@ -514,8 +532,130 @@ export function Dashboard() {
                     </a>
                   )}
 
-                  {/* Regular bookmark content (not for image bookmarks) */}
-                  {!isImageBookmark && (
+                  {/* To-do Bookmark - Special Design */}
+                  {isTodoBookmark ? (
+                    <div className="todo-bookmark-content p-3">
+                      {/* Title and Completion */}
+                      <div className="flex items-center justify-between mb-3">
+                        {bookmark.title ? (
+                          <h3 className="text-sm font-semibold text-gray-900 flex-1 leading-tight">
+                            {bookmark.title}
+                          </h3>
+                        ) : (
+                          <h3 className="text-sm font-semibold text-gray-500 flex-1 leading-tight">
+                            To-do List
+                          </h3>
+                        )}
+                        {bookmark.is_favorite && (
+                          <Heart className="w-3.5 h-3.5 text-red-500 fill-current flex-shrink-0 ml-2" />
+                        )}
+                      </div>
+
+                      {/* Completion Percentage */}
+                      {todoCompletion && (
+                        <div className="mb-3">
+                          <div className="flex items-center justify-between text-[10px] text-gray-600 mb-1">
+                            <span className="font-medium">Progress</span>
+                            <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
+                          </div>
+                          <div className="w-full bg-purple-200 rounded-full h-2 overflow-hidden">
+                            <div
+                              className="bg-gradient-to-r from-purple-500 to-purple-600 h-full transition-all duration-300 rounded-full"
+                              style={{ width: `${todoCompletion.percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Todo Items */}
+                      {bookmark.todo_items && bookmark.todo_items.length > 0 && (
+                        <div className="space-y-2 mb-3">
+                          {bookmark.todo_items.map((item) => (
+                            <label
+                              key={item.id}
+                              className="flex items-start gap-2 cursor-pointer group hover:bg-purple-50 p-1.5 rounded transition-colors"
+                            >
+                              <Checkbox
+                                checked={item.completed}
+                                onCheckedChange={() => handleToggleTodo(bookmark.id, item.id)}
+                                className="mt-0.5 flex-shrink-0"
+                              />
+                              <span
+                                className={`text-xs flex-1 leading-relaxed ${
+                                  item.completed
+                                    ? 'text-gray-400 line-through'
+                                    : 'text-gray-700'
+                                }`}
+                              >
+                                {item.text}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Notes for todo */}
+                      {bookmark.notes.length > 0 && (
+                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-purple-200">
+                          <label className="text-[10px] font-semibold text-gray-700 mb-1.5 block">Notes</label>
+                          <div className="space-y-1.5">
+                            {(expandedNotesBookmarks.has(bookmark.id)
+                              ? bookmark.notes
+                              : bookmark.notes.slice(0, 3)
+                            ).map((note) => (
+                              <div
+                                key={note.id}
+                                className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-500 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                onClick={() => handleNoteClick(note, bookmark.id)}
+                              >
+                                <p className="text-[11px] text-gray-700 line-clamp-3 leading-relaxed pr-1">
+                                  {note.content}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                          {bookmark.notes.length > 3 && (
+                            <button
+                              onClick={() => handleToggleOlderNotes(bookmark.id)}
+                              className="text-[10px] text-blue-600 hover:text-blue-800 mt-1.5 font-medium"
+                            >
+                              {expandedNotesBookmarks.has(bookmark.id)
+                                ? '− Show less'
+                                : `+ ${bookmark.notes.length - 3} older notes`}
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Categories for todo */}
+                      {bookmark.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {bookmark.categories.map((cat, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-purple-100 text-purple-800 border-purple-300">
+                              {cat}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Timestamps for todo */}
+                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
+                        <div className="bookmark-timestamp flex items-center gap-1">
+                          <Clock className="w-2 h-2" />
+                          <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
+                        </div>
+                        {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
+                          <>
+                            <span className="text-gray-400">•</span>
+                            <div className="bookmark-edited flex items-center gap-1">
+                              <Clock className="w-2 h-2" />
+                              <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ) : !isImageBookmark && (
                   <div className="bookmark-content p-3">
                     {bookmark.url && (
                       <div className="bookmark-url-display mb-1.5">
