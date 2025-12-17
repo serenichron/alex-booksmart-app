@@ -274,6 +274,8 @@ export function Dashboard() {
                     </a>
                   )}
 
+                  {/* Regular bookmark content (not for image bookmarks) */}
+                  {!isImageBookmark && (
                   <div className="bookmark-content p-5">
                     {bookmark.url && (
                       <div className="bookmark-url-display mb-2">
@@ -309,7 +311,15 @@ export function Dashboard() {
                       )}
                     </div>
 
-                    {bookmark.meta_description && (
+                    {/* For text bookmarks, show summary (text content) */}
+                    {isTextBookmark && bookmark.summary && (
+                      <p className="bookmark-text-content text-sm text-gray-700 mb-3 line-clamp-4">
+                        {bookmark.summary}
+                      </p>
+                    )}
+
+                    {/* For URL bookmarks, show meta description */}
+                    {!isTextBookmark && bookmark.meta_description && (
                       <p className="bookmark-meta-description text-sm text-gray-500 mb-3 line-clamp-3 italic">
                         {bookmark.meta_description}
                       </p>
@@ -373,6 +383,7 @@ export function Dashboard() {
                       )}
                     </div>
                   </div>
+                  )}
                 </div>
                 )
               }
