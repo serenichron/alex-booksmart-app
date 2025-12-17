@@ -6,8 +6,13 @@ import {
   addNoteToBookmark,
   deleteNoteFromBookmark,
   updateNoteInBookmark,
+  addTodoItem,
+  deleteTodoItem,
+  updateTodoItem,
+  toggleTodoItem,
   type Bookmark,
-  type Note
+  type Note,
+  type TodoItem
 } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
 import { format } from 'date-fns'
@@ -23,7 +28,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, Pencil, X, Plus, Trash2, RefreshCw, Image as ImageIcon } from 'lucide-react'
+import { Loader2, Pencil, X, Plus, Trash2, RefreshCw, Image as ImageIcon, CheckSquare } from 'lucide-react'
 
 interface EditBookmarkDialogProps {
   open: boolean
@@ -58,6 +63,12 @@ export function EditBookmarkDialog({
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editingNoteContent, setEditingNoteContent] = useState('')
 
+  // Todo-specific state
+  const [localTodoItems, setLocalTodoItems] = useState<TodoItem[]>([])
+  const [newTodoItemInput, setNewTodoItemInput] = useState('')
+  const [editingTodoId, setEditingTodoId] = useState<string | null>(null)
+  const [editingTodoText, setEditingTodoText] = useState('')
+
   useEffect(() => {
     if (open && bookmark) {
       setTitle(bookmark.title)
@@ -65,10 +76,14 @@ export function EditBookmarkDialog({
       setTextContent(bookmark.summary || '')
       setSelectedCategories([...bookmark.categories])
       setLocalNotes([...bookmark.notes])
+      setLocalTodoItems([...(bookmark.todo_items || [])])
       setShowMetaDescription(bookmark.show_meta_description ?? true)
       setAvailableCategories(getCategories())
       setError('')
       setShowOlderNotes(false)
+      setNewTodoItemInput('')
+      setEditingTodoId(null)
+      setEditingTodoText('')
     }
   }, [open, bookmark])
 
@@ -78,6 +93,9 @@ export function EditBookmarkDialog({
     setCurrentNoteInput('')
     setEditingNoteId(null)
     setEditingNoteContent('')
+    setNewTodoItemInput('')
+    setEditingTodoId(null)
+    setEditingTodoText('')
     onOpenChange(false)
   }
 
@@ -187,15 +205,70 @@ export function EditBookmarkDialog({
     setEditingNoteContent('')
   }
 
+  // Todo handlers
+  const handleToggleTodoItem = (todoId: string) => {
+    if (!bookmark) return
+    toggleTodoItem(bookmark.id, todoId)
+    setLocalTodoItems(localTodoItems.map(item =>
+      item.id === todoId ? { ...item, completed: !item.completed } : item
+    ))
+    onSuccess()
+  }
+
+  const handleAddTodoItem = () => {
+    if (!bookmark) return
+    const trimmed = newTodoItemInput.trim()
+    if (trimmed) {
+      const newItem = addTodoItem(bookmark.id, trimmed)
+      setLocalTodoItems([...localTodoItems, newItem])
+      setNewTodoItemInput('')
+      onSuccess()
+    }
+  }
+
+  const handleDeleteTodoItem = (todoId: string) => {
+    if (!bookmark) return
+    if (confirm('Delete this to-do item?')) {
+      deleteTodoItem(bookmark.id, todoId)
+      setLocalTodoItems(localTodoItems.filter(item => item.id !== todoId))
+      onSuccess()
+    }
+  }
+
+  const handleStartEditTodo = (item: TodoItem) => {
+    setEditingTodoId(item.id)
+    setEditingTodoText(item.text)
+  }
+
+  const handleSaveTodoEdit = () => {
+    if (!bookmark || !editingTodoId) return
+    const trimmed = editingTodoText.trim()
+    if (trimmed) {
+      updateTodoItem(bookmark.id, editingTodoId, trimmed)
+      setLocalTodoItems(localTodoItems.map(item =>
+        item.id === editingTodoId ? { ...item, text: trimmed } : item
+      ))
+      setEditingTodoId(null)
+      setEditingTodoText('')
+      onSuccess()
+    }
+  }
+
+  const handleCancelTodoEdit = () => {
+    setEditingTodoId(null)
+    setEditingTodoText('')
+  }
+
   const handleSave = async () => {
     if (!bookmark) return
 
     // Only validate title for regular link bookmarks
-    // Text bookmarks and image bookmarks can have empty titles
-    const isTextBookmark = !bookmark.url
+    // Text bookmarks, image bookmarks, and todo bookmarks can have empty titles
+    const isTextBookmark = !bookmark.url && bookmark.type === 'text'
     const isImageBookmark = bookmark.type === 'image'
+    const isTodoBookmark = bookmark.type === 'todo'
 
-    if (!title.trim() && !isTextBookmark && !isImageBookmark) {
+    if (!title.trim() && !isTextBookmark && !isImageBookmark && !isTodoBookmark) {
       // For regular link bookmarks, auto-refetch title if empty
       if (bookmark.url) {
         await handleRefetchTitle()
@@ -296,7 +369,7 @@ export function EditBookmarkDialog({
           <div className="title-section space-y-2">
             <label htmlFor="edit-title" className="text-sm font-medium flex items-center gap-2">
               <Pencil className="w-3 h-3" />
-              Title {(!bookmark.url || bookmark.type === 'image') && '(optional)'}
+              Title {(!bookmark.url || bookmark.type === 'image' || bookmark.type === 'todo') && '(optional)'}
             </label>
             <div className="flex gap-2">
               <Input
@@ -305,7 +378,7 @@ export function EditBookmarkDialog({
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={loading}
                 className="flex-1"
-                placeholder={!bookmark.url || bookmark.type === 'image' ? "Optional title..." : "Enter title"}
+                placeholder={!bookmark.url || bookmark.type === 'image' || bookmark.type === 'todo' ? "Optional title..." : "Enter title"}
               />
               {bookmark.url && bookmark.type !== 'image' && (
                 <Button
@@ -327,7 +400,7 @@ export function EditBookmarkDialog({
           </div>
 
           {/* Text Content Section (for text bookmarks) */}
-          {!bookmark.url && (
+          {!bookmark.url && bookmark.type === 'text' && (
             <div className="text-content-section space-y-2">
               <label className="text-sm font-medium">Text Content</label>
               <Textarea
@@ -338,6 +411,137 @@ export function EditBookmarkDialog({
                 className="text-sm bg-yellow-50 border-yellow-200 focus:border-yellow-400"
                 placeholder="Enter your text content..."
               />
+            </div>
+          )}
+
+          {/* Todo Items Section (for todo bookmarks) */}
+          {bookmark.type === 'todo' && (
+            <div className="todo-items-section space-y-3">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <CheckSquare className="w-4 h-4 text-purple-600" />
+                To-do Items
+              </label>
+
+              {/* Add new todo item */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add new to-do item..."
+                  value={newTodoItemInput}
+                  onChange={(e) => setNewTodoItemInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddTodoItem()
+                    }
+                  }}
+                  disabled={loading}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAddTodoItem}
+                  disabled={loading || !newTodoItemInput.trim()}
+                  className="h-10"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+
+              {/* Todo items list */}
+              {localTodoItems.length > 0 && (
+                <div className="space-y-2 max-h-96 overflow-y-auto p-3 bg-purple-50/50 rounded-lg border border-purple-200">
+                  {localTodoItems.map((item) => (
+                    <div key={item.id} className="flex items-start gap-2 bg-white p-2.5 rounded border border-purple-100 group">
+                      <Checkbox
+                        checked={item.completed}
+                        onCheckedChange={() => handleToggleTodoItem(item.id)}
+                        className="mt-0.5 flex-shrink-0"
+                      />
+                      {editingTodoId === item.id ? (
+                        <div className="flex-1 flex gap-2">
+                          <Input
+                            value={editingTodoText}
+                            onChange={(e) => setEditingTodoText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleSaveTodoEdit()
+                              }
+                              if (e.key === 'Escape') {
+                                e.preventDefault()
+                                handleCancelTodoEdit()
+                              }
+                            }}
+                            className="flex-1 text-sm"
+                            autoFocus
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleSaveTodoEdit}
+                            className="h-8"
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={handleCancelTodoEdit}
+                            className="h-8"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <span
+                            className={`flex-1 text-sm leading-relaxed ${
+                              item.completed ? 'text-gray-400 line-through' : 'text-gray-700'
+                            }`}
+                          >
+                            {item.text}
+                          </span>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => handleStartEditTodo(item)}
+                              className="p-1 text-gray-500 hover:text-blue-600"
+                              title="Edit item"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTodoItem(item.id)}
+                              className="p-1 text-gray-500 hover:text-red-600"
+                              title="Delete item"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Completion stats */}
+              {localTodoItems.length > 0 && (
+                <div className="text-xs text-gray-600">
+                  <span className="font-medium">
+                    {localTodoItems.filter(item => item.completed).length} of {localTodoItems.length} completed
+                  </span>
+                  <span className="text-gray-400 mx-2">•</span>
+                  <span>
+                    {Math.round((localTodoItems.filter(item => item.completed).length / localTodoItems.length) * 100)}% done
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
