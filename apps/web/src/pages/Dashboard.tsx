@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { getBookmarks, getStats, type Bookmark as BookmarkType } from '@/lib/storage'
+import { getBookmarks, getStats, deleteBookmark, type Bookmark as BookmarkType } from '@/lib/storage'
 
 interface BookmarkWithDetails extends BookmarkType {}
 
@@ -28,6 +28,13 @@ export function Dashboard() {
       console.error('Error fetching bookmarks:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = (id: string) => {
+    if (confirm('Delete this bookmark?')) {
+      deleteBookmark(id)
+      fetchBookmarks()
     }
   }
 
@@ -117,13 +124,22 @@ export function Dashboard() {
             </Button>
           </div>
         ) : (
-          /* Bookmarks Grid */
-          <div className="bookmarks-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          /* Bookmarks Masonry */
+          <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
             {bookmarks.map((bookmark) => (
               <div
                 key={bookmark.id}
-                className="bookmark-card bg-white rounded-xl border border-gray-200/60 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
+                className="bookmark-card bg-white rounded-xl border border-gray-200/60 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200 break-inside-avoid mb-6 relative group"
               >
+                {/* Delete Button */}
+                <button
+                  onClick={() => handleDelete(bookmark.id)}
+                  className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete bookmark"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
                 {bookmark.image_url && (
                   <a
                     href={bookmark.url || '#'}
