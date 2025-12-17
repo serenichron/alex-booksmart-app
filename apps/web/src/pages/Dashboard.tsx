@@ -433,7 +433,7 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg hover:scale-[1.01] transition-all duration-200 break-inside-avoid mb-4 relative group ${
                     isTodoBookmark
-                      ? 'bg-gradient-to-br from-purple-100 via-purple-50 to-purple-100 border-purple-300 shadow-sm'
+                      ? 'bg-gradient-to-br from-purple-200 via-purple-100 to-purple-200 border-purple-400 shadow-sm'
                       : isTextBookmark
                       ? 'bg-gradient-to-br from-yellow-100 via-yellow-50 to-yellow-100 border-yellow-300 shadow-sm'
                       : isImageBookmark
@@ -558,9 +558,9 @@ export function Dashboard() {
                             <span className="font-medium">Progress</span>
                             <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
                           </div>
-                          <div className="w-full bg-purple-200 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-purple-300 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-purple-500 to-purple-600 h-full transition-all duration-300 rounded-full"
+                              className="bg-gradient-to-r from-purple-600 to-purple-700 h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -569,11 +569,11 @@ export function Dashboard() {
 
                       {/* Todo Items */}
                       {bookmark.todo_items && bookmark.todo_items.length > 0 && (
-                        <div className="space-y-2 mb-3">
+                        <div className="space-y-0.5 mb-3">
                           {bookmark.todo_items.map((item) => (
                             <label
                               key={item.id}
-                              className="flex items-start gap-2 cursor-pointer group hover:bg-purple-50 p-1.5 rounded transition-colors"
+                              className="flex items-start gap-2 cursor-pointer group hover:bg-purple-100 p-0.5 rounded transition-colors"
                             >
                               <Checkbox
                                 checked={item.completed}
@@ -596,7 +596,7 @@ export function Dashboard() {
 
                       {/* Notes for todo */}
                       {bookmark.notes.length > 0 && (
-                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-purple-200">
+                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-purple-300">
                           <label className="text-[10px] font-semibold text-gray-700 mb-1.5 block">Notes</label>
                           <div className="space-y-1.5">
                             {(expandedNotesBookmarks.has(bookmark.id)
@@ -631,7 +631,7 @@ export function Dashboard() {
                       {bookmark.categories.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {bookmark.categories.map((cat, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-purple-100 text-purple-800 border-purple-300">
+                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-purple-200 text-purple-900 border-purple-400">
                               {cat}
                             </Badge>
                           ))}
