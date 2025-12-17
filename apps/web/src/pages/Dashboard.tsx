@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2 } from 'lucide-react'
+import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { getBookmarks, getStats, deleteBookmark, type Bookmark as BookmarkType, type Note } from '@/lib/storage'
 
@@ -10,6 +11,8 @@ interface BookmarkWithDetails extends BookmarkType {}
 
 export function Dashboard() {
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [editingBookmark, setEditingBookmark] = useState<BookmarkType | null>(null)
   const [bookmarks, setBookmarks] = useState<BookmarkWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -55,6 +58,33 @@ export function Dashboard() {
     if (confirm('Delete this bookmark?')) {
       deleteBookmark(id)
       fetchBookmarks()
+    }
+  }
+
+  const handleEdit = (bookmark: BookmarkType) => {
+    setEditingBookmark(bookmark)
+    setShowEditDialog(true)
+  }
+
+  const handleShare = async (bookmark: BookmarkType) => {
+    if (!bookmark.url) {
+      alert('This bookmark does not have a URL to share')
+      return
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: bookmark.title,
+          url: bookmark.url
+        })
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(bookmark.url)
+        alert('URL copied to clipboard!')
+      }
+    } catch (err) {
+      console.error('Error sharing:', err)
     }
   }
 
@@ -160,14 +190,32 @@ export function Dashboard() {
                       : 'bg-white border-gray-200/60'
                   }`}
                 >
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDelete(bookmark.id)}
-                    className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Delete bookmark"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="absolute top-2 right-2 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {bookmark.url && (
+                      <button
+                        onClick={() => handleShare(bookmark)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg shadow-lg"
+                        title="Share bookmark"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleEdit(bookmark)}
+                      className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg shadow-lg"
+                      title="Edit bookmark"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(bookmark.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-lg"
+                      title="Delete bookmark"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
 
                   {bookmark.image_url && (
                     <a
@@ -357,6 +405,14 @@ export function Dashboard() {
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
         onSuccess={fetchBookmarks}
+      />
+
+      {/* Edit Bookmark Dialog */}
+      <EditBookmarkDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSuccess={fetchBookmarks}
+        bookmark={editingBookmark}
       />
     </div>
   )
