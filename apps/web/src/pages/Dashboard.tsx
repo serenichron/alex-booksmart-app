@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2 } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter } from 'lucide-react'
 import { format } from 'date-fns'
 import { getBookmarks, getStats, deleteBookmark, type Bookmark as BookmarkType, type Note } from '@/lib/storage'
 
 interface BookmarkWithDetails extends BookmarkType {}
+
+type BookmarkTypeFilter = 'text' | 'link' | 'image'
 
 export function Dashboard() {
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -26,6 +29,7 @@ export function Dashboard() {
     tags: 0,
     thisWeek: 0,
   })
+  const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image']))
 
   const fetchBookmarks = () => {
     try {
@@ -41,10 +45,10 @@ export function Dashboard() {
 
   // Group bookmarks by category
   const groupedByCategory = () => {
-    const uncategorized = bookmarks.filter(b => b.categories.length === 0)
+    const uncategorized = filteredBookmarks.filter(b => b.categories.length === 0)
     const categorizedMap = new Map<string, BookmarkWithDetails[]>()
 
-    bookmarks.forEach(bookmark => {
+    filteredBookmarks.forEach(bookmark => {
       bookmark.categories.forEach(category => {
         if (!categorizedMap.has(category)) {
           categorizedMap.set(category, [])
@@ -111,6 +115,32 @@ export function Dashboard() {
     })
   }
 
+  const handleToggleType = (type: BookmarkTypeFilter) => {
+    setSelectedTypes(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(type)) {
+        newSet.delete(type)
+      } else {
+        newSet.add(type)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAllTypes = () => {
+    setSelectedTypes(new Set(['text', 'link', 'image']))
+  }
+
+  const handleUnselectAllTypes = () => {
+    setSelectedTypes(new Set())
+  }
+
+  // Filter bookmarks based on selected types
+  const filteredBookmarks = bookmarks.filter(bookmark => {
+    if (selectedTypes.size === 0) return false
+    return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
+  })
+
   useEffect(() => {
     fetchBookmarks()
   }, [])
@@ -142,8 +172,71 @@ export function Dashboard() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Layout with Sidebar */}
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-4rem)] p-4 sticky top-16">
+          <div className="space-y-6">
+            {/* Bookmark Type Filter */}
+            <div className="filter-section">
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="w-4 h-4 text-gray-600" />
+                <h3 className="text-sm font-semibold text-gray-900">Bookmark Types</h3>
+              </div>
+
+              <div className="space-y-2 mb-3">
+                <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                  <Checkbox
+                    checked={selectedTypes.has('link')}
+                    onCheckedChange={() => handleToggleType('link')}
+                  />
+                  <LinkIcon className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm text-gray-700">Links</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                  <Checkbox
+                    checked={selectedTypes.has('text')}
+                    onCheckedChange={() => handleToggleType('text')}
+                  />
+                  <FileText className="w-4 h-4 text-yellow-600" />
+                  <span className="text-sm text-gray-700">Text</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                  <Checkbox
+                    checked={selectedTypes.has('image')}
+                    onCheckedChange={() => handleToggleType('image')}
+                  />
+                  <ImageIcon className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-gray-700">Images</span>
+                </label>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAllTypes}
+                  className="flex-1 text-xs"
+                >
+                  Select All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleUnselectAllTypes}
+                  className="flex-1 text-xs"
+                >
+                  Unselect All
+                </Button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
@@ -185,6 +278,19 @@ export function Dashboard() {
               <Plus className="w-5 h-5" />
               Add Your First Bookmark
             </Button>
+          </div>
+        ) : filteredBookmarks.length === 0 ? (
+          /* No results for current filter */
+          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <Filter className="w-8 h-8 text-gray-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              No Bookmarks Found
+            </h2>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              No bookmarks match the selected filters. Try selecting different bookmark types.
+            </p>
           </div>
         ) : (
           /* Bookmarks Organized by Category */
@@ -482,6 +588,7 @@ export function Dashboard() {
           </div>
         )}
       </main>
+      </div>
 
       {/* Add Bookmark Dialog */}
       <AddBookmarkDialog
