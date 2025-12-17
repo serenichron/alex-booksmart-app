@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { getBookmarks, getStats, deleteBookmark, type Bookmark as BookmarkType } from '@/lib/storage'
+import { format } from 'date-fns'
+import { getBookmarks, getStats, deleteBookmark, type Bookmark as BookmarkType, type Note } from '@/lib/storage'
 
 interface BookmarkWithDetails extends BookmarkType {}
 
@@ -149,10 +149,16 @@ export function Dashboard() {
             {(() => {
               const { uncategorized, categorizedMap, sortedCategories } = groupedByCategory()
 
-              const renderBookmarkCard = (bookmark: BookmarkWithDetails) => (
+              const renderBookmarkCard = (bookmark: BookmarkWithDetails) => {
+                const isTextBookmark = !bookmark.url
+                return (
                 <div
                   key={bookmark.id}
-                  className="bookmark-card bg-white rounded-xl border border-gray-200/60 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200 break-inside-avoid mb-6 relative group"
+                  className={`bookmark-card rounded-xl border overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-200 break-inside-avoid mb-6 relative group ${
+                    isTextBookmark
+                      ? 'bg-gradient-to-br from-yellow-100 via-yellow-50 to-yellow-100 border-yellow-300 shadow-md'
+                      : 'bg-white border-gray-200/60'
+                  }`}
                 >
                   {/* Delete Button */}
                   <button
@@ -168,7 +174,7 @@ export function Dashboard() {
                       href={bookmark.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bookmark-image-container block"
+                      className="bookmark-image-container block border-b border-[#eaeaea]"
                     >
                       <img
                         src={bookmark.image_url}
@@ -222,14 +228,20 @@ export function Dashboard() {
                       </p>
                     )}
 
-                    {bookmark.notes && (
-                      <div className="bookmark-notes bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 mb-3 rounded-r">
-                        <p className="bookmark-notes-label text-xs font-medium text-blue-900 mb-1">
-                          📝 Your Notes:
-                        </p>
-                        <p className="bookmark-notes-text text-sm text-blue-800 line-clamp-3">
-                          {bookmark.notes}
-                        </p>
+                    {bookmark.notes.length > 0 && (
+                      <div className="bookmark-notes-container mb-3 space-y-2">
+                        {bookmark.notes.slice(0, 3).map((note) => (
+                          <div key={note.id} className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 rounded-r">
+                            <p className="bookmark-note-text text-sm text-blue-800">
+                              {note.content}
+                            </p>
+                          </div>
+                        ))}
+                        {bookmark.notes.length > 3 && (
+                          <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                            + {bookmark.notes.length - 3} older notes
+                          </button>
+                        )}
                       </div>
                     )}
 
@@ -258,52 +270,79 @@ export function Dashboard() {
                       </div>
                     )}
 
-                    <div className="bookmark-footer flex items-center justify-between text-xs text-gray-500 mt-4">
-                      <div className="bookmark-timestamp flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {formatDistanceToNow(new Date(bookmark.created_at), { addSuffix: true })}
+                    <div className="bookmark-footer flex flex-col gap-1.5 text-xs text-gray-500 mt-4 pt-3 border-t border-gray-100 bg-gray-50/50 -mx-5 px-5 -mb-5 pb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="bookmark-timestamp flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
+                        </div>
+                        {bookmark.url && (
+                          <a
+                            href={bookmark.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bookmark-visit-link flex items-center gap-1 text-primary hover:underline"
+                          >
+                            Visit
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
                       </div>
-                      {bookmark.url && (
-                        <a
-                          href={bookmark.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bookmark-visit-link flex items-center gap-1 text-primary hover:underline"
-                        >
-                          Visit
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
+                      {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
+                        <div className="bookmark-edited flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-              )
+                )
+              }
 
               return (
                 <>
                   {/* Uncategorized Section */}
                   {uncategorized.length > 0 && (
-                    <div className="category-section">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <span className="text-gray-400">#</span> Uncategorized
-                        <span className="text-sm font-normal text-gray-500">({uncategorized.length})</span>
-                      </h2>
-                      <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 gap-6">
-                        {uncategorized.map(renderBookmarkCard)}
+                    <>
+                      <div className="category-section">
+                        <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg px-6 py-4 mb-6 border-l-4 border-gray-400">
+                          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                            Uncategorized
+                            <span className="text-sm font-normal bg-white px-3 py-1 rounded-full text-gray-600 border border-gray-200">
+                              {uncategorized.length}
+                            </span>
+                          </h2>
+                        </div>
+                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                          {uncategorized.map(renderBookmarkCard)}
+                        </div>
                       </div>
-                    </div>
+                      {sortedCategories.length > 0 && (
+                        <div className="category-separator border-t-2 border-gray-200 my-10"></div>
+                      )}
+                    </>
                   )}
 
                   {/* Categorized Sections */}
-                  {sortedCategories.map(category => (
-                    <div key={category} className="category-section">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <span className="text-purple-500">#</span> {category}
-                        <span className="text-sm font-normal text-gray-500">({categorizedMap.get(category)!.length})</span>
-                      </h2>
-                      <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 gap-6">
-                        {categorizedMap.get(category)!.map(renderBookmarkCard)}
+                  {sortedCategories.map((category, idx) => (
+                    <div key={category}>
+                      <div className="category-section">
+                        <div className="bg-gradient-to-r from-purple-100 to-pink-50 rounded-lg px-6 py-4 mb-6 border-l-4 border-purple-500">
+                          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                            {category}
+                            <span className="text-sm font-normal bg-white px-3 py-1 rounded-full text-purple-600 border border-purple-200">
+                              {categorizedMap.get(category)!.length}
+                            </span>
+                          </h2>
+                        </div>
+                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                          {categorizedMap.get(category)!.map(renderBookmarkCard)}
+                        </div>
                       </div>
+                      {idx < sortedCategories.length - 1 && (
+                        <div className="category-separator border-t-2 border-gray-200 my-10"></div>
+                      )}
                     </div>
                   ))}
                 </>
