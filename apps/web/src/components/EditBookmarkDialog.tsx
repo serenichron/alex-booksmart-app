@@ -78,7 +78,7 @@ export function EditBookmarkDialog({
       setLocalNotes([...bookmark.notes])
       setLocalTodoItems([...(bookmark.todo_items || [])])
       setShowMetaDescription(bookmark.show_meta_description ?? true)
-      setAvailableCategories(getCategories())
+      getCategories().then(setAvailableCategories)
       setError('')
       setShowOlderNotes(false)
       setNewTodoItemInput('')
@@ -159,12 +159,12 @@ export function EditBookmarkDialog({
     }
   }
 
-  const handleAddNewCategory = () => {
+  const handleAddNewCategory = async () => {
     const trimmed = categoryInput.trim()
     if (trimmed && !selectedCategories.includes(trimmed)) {
       setSelectedCategories([...selectedCategories, trimmed])
       if (!availableCategories.includes(trimmed)) {
-        addCategory(trimmed)
+        await addCategory(trimmed)
         setAvailableCategories([...availableCategories, trimmed])
       }
       setCategoryInput('')
@@ -298,7 +298,9 @@ export function EditBookmarkDialog({
     setError('')
 
     try {
-      selectedCategories.forEach(cat => addCategory(cat))
+      for (const cat of selectedCategories) {
+        await addCategory(cat)
+      }
 
       const updates: Partial<Bookmark> = {
         title: title.trim(),
@@ -312,7 +314,7 @@ export function EditBookmarkDialog({
         updates.summary = textContent.trim()
       }
 
-      updateBookmark(bookmark.id, updates)
+      await updateBookmark(bookmark.id, updates)
 
       handleClose()
       onSuccess()
