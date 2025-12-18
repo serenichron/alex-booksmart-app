@@ -894,7 +894,7 @@ export function AddBookmarkDialog({
                 </div>
               </div>
             </>
-          ) : (
+          ) : mode === 'todo' ? (
             <>
               {/* To-do Mode */}
               <div className="todo-title-field space-y-2">
