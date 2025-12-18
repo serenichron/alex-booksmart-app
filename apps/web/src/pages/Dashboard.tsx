@@ -434,10 +434,10 @@ export function Dashboard() {
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={handleExport} title="Export all data">
-                <Download className="w-4 h-4" />
+                <Upload className="w-4 h-4" />
               </Button>
               <Button size="sm" variant="outline" onClick={handleImport} title="Import data">
-                <Upload className="w-4 h-4" />
+                <Download className="w-4 h-4" />
               </Button>
               <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                 <AlertTriangle className="w-4 h-4" />
