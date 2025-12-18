@@ -748,7 +748,7 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 relative group ${
+                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
                       ? 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200 shadow-sm'
                       : isTextBookmark
@@ -1156,8 +1156,8 @@ export function Dashboard() {
                             </span>
                           </h2>
                         </div>
-                        <div className="bookmarks-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
-                          {uncategorized.map(renderBookmarkCard)}
+                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                          {[...uncategorized].reverse().map(renderBookmarkCard)}
                         </div>
                       </div>
                       {sortedCategories.length > 0 && (
@@ -1178,8 +1178,8 @@ export function Dashboard() {
                             </span>
                           </h2>
                         </div>
-                        <div className="bookmarks-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
-                          {categorizedMap.get(category)!.map(renderBookmarkCard)}
+                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                          {[...categorizedMap.get(category)!].reverse().map(renderBookmarkCard)}
                         </div>
                       </div>
                       {idx < sortedCategories.length - 1 && (
