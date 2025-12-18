@@ -792,6 +792,7 @@ export function Dashboard() {
                         alt={bookmark.title}
                         className="w-full h-auto object-contain"
                         style={{ maxHeight: '600px' }}
+                        loading="lazy"
                         onError={(e) => {
                           e.currentTarget.src = bookmark.image_url || ''
                         }}
@@ -844,6 +845,7 @@ export function Dashboard() {
                         src={bookmark.image_url}
                         alt={bookmark.title}
                         className="bookmark-image w-full h-36 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                        loading="lazy"
                         onError={(e) => {
                           e.currentTarget.parentElement!.parentElement!.style.display = 'none'
                         }}
