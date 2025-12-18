@@ -66,16 +66,16 @@ export function Dashboard() {
   const [showImageViewer, setShowImageViewer] = useState(false)
   const [viewingImageBookmark, setViewingImageBookmark] = useState<BookmarkType | null>(null)
 
-  const fetchBookmarks = () => {
+  const fetchBookmarks = async () => {
     try {
-      const bookmarksData = getBookmarks()
-      const boardsData = getBoards()
+      const bookmarksData = await getBookmarks()
+      const boardsData = await getBoards()
       const currentId = getCurrentBoardId()
 
       setBookmarks(bookmarksData)
       setBoards(boardsData)
       setCurrentBoardIdState(currentId)
-      setStats(getStats())
+      setStats(await getStats())
     } catch (error) {
       console.error('Error fetching bookmarks:', error)
     } finally {
@@ -100,15 +100,15 @@ export function Dashboard() {
     setShowBoardDialog(true)
   }
 
-  const handleDeleteBoard = (boardId: string) => {
+  const handleDeleteBoard = async (boardId: string) => {
     if (boards.length <= 1) {
       alert('Cannot delete the last board')
       return
     }
 
     if (confirm('Are you sure you want to delete this board? All bookmarks in it will be lost.')) {
-      deleteBoard(boardId)
-      fetchBookmarks()
+      await deleteBoard(boardId)
+      await fetchBookmarks()
     }
   }
 
@@ -126,9 +126,9 @@ export function Dashboard() {
     }
   }
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
-      const data = exportAllData()
+      const data = await exportAllData()
       const json = JSON.stringify(data, null, 2)
       const blob = new Blob([json], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
@@ -157,8 +157,8 @@ export function Dashboard() {
       try {
         const text = await file.text()
         const data = JSON.parse(text)
-        importAllData(data)
-        fetchBookmarks()
+        await importAllData(data)
+        await fetchBookmarks()
         alert('Data imported successfully!')
       } catch (error) {
         console.error('Import error:', error)
@@ -168,11 +168,11 @@ export function Dashboard() {
     input.click()
   }
 
-  const handleClearAccount = () => {
+  const handleClearAccount = async () => {
     if (confirm('⚠️ WARNING: This will delete ALL your bookmarks, boards, categories, and tags. This action cannot be undone!\n\nAre you sure you want to continue?')) {
       if (confirm('Are you ABSOLUTELY sure? This is your last chance to back out.')) {
-        clearAllData()
-        fetchBookmarks()
+        await clearAllData()
+        await fetchBookmarks()
         alert('All data has been cleared.')
       }
     }
@@ -198,10 +198,10 @@ export function Dashboard() {
     return { uncategorized, categorizedMap, sortedCategories }
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Delete this bookmark?')) {
-      deleteBookmark(id)
-      fetchBookmarks()
+      await deleteBookmark(id)
+      await fetchBookmarks()
     }
   }
 
@@ -250,9 +250,9 @@ export function Dashboard() {
     })
   }
 
-  const handleToggleTodo = (bookmarkId: string, todoId: string) => {
-    toggleTodoItem(bookmarkId, todoId)
-    fetchBookmarks()
+  const handleToggleTodo = async (bookmarkId: string, todoId: string) => {
+    await toggleTodoItem(bookmarkId, todoId)
+    await fetchBookmarks()
   }
 
   const handleToggleType = (type: BookmarkTypeFilter) => {
