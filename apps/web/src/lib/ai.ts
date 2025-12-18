@@ -1,9 +1,12 @@
-import Anthropic from '@anthropic-ai/sdk'
+// AI functions disabled for faster loading
+// Uncomment when you want to use AI features
 
-const anthropic = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true, // Note: For demo only. In production, use a backend API
-})
+// import Anthropic from '@anthropic-ai/sdk'
+//
+// const anthropic = new Anthropic({
+//   apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
+//   dangerouslyAllowBrowser: true,
+// })
 
 export interface BookmarkSuggestion {
   title: string
@@ -14,10 +17,15 @@ export interface BookmarkSuggestion {
 }
 
 export async function analyzeBookmarkWithAI(
-  url?: string,
-  content?: string,
-  existingCategories: string[] = []
+  _url?: string,
+  _content?: string,
+  _existingCategories: string[] = []
 ): Promise<BookmarkSuggestion> {
+  // AI disabled for faster loading
+  throw new Error('AI features are currently disabled')
+
+  // Uncomment the code below when you want to use AI
+  /*
   const prompt = `You are an AI assistant helping organize bookmarks.
 ${url ? `URL: ${url}` : ''}
 ${content ? `Content: ${content}` : ''}
@@ -41,7 +49,7 @@ Respond ONLY with valid JSON in this exact format:
 }`
 
   const message = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'claude-3-5-sonnet',
     max_tokens: 1024,
     messages: [
       {
@@ -61,6 +69,7 @@ Respond ONLY with valid JSON in this exact format:
 
   const suggestion: BookmarkSuggestion = JSON.parse(jsonMatch[0])
   return suggestion
+  */
 }
 
 export async function generateEmbedding(_text: string): Promise<number[]> {
