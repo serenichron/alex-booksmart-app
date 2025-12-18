@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, Link as LinkIcon, FileText, Pencil, X, Plus, Trash2, CheckSquare } from 'lucide-react'
+import { Loader2, Link as LinkIcon, FileText, Pencil, X, Plus, Trash2, CheckSquare, List } from 'lucide-react'
 
 interface AddBookmarkDialogProps {
   open: boolean
@@ -27,7 +27,7 @@ export function AddBookmarkDialog({
   onOpenChange,
   onSuccess,
 }: AddBookmarkDialogProps) {
-  const [mode, setMode] = useState<'url' | 'text' | 'todo'>('url')
+  const [mode, setMode] = useState<'url' | 'text' | 'todo' | 'multi-url'>('url')
   const [loading, setLoading] = useState(false)
   const [fetchingMetadata, setFetchingMetadata] = useState(false)
   const [error, setError] = useState('')
@@ -44,6 +44,12 @@ export function AddBookmarkDialog({
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [duplicateBookmark, setDuplicateBookmark] = useState<any>(null)
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
+
+  // Multi-URL state
+  const [multiUrlInput, setMultiUrlInput] = useState('')
+  const [multiUrlParsed, setMultiUrlParsed] = useState<string[]>([])
+  const [multiUrlFetchProgress, setMultiUrlFetchProgress] = useState<number>(0)
+  const [multiUrlMetadata, setMultiUrlMetadata] = useState<Map<string, any>>(new Map())
 
   // Auto-fetched metadata
   const [title, setTitle] = useState('')
@@ -104,6 +110,10 @@ export function AddBookmarkDialog({
     setFetchingMetadata(false)
     setDuplicateBookmark(null)
     setShowDuplicateDialog(false)
+    setMultiUrlInput('')
+    setMultiUrlParsed([])
+    setMultiUrlFetchProgress(0)
+    setMultiUrlMetadata(new Map())
     lastFetchedUrlRef.current = ''
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current)
@@ -252,6 +262,48 @@ export function AddBookmarkDialog({
     }
   }
 
+  // Parse and fetch metadata for multi-URL input
+  const handleMultiUrlFetch = async () => {
+    setError('')
+    setFetchingMetadata(true)
+    setMultiUrlFetchProgress(0)
+    setMultiUrlMetadata(new Map())
+
+    // Parse URLs from input - remove bullets, dashes, and empty lines
+    const lines = multiUrlInput.split('\n')
+    const urls = lines
+      .map(line => line.replace(/^[•\-\*\d+\.\)]\s*/, '').trim()) // Remove bullets, dashes, numbers
+      .filter(line => line.length > 0) // Remove empty lines
+      .map(url => normalizeUrl(url)) // Normalize URLs
+      .filter(url => url.startsWith('http')) // Only keep valid HTTP(S) URLs
+      .slice(0, 20) // Limit to 20 URLs
+
+    if (urls.length === 0) {
+      setError('No valid URLs found. Please paste at least one URL.')
+      setFetchingMetadata(false)
+      return
+    }
+
+    setMultiUrlParsed(urls)
+
+    // Fetch metadata for each URL
+    const metadataMap = new Map()
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i]
+      try {
+        const metadata = await fetchURLMetadata(url)
+        metadataMap.set(url, metadata)
+      } catch (err) {
+        console.error(`Failed to fetch metadata for ${url}:`, err)
+        metadataMap.set(url, { title: url, description: '', image: null })
+      }
+      setMultiUrlFetchProgress(((i + 1) / urls.length) * 100)
+    }
+
+    setMultiUrlMetadata(metadataMap)
+    setFetchingMetadata(false)
+  }
+
   const handleSave = async () => {
     if (mode === 'url' && !url.trim()) {
       setError('Please enter a URL')
@@ -265,6 +317,11 @@ export function AddBookmarkDialog({
 
     if (mode === 'todo' && !todoItemsInput.trim()) {
       setError('Please enter at least one to-do item')
+      return
+    }
+
+    if (mode === 'multi-url' && multiUrlParsed.length === 0) {
+      setError('Please parse URLs first by clicking "Fetch Metadata"')
       return
     }
 
@@ -371,6 +428,26 @@ export function AddBookmarkDialog({
           meta_description: null,
           todo_items: todoItems,
         })
+      } else if (mode === 'multi-url') {
+        // Save all URLs as separate bookmarks
+        for (const url of multiUrlParsed) {
+          const metadata = multiUrlMetadata.get(url) || { title: url, description: '', image: null }
+          const bookmarkType = isImageUrl(url) ? 'image' : 'link'
+
+          await saveBookmark({
+            title: metadata.title || url,
+            summary: metadata.description || '',
+            notes: [], // No notes for multi-URL mode
+            url: url,
+            type: bookmarkType,
+            is_favorite: false,
+            categories: selectedCategories,
+            tags: [],
+            image_url: metadata.image || null,
+            meta_description: metadata.description || null,
+            show_meta_description: true,
+          })
+        }
       }
 
       handleClose()
@@ -420,6 +497,15 @@ export function AddBookmarkDialog({
           >
             <CheckSquare className="w-4 h-4 mr-2" />
             To-do
+          </Button>
+          <Button
+            type="button"
+            variant={mode === 'multi-url' ? 'default' : 'outline'}
+            onClick={() => setMode('multi-url')}
+            className="flex-1"
+          >
+            <List className="w-4 h-4 mr-2" />
+            Multi-URL
           </Button>
         </div>
 
@@ -969,7 +1055,127 @@ export function AddBookmarkDialog({
                 </div>
               </div>
             </>
-          )}
+          ) : mode === 'multi-url' ? (
+            <>
+              <div className="multi-url-field space-y-2">
+                <label htmlFor="multiUrlInput" className="text-sm font-medium">
+                  Paste URLs (one per line, up to 20) *
+                </label>
+                <Textarea
+                  id="multiUrlInput"
+                  placeholder="Paste multiple URLs here...&#10;https://example.com&#10;https://another-example.com&#10;Bullets or dashes will be removed automatically"
+                  value={multiUrlInput}
+                  onChange={(e) => setMultiUrlInput(e.target.value)}
+                  disabled={loading || fetchingMetadata}
+                  rows={10}
+                  className="multi-url-input font-mono text-sm"
+                />
+                <p className="text-xs text-gray-500">Paste up to 20 URLs (bullets and dashes will be cleaned automatically)</p>
+              </div>
+
+              {multiUrlParsed.length > 0 && (
+                <div className="parsed-urls bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm font-semibold text-green-900 mb-2">
+                    ✓ Parsed {multiUrlParsed.length} URL{multiUrlParsed.length > 1 ? 's' : ''}
+                  </p>
+                  <ul className="text-xs text-green-800 space-y-1 max-h-32 overflow-y-auto">
+                    {multiUrlParsed.map((url, idx) => (
+                      <li key={idx} className="truncate">• {url}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {!fetchingMetadata && multiUrlParsed.length === 0 && (
+                <Button
+                  type="button"
+                  onClick={handleMultiUrlFetch}
+                  disabled={!multiUrlInput.trim() || loading}
+                  className="w-full"
+                >
+                  <Loader2 className="w-4 h-4 mr-2" />
+                  Fetch Metadata for URLs
+                </Button>
+              )}
+
+              {fetchingMetadata && (
+                <div className="fetching-progress bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm font-semibold text-blue-900 mb-2">
+                    Fetching metadata... {Math.round(multiUrlFetchProgress)}%
+                  </p>
+                  <div className="w-full bg-blue-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${multiUrlFetchProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
+              <div className="categories-field space-y-2">
+                <label className="text-sm font-medium">
+                  Categories (optional)
+                </label>
+
+                {/* Selected Categories */}
+                {selectedCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedCategories.map((cat) => (
+                      <div key={cat} className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                        {cat}
+                        <button
+                          onClick={() => handleRemoveCategory(cat)}
+                          className="hover:text-purple-900"
+                          type="button"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="relative">
+                  <Input
+                    placeholder="Add or search categories..."
+                    value={categoryInput}
+                    onChange={(e) => {
+                      setCategoryInput(e.target.value)
+                      setShowCategoryDropdown(true)
+                    }}
+                    onFocus={() => setShowCategoryDropdown(true)}
+                    disabled={loading}
+                    className="category-input"
+                  />
+
+                  {showCategoryDropdown && (categoryInput.trim() || filteredCategories.length > 0) && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {filteredCategories.length > 0 ? (
+                        filteredCategories.map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => handleSelectCategory(cat)}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+                          >
+                            {cat}
+                          </button>
+                        ))
+                      ) : categoryInput.trim() ? (
+                        <button
+                          type="button"
+                          onClick={handleAddNewCategory}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm text-blue-600"
+                        >
+                          + Create "{categoryInput}"
+                        </button>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
 
         <DialogFooter>
