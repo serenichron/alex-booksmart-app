@@ -47,7 +47,7 @@ async function getCurrentUserId(): Promise<string> {
   return user.id
 }
 
-// Board Management
+// Board Management - Fetch boards without bookmarks for better performance
 export async function getBoards(): Promise<Board[]> {
   const userId = await getCurrentUserId()
 
@@ -59,62 +59,44 @@ export async function getBoards(): Promise<Board[]> {
 
   if (error) throw error
 
-  // For each board, fetch its bookmarks
-  const boardsWithBookmarks = await Promise.all(
-    (boards || []).map(async (board) => {
-      const bookmarks = await getBookmarksByBoardId(board.id)
-      return {
-        ...board,
-        bookmarks
-      }
-    })
-  )
-
   // If no boards exist, create a default one
-  if (boardsWithBookmarks.length === 0) {
+  if (!boards || boards.length === 0) {
     const defaultBoard = await createBoard('My Board')
     return [defaultBoard]
   }
 
-  return boardsWithBookmarks
+  // Return boards with empty bookmarks array (we'll fetch bookmarks separately for current board)
+  return boards.map(board => ({
+    ...board,
+    bookmarks: []
+  }))
 }
 
 // Helper function to get bookmarks for a specific board
 async function getBookmarksByBoardId(boardId: string): Promise<Bookmark[]> {
+  // Use Supabase's query expansion to fetch bookmarks with notes and todos in one query
   const { data: bookmarks, error } = await supabase
     .from('bookmarks')
-    .select('*')
+    .select(`
+      *,
+      notes(*),
+      todo_items(*)
+    `)
     .eq('board_id', boardId)
     .order('created_at', { ascending: false })
 
   if (error) throw error
 
-  // For each bookmark, fetch its notes and todo items
-  const bookmarksWithDetails = await Promise.all(
-    (bookmarks || []).map(async (bookmark) => {
-      // Fetch notes
-      const { data: notes } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('bookmark_id', bookmark.id)
-        .order('created_at', { ascending: false })
-
-      // Fetch todo items
-      const { data: todoItems } = await supabase
-        .from('todo_items')
-        .select('*')
-        .eq('bookmark_id', bookmark.id)
-        .order('created_at', { ascending: true })
-
-      return {
-        ...bookmark,
-        notes: notes || [],
-        todo_items: todoItems || []
-      }
-    })
-  )
-
-  return bookmarksWithDetails
+  // Transform the data to match our Bookmark interface
+  return (bookmarks || []).map(bookmark => ({
+    ...bookmark,
+    notes: (bookmark.notes || []).sort((a: Note, b: Note) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    ),
+    todo_items: (bookmark.todo_items || []).sort((a: TodoItem, b: TodoItem) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+  }))
 }
 
 // Current board ID management (stored in localStorage for now)
@@ -202,8 +184,17 @@ export async function getAllBookmarksWithBoard(): Promise<Array<Bookmark & { boa
 
 // Bookmarks - Now operates on current board
 export async function getBookmarks(): Promise<Bookmark[]> {
-  const board = await getCurrentBoard()
-  return board ? board.bookmarks : []
+  const currentBoardId = getCurrentBoardId()
+  if (!currentBoardId) {
+    // If no current board, fetch boards and set first one as current
+    const boards = await getBoards()
+    if (boards.length > 0) {
+      setCurrentBoardId(boards[0].id)
+      return getBookmarksByBoardId(boards[0].id)
+    }
+    return []
+  }
+  return getBookmarksByBoardId(currentBoardId)
 }
 
 export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' | 'updated_at'>): Promise<Bookmark> {
