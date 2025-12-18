@@ -68,7 +68,7 @@ export function BoardManagementDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
+          <DialogHeader className="pb-4">
             <DialogTitle>
               {mode === 'create' ? 'Create New Board' : 'Rename Board'}
             </DialogTitle>
@@ -79,7 +79,7 @@ export function BoardManagementDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
+          <div className="py-4">
             <div className="grid gap-2">
               <label htmlFor="boardName" className="text-sm font-medium">
                 Board Name
@@ -95,7 +95,7 @@ export function BoardManagementDialog({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <Button
               type="button"
               variant="outline"

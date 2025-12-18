@@ -7,7 +7,8 @@ import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers } from 'lucide-react'
+import { ImageViewerDialog } from '@/components/ImageViewerDialog'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare } from 'lucide-react'
 import { format } from 'date-fns'
 import {
   getBookmarks,
@@ -57,6 +58,8 @@ export function Dashboard() {
   const [showBoardDialog, setShowBoardDialog] = useState(false)
   const [boardDialogMode, setBoardDialogMode] = useState<'create' | 'rename'>('create')
   const [editingBoard, setEditingBoard] = useState<Board | null>(null)
+  const [showImageViewer, setShowImageViewer] = useState(false)
+  const [viewingImageBookmark, setViewingImageBookmark] = useState<BookmarkType | null>(null)
 
   const fetchBookmarks = () => {
     try {
@@ -101,6 +104,20 @@ export function Dashboard() {
     if (confirm('Are you sure you want to delete this board? All bookmarks in it will be lost.')) {
       deleteBoard(boardId)
       fetchBookmarks()
+    }
+  }
+
+  const handleViewImage = (bookmark: BookmarkType) => {
+    setViewingImageBookmark(bookmark)
+    setShowImageViewer(true)
+  }
+
+  const handleImageNoteClick = (note: Note) => {
+    if (viewingImageBookmark) {
+      setSelectedNote(note)
+      setSelectedNoteBookmarkId(viewingImageBookmark.id)
+      setShowImageViewer(false)
+      setShowNoteDialog(true)
     }
   }
 
@@ -371,8 +388,70 @@ export function Dashboard() {
       {/* Sidebar - Fixed Position */}
       <aside className="fixed left-0 top-16 w-64 bg-white border-r border-gray-200 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40">
         <div className="space-y-4">
+          {/* Bookmark Type Filter */}
+          <div className="filter-section">
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">Bookmark Types</h3>
+
+            <div className="space-y-1 mb-3">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                <Checkbox
+                  checked={selectedTypes.has('link')}
+                  onCheckedChange={() => handleToggleType('link')}
+                />
+                <LinkIcon className="w-4 h-4 text-blue-600" />
+                <span className="text-sm text-gray-700">Links</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                <Checkbox
+                  checked={selectedTypes.has('text')}
+                  onCheckedChange={() => handleToggleType('text')}
+                />
+                <FileText className="w-4 h-4 text-yellow-600" />
+                <span className="text-sm text-gray-700">Text</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                <Checkbox
+                  checked={selectedTypes.has('image')}
+                  onCheckedChange={() => handleToggleType('image')}
+                />
+                <ImageIcon className="w-4 h-4 text-green-600" />
+                <span className="text-sm text-gray-700">Images</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                <Checkbox
+                  checked={selectedTypes.has('todo')}
+                  onCheckedChange={() => handleToggleType('todo')}
+                />
+                <CheckSquare className="w-4 h-4 text-purple-600" />
+                <span className="text-sm text-gray-700">To-dos</span>
+              </label>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAllTypes}
+                className="flex-1 text-xs"
+              >
+                Select All
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUnselectAllTypes}
+                className="flex-1 text-xs"
+              >
+                Unselect All
+              </Button>
+            </div>
+          </div>
+
           {/* Board Selector */}
-          <div className="board-section">
+          <div className="board-section pt-3 border-t border-gray-200">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-gray-900">Boards</h3>
               <Button
@@ -431,68 +510,6 @@ export function Dashboard() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Bookmark Type Filter */}
-          <div className="filter-section pt-3 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">Bookmark Types</h3>
-
-            <div className="space-y-1 mb-3">
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                <Checkbox
-                  checked={selectedTypes.has('link')}
-                  onCheckedChange={() => handleToggleType('link')}
-                />
-                <LinkIcon className="w-4 h-4 text-blue-600" />
-                <span className="text-sm text-gray-700">Links</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                <Checkbox
-                  checked={selectedTypes.has('text')}
-                  onCheckedChange={() => handleToggleType('text')}
-                />
-                <FileText className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm text-gray-700">Text</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                <Checkbox
-                  checked={selectedTypes.has('image')}
-                  onCheckedChange={() => handleToggleType('image')}
-                />
-                <ImageIcon className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-700">Images</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                <Checkbox
-                  checked={selectedTypes.has('todo')}
-                  onCheckedChange={() => handleToggleType('todo')}
-                />
-                <CheckSquare className="w-4 h-4 text-purple-600" />
-                <span className="text-sm text-gray-700">To-dos</span>
-              </label>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAllTypes}
-                className="flex-1 text-xs"
-              >
-                Select All
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleUnselectAllTypes}
-                className="flex-1 text-xs"
-              >
-                Unselect All
-              </Button>
             </div>
           </div>
         </div>
@@ -628,11 +645,9 @@ export function Dashboard() {
 
                   {/* Image Bookmark - Special Design */}
                   {isImageBookmark && bookmark.url ? (
-                    <a
-                      href={bookmark.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block relative"
+                    <div
+                      className="block relative cursor-pointer"
+                      onClick={() => handleViewImage(bookmark)}
                     >
                       <img
                         src={bookmark.url}
@@ -644,10 +659,30 @@ export function Dashboard() {
                         }}
                       />
 
-                      {/* Title overlay at top - only show if title exists */}
+                      {/* External link icon - top right */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(bookmark.url!, '_blank')
+                        }}
+                        className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full shadow-lg transition-all z-10"
+                        title="Open in new tab"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
+
+                      {/* Notes count badge - top left (if notes exist) */}
+                      {bookmark.notes.length > 0 && (
+                        <div className="absolute top-3 left-3 bg-blue-600/90 text-white px-2 py-1 rounded-full shadow-lg flex items-center gap-1.5 text-xs font-medium z-10">
+                          <MessageSquare className="w-3 h-3" />
+                          {bookmark.notes.length}
+                        </div>
+                      )}
+
+                      {/* Title overlay at top center - only show if title exists */}
                       {bookmark.title && (
-                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent p-3">
-                          <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg">
+                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent p-3 pt-16">
+                          <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-center">
                             {bookmark.title}
                           </h3>
                         </div>
@@ -671,7 +706,7 @@ export function Dashboard() {
                           )}
                         </div>
                       </div>
-                    </a>
+                    </div>
                   ) : bookmark.image_url && !isImageBookmark && (
                     <a
                       href={bookmark.url || '#'}
@@ -1049,6 +1084,14 @@ export function Dashboard() {
         onSuccess={fetchBookmarks}
         mode={boardDialogMode}
         board={editingBoard}
+      />
+
+      {/* Image Viewer Dialog */}
+      <ImageViewerDialog
+        open={showImageViewer}
+        onOpenChange={setShowImageViewer}
+        bookmark={viewingImageBookmark}
+        onNoteClick={handleImageNoteClick}
       />
     </div>
   )
