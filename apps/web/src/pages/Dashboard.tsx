@@ -1157,7 +1157,7 @@ export function Dashboard() {
                           </h2>
                         </div>
                         <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
-                          {[...uncategorized].reverse().map(renderBookmarkCard)}
+                          {uncategorized.map(renderBookmarkCard)}
                         </div>
                       </div>
                       {sortedCategories.length > 0 && (
@@ -1179,7 +1179,7 @@ export function Dashboard() {
                           </h2>
                         </div>
                         <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
-                          {[...categorizedMap.get(category)!].reverse().map(renderBookmarkCard)}
+                          {categorizedMap.get(category)!.map(renderBookmarkCard)}
                         </div>
                       </div>
                       {idx < sortedCategories.length - 1 && (
