@@ -40,6 +40,68 @@ export interface Board {
   updated_at: string
 }
 
+// Cache management
+const CACHE_PREFIX = 'booksmart_cache_'
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+function getCacheKey(key: string): string {
+  return `${CACHE_PREFIX}${key}`
+}
+
+function setCache<T>(key: string, data: T): void {
+  try {
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: Date.now()
+    }
+    localStorage.setItem(getCacheKey(key), JSON.stringify(entry))
+  } catch (err) {
+    console.warn('Failed to set cache:', err)
+  }
+}
+
+function getCache<T>(key: string): T | null {
+  try {
+    const item = localStorage.getItem(getCacheKey(key))
+    if (!item) return null
+
+    const entry: CacheEntry<T> = JSON.parse(item)
+    const age = Date.now() - entry.timestamp
+
+    // Return cached data if it's fresh enough
+    if (age < CACHE_TTL) {
+      return entry.data
+    }
+
+    // Clear stale cache
+    localStorage.removeItem(getCacheKey(key))
+    return null
+  } catch (err) {
+    console.warn('Failed to get cache:', err)
+    return null
+  }
+}
+
+function invalidateCache(pattern?: string): void {
+  try {
+    const keys = Object.keys(localStorage)
+    keys.forEach(key => {
+      if (key.startsWith(CACHE_PREFIX)) {
+        if (!pattern || key.includes(pattern)) {
+          localStorage.removeItem(key)
+        }
+      }
+    })
+  } catch (err) {
+    console.warn('Failed to invalidate cache:', err)
+  }
+}
+
 // Helper to get current user ID
 async function getCurrentUserId(): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser()
@@ -72,8 +134,27 @@ export async function getBoards(): Promise<Board[]> {
   }))
 }
 
-// Helper function to get bookmarks for a specific board
-async function getBookmarksByBoardId(boardId: string): Promise<Bookmark[]> {
+// Pagination config
+const DEFAULT_PAGE_SIZE = 20
+
+// Helper function to get bookmarks for a specific board with pagination
+async function getBookmarksByBoardId(
+  boardId: string,
+  options?: { limit?: number; offset?: number; skipCache?: boolean }
+): Promise<Bookmark[]> {
+  const limit = options?.limit || DEFAULT_PAGE_SIZE
+  const offset = options?.offset || 0
+  const skipCache = options?.skipCache || false
+
+  // Try cache first (only for first page)
+  if (!skipCache && offset === 0) {
+    const cacheKey = `bookmarks_${boardId}_${limit}`
+    const cached = getCache<Bookmark[]>(cacheKey)
+    if (cached) {
+      return cached
+    }
+  }
+
   // Use Supabase's query expansion to fetch bookmarks with notes and todos in one query
   const { data: bookmarks, error } = await supabase
     .from('bookmarks')
@@ -84,11 +165,12 @@ async function getBookmarksByBoardId(boardId: string): Promise<Bookmark[]> {
     `)
     .eq('board_id', boardId)
     .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
 
   if (error) throw error
 
   // Transform the data to match our Bookmark interface
-  return (bookmarks || []).map(bookmark => ({
+  const transformed = (bookmarks || []).map(bookmark => ({
     ...bookmark,
     notes: (bookmark.notes || []).sort((a: Note, b: Note) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -97,6 +179,32 @@ async function getBookmarksByBoardId(boardId: string): Promise<Bookmark[]> {
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
   }))
+
+  // Cache first page results
+  if (offset === 0) {
+    const cacheKey = `bookmarks_${boardId}_${limit}`
+    setCache(cacheKey, transformed)
+  }
+
+  return transformed
+}
+
+// Get bookmark count for a board
+export async function getBookmarkCount(boardId: string): Promise<number> {
+  const cacheKey = `count_${boardId}`
+  const cached = getCache<number>(cacheKey)
+  if (cached !== null) return cached
+
+  const { count, error } = await supabase
+    .from('bookmarks')
+    .select('*', { count: 'exact', head: true })
+    .eq('board_id', boardId)
+
+  if (error) throw error
+
+  const total = count || 0
+  setCache(cacheKey, total)
+  return total
 }
 
 // Current board ID management (stored in localStorage for now)
@@ -196,19 +304,30 @@ export async function getAllBookmarksWithBoard(): Promise<Array<Bookmark & { boa
   }))
 }
 
-// Bookmarks - Now operates on current board
-export async function getBookmarks(): Promise<Bookmark[]> {
+// Bookmarks - Now operates on current board with pagination support
+export async function getBookmarks(options?: { limit?: number; offset?: number; skipCache?: boolean }): Promise<Bookmark[]> {
   const currentBoardId = getCurrentBoardId()
   if (!currentBoardId) {
     // If no current board, fetch boards and set first one as current
     const boards = await getBoards()
     if (boards.length > 0) {
       setCurrentBoardId(boards[0].id)
-      return getBookmarksByBoardId(boards[0].id)
+      return getBookmarksByBoardId(boards[0].id, options)
     }
     return []
   }
-  return getBookmarksByBoardId(currentBoardId)
+  return getBookmarksByBoardId(currentBoardId, options)
+}
+
+// Load more bookmarks (for infinite scroll)
+export async function loadMoreBookmarks(offset: number, limit?: number): Promise<Bookmark[]> {
+  return getBookmarks({ offset, limit, skipCache: true })
+}
+
+// Prefetch board bookmarks (for hover optimization)
+export async function prefetchBoard(boardId: string): Promise<void> {
+  // Fetch and cache first page of bookmarks for this board
+  await getBookmarksByBoardId(boardId, { limit: DEFAULT_PAGE_SIZE, offset: 0, skipCache: false })
 }
 
 export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' | 'updated_at'>): Promise<Bookmark> {
@@ -261,19 +380,33 @@ export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' 
     newBookmark.todo_items = bookmark.todo_items
   }
 
+  // Invalidate cache for this board
+  invalidateCache(`bookmarks_${currentBoardId}`)
+  invalidateCache(`count_${currentBoardId}`)
+
   return newBookmark
 }
 
 export async function deleteBookmark(id: string): Promise<void> {
+  const currentBoardId = getCurrentBoardId()
+
   const { error } = await supabase
     .from('bookmarks')
     .delete()
     .eq('id', id)
 
   if (error) throw error
+
+  // Invalidate cache for this board
+  if (currentBoardId) {
+    invalidateCache(`bookmarks_${currentBoardId}`)
+    invalidateCache(`count_${currentBoardId}`)
+  }
 }
 
 export async function updateBookmark(id: string, updates: Partial<Bookmark>): Promise<void> {
+  const currentBoardId = getCurrentBoardId()
+
   // Extract only the fields that exist in the bookmarks table
   const { notes, todo_items, ...bookmarkUpdates } = updates
 
@@ -283,6 +416,11 @@ export async function updateBookmark(id: string, updates: Partial<Bookmark>): Pr
     .eq('id', id)
 
   if (error) throw error
+
+  // Invalidate cache for this board
+  if (currentBoardId) {
+    invalidateCache(`bookmarks_${currentBoardId}`)
+  }
 }
 
 // Note management
