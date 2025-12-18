@@ -314,7 +314,7 @@ export function Dashboard() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header - Full Width */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -521,21 +521,21 @@ export function Dashboard() {
       <main className="ml-64 px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
-            <div className="text-sm text-blue-100">Total Bookmarks</div>
-            <div className="text-3xl font-bold text-white">{stats.total}</div>
+          <div className="stats-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+            <div className="text-sm text-gray-600">Total Bookmarks</div>
+            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-purple-500 to-purple-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
-            <div className="text-sm text-purple-100">Categories</div>
-            <div className="text-3xl font-bold text-white">{stats.categories}</div>
+          <div className="stats-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+            <div className="text-sm text-gray-600">Categories</div>
+            <div className="text-3xl font-bold text-gray-900">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-pink-500 to-pink-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
-            <div className="text-sm text-pink-100">Tags</div>
-            <div className="text-3xl font-bold text-white">{stats.tags}</div>
+          <div className="stats-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+            <div className="text-sm text-gray-600">Tags</div>
+            <div className="text-3xl font-bold text-gray-900">{stats.tags}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-indigo-500 to-indigo-600 p-4 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex items-center justify-between">
-            <div className="text-sm text-indigo-100">This Week</div>
-            <div className="text-3xl font-bold text-white">{stats.thisWeek}</div>
+          <div className="stats-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+            <div className="text-sm text-gray-600">This Week</div>
+            <div className="text-3xl font-bold text-gray-900">{stats.thisWeek}</div>
           </div>
         </div>
 
@@ -610,9 +610,9 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg hover:scale-[1.01] transition-all duration-200 break-inside-avoid mb-4 relative group ${
                     isTodoBookmark
-                      ? 'bg-gradient-to-br from-purple-200 via-purple-100 to-purple-200 border-purple-400 shadow-sm'
+                      ? 'bg-gray-50 border-gray-300 shadow-sm'
                       : isTextBookmark
-                      ? 'bg-gradient-to-br from-yellow-100 via-yellow-50 to-yellow-100 border-yellow-300 shadow-sm'
+                      ? 'bg-white border-gray-200 shadow-sm'
                       : isImageBookmark
                       ? 'bg-black border-gray-800'
                       : 'bg-white border-gray-200/60 shadow-sm'
@@ -620,6 +620,15 @@ export function Dashboard() {
                 >
                   {/* Action Buttons */}
                   <div className="absolute top-2 right-2 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {bookmark.url && (
+                      <button
+                        onClick={() => window.open(bookmark.url!, '_blank')}
+                        className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
+                        title="Open in new tab"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
@@ -660,18 +669,6 @@ export function Dashboard() {
                           e.currentTarget.src = bookmark.image_url || ''
                         }}
                       />
-
-                      {/* External link icon - top right */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          window.open(bookmark.url!, '_blank')
-                        }}
-                        className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full shadow-lg transition-all z-10"
-                        title="Open in new tab"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </button>
 
                       {/* Notes count badge - top left (if notes exist) */}
                       {bookmark.notes.length > 0 && (
@@ -753,9 +750,9 @@ export function Dashboard() {
                             <span className="font-medium">Progress</span>
                             <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
                           </div>
-                          <div className="w-full bg-purple-300 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-purple-600 to-purple-700 h-full transition-all duration-300 rounded-full"
+                              className="bg-gray-600 h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -800,7 +797,7 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-500 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-gray-50 border-l-3 border-gray-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
                                 <p className="text-[11px] text-gray-700 line-clamp-3 leading-relaxed pr-1">
@@ -1009,10 +1006,10 @@ export function Dashboard() {
                   {uncategorized.length > 0 && (
                     <>
                       <div className="category-section">
-                        <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg px-6 py-4 mb-6 border-l-4 border-gray-400">
-                          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-gray-400">
+                          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
                             Uncategorized
-                            <span className="text-sm font-normal bg-white px-3 py-1 rounded-full text-gray-600 border border-gray-200">
+                            <span className="text-sm font-normal bg-gray-100 px-3 py-1 rounded-full text-gray-700 border border-gray-300">
                               {uncategorized.length}
                             </span>
                           </h2>
@@ -1031,10 +1028,10 @@ export function Dashboard() {
                   {sortedCategories.map((category, idx) => (
                     <div key={category}>
                       <div className="category-section">
-                        <div className="bg-gradient-to-r from-purple-100 to-pink-50 rounded-lg px-6 py-4 mb-6 border-l-4 border-purple-500">
-                          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-gray-400">
+                          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
                             {category}
-                            <span className="text-sm font-normal bg-white px-3 py-1 rounded-full text-purple-600 border border-purple-200">
+                            <span className="text-sm font-normal bg-gray-100 px-3 py-1 rounded-full text-gray-700 border border-gray-300">
                               {categorizedMap.get(category)!.length}
                             </span>
                           </h2>

@@ -87,6 +87,22 @@ export function EditBookmarkDialog({
     }
   }, [open, bookmark])
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        onOpenChange(false)
+      }
+    }
+
+    if (open) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [open, onOpenChange])
+
   const handleClose = () => {
     setCategoryInput('')
     setShowCategoryDropdown(false)

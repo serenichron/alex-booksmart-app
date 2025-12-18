@@ -40,6 +40,22 @@ export function BoardManagementDialog({
     }
   }, [open, mode, board])
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        onOpenChange(false)
+      }
+    }
+
+    if (open) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [open, onOpenChange])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 

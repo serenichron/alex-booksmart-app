@@ -60,6 +60,22 @@ export function AddBookmarkDialog({
     setAvailableCategories(getCategories())
   }, [open])
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) {
+        onOpenChange(false)
+      }
+    }
+
+    if (open) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [open, onOpenChange])
+
   const reset = () => {
     setMode('url')
     setUrl('')
