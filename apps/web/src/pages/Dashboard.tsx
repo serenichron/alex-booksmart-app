@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -65,6 +65,7 @@ export function Dashboard() {
 
   // Infinite scroll ref
   const loadMoreRef = useRef<HTMLDivElement>(null)
+  const bookmarksRef = useRef(bookmarks)
 
   // Board management state
   const [boards, setBoards] = useState<Board[]>([])
@@ -99,20 +100,29 @@ export function Dashboard() {
     }
   }
 
+  // Update ref when bookmarks change
+  useEffect(() => {
+    bookmarksRef.current = bookmarks
+  }, [bookmarks])
+
   const handleLoadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return
 
     setLoadingMore(true)
     try {
-      const moreBookmarks = await loadMoreBookmarks(bookmarks.length)
-      setBookmarks(prev => [...prev, ...moreBookmarks])
-      setHasMore(bookmarks.length + moreBookmarks.length < totalCount)
+      const currentLength = bookmarksRef.current.length
+      const moreBookmarks = await loadMoreBookmarks(currentLength)
+      setBookmarks(prev => {
+        const newBookmarks = [...prev, ...moreBookmarks]
+        setHasMore(newBookmarks.length < totalCount)
+        return newBookmarks
+      })
     } catch (error) {
       console.error('Error loading more bookmarks:', error)
     } finally {
       setLoadingMore(false)
     }
-  }, [bookmarks.length, hasMore, loadingMore, totalCount])
+  }, [loadingMore, hasMore, totalCount])
 
   const handleSwitchBoard = (boardId: string) => {
     setCurrentBoardId(boardId)
@@ -371,8 +381,8 @@ export function Dashboard() {
       .map(item => item.bookmark)
   }
 
-  // Filter bookmarks based on selected types and search query
-  const filteredBookmarks = (() => {
+  // Filter bookmarks based on selected types and search query (memoized for performance)
+  const filteredBookmarks = useMemo(() => {
     let filtered: BookmarkWithDetails[]
 
     // Check if we're using global search mode
@@ -403,7 +413,7 @@ export function Dashboard() {
     }
 
     return filtered
-  })()
+  }, [bookmarks, selectedTypes, searchQuery, searchMode])
 
   useEffect(() => {
     fetchBookmarks()
@@ -417,7 +427,10 @@ export function Dashboard() {
           handleLoadMore()
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0.1,
+        rootMargin: '100px' // Start loading 100px before reaching the trigger
+      }
     )
 
     if (loadMoreRef.current) {
@@ -735,7 +748,7 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg hover:scale-[1.01] transition-all duration-200 break-inside-avoid mb-4 relative group ${
+                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 break-inside-avoid mb-4 relative group ${
                     isTodoBookmark
                       ? 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200 shadow-sm'
                       : isTextBookmark
