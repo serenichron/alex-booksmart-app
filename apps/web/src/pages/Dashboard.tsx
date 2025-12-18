@@ -1177,38 +1177,38 @@ export function Dashboard() {
                 </>
               )
             })()}
+
+            {/* Infinite scroll trigger and Load More button */}
+            {!loading && filteredBookmarks.length > 0 && (
+              <div className="flex flex-col items-center gap-4 py-8">
+                {/* Intersection observer trigger */}
+                <div ref={loadMoreRef} className="h-4" />
+
+                {loadingMore && (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Loading more bookmarks...</span>
+                  </div>
+                )}
+
+                {!loadingMore && hasMore && (
+                  <Button
+                    variant="outline"
+                    onClick={handleLoadMore}
+                    className="min-w-[200px]"
+                  >
+                    Load More ({totalCount - filteredBookmarks.length} remaining)
+                  </Button>
+                )}
+
+                {!hasMore && filteredBookmarks.length > 0 && (
+                  <p className="text-sm text-gray-500">
+                    You've reached the end! ({filteredBookmarks.length} bookmarks)
+                  </p>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Infinite scroll trigger and Load More button */}
-          {!loading && filteredBookmarks.length > 0 && (
-            <div className="flex flex-col items-center gap-4 py-8">
-              {/* Intersection observer trigger */}
-              <div ref={loadMoreRef} className="h-4" />
-
-              {loadingMore && (
-                <div className="flex items-center gap-2 text-gray-500">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Loading more bookmarks...</span>
-                </div>
-              )}
-
-              {!loadingMore && hasMore && (
-                <Button
-                  variant="outline"
-                  onClick={handleLoadMore}
-                  className="min-w-[200px]"
-                >
-                  Load More ({totalCount - filteredBookmarks.length} remaining)
-                </Button>
-              )}
-
-              {!hasMore && filteredBookmarks.length > 0 && (
-                <p className="text-sm text-gray-500">
-                  You've reached the end! ({filteredBookmarks.length} bookmarks)
-                </p>
-              )}
-            </div>
-          )}
         )}
       </main>
 
