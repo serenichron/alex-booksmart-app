@@ -314,7 +314,7 @@ export function Dashboard() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/40 via-slate-50 to-indigo-50/40">
       {/* Header - Full Width */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -521,21 +521,21 @@ export function Dashboard() {
       <main className="ml-64 px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="stats-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
-            <div className="text-sm text-gray-600">Total Bookmarks</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-blue-100">Total Bookmarks</div>
+            <div className="text-3xl font-bold text-white">{stats.total}</div>
           </div>
-          <div className="stats-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
-            <div className="text-sm text-gray-600">Categories</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.categories}</div>
+          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-blue-100">Categories</div>
+            <div className="text-3xl font-bold text-white">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
-            <div className="text-sm text-gray-600">Tags</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.tags}</div>
+          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-blue-100">Tags</div>
+            <div className="text-3xl font-bold text-white">{stats.tags}</div>
           </div>
-          <div className="stats-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
-            <div className="text-sm text-gray-600">This Week</div>
-            <div className="text-3xl font-bold text-gray-900">{stats.thisWeek}</div>
+          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-blue-100">This Week</div>
+            <div className="text-3xl font-bold text-white">{stats.thisWeek}</div>
           </div>
         </div>
 
@@ -610,9 +610,9 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg hover:scale-[1.01] transition-all duration-200 break-inside-avoid mb-4 relative group ${
                     isTodoBookmark
-                      ? 'bg-gray-50 border-gray-300 shadow-sm'
+                      ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-sm'
                       : isTextBookmark
-                      ? 'bg-white border-gray-200 shadow-sm'
+                      ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 shadow-sm'
                       : isImageBookmark
                       ? 'bg-black border-gray-800'
                       : 'bg-white border-gray-200/60 shadow-sm'
@@ -750,9 +750,9 @@ export function Dashboard() {
                             <span className="font-medium">Progress</span>
                             <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gray-600 h-full transition-all duration-300 rounded-full"
+                              className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -797,7 +797,7 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-gray-50 border-l-3 border-gray-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
                                 <p className="text-[11px] text-gray-700 line-clamp-3 leading-relaxed pr-1">
@@ -1006,10 +1006,10 @@ export function Dashboard() {
                   {uncategorized.length > 0 && (
                     <>
                       <div className="category-section">
-                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-gray-400">
+                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-blue-500 shadow-sm">
                           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
                             Uncategorized
-                            <span className="text-sm font-normal bg-gray-100 px-3 py-1 rounded-full text-gray-700 border border-gray-300">
+                            <span className="text-sm font-normal bg-blue-50 px-3 py-1 rounded-full text-blue-700 border border-blue-200">
                               {uncategorized.length}
                             </span>
                           </h2>
@@ -1028,10 +1028,10 @@ export function Dashboard() {
                   {sortedCategories.map((category, idx) => (
                     <div key={category}>
                       <div className="category-section">
-                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-gray-400">
+                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-blue-500 shadow-sm">
                           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
                             {category}
-                            <span className="text-sm font-normal bg-gray-100 px-3 py-1 rounded-full text-gray-700 border border-gray-300">
+                            <span className="text-sm font-normal bg-blue-50 px-3 py-1 rounded-full text-blue-700 border border-blue-200">
                               {categorizedMap.get(category)!.length}
                             </span>
                           </h2>
