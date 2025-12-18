@@ -54,18 +54,18 @@ export function NoteDialog({
     }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (note && editedContent.trim()) {
-      updateNoteInBookmark(bookmarkId, note.id, editedContent.trim())
+      await updateNoteInBookmark(bookmarkId, note.id, editedContent.trim())
       setIsEditing(false)
       onSuccess()
       onOpenChange(false)
     }
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (note && confirm('Delete this note?')) {
-      deleteNoteFromBookmark(bookmarkId, note.id)
+      await deleteNoteFromBookmark(bookmarkId, note.id)
       onSuccess()
       onOpenChange(false)
     }
