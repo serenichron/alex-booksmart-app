@@ -64,8 +64,8 @@ export function ImageViewerDialog({
             <img
               src={imageUrl}
               alt={bookmark.title || 'Image'}
-              className="max-w-full max-h-[calc(90vh-100px)] object-contain border-2 rounded-sm"
-              style={{ borderColor: '#cacaca' }}
+              className="max-w-full max-h-[calc(90vh-100px)] object-contain border-2 rounded-lg"
+              style={{ borderColor: '#666' }}
               onError={(e) => {
                 const fallback = bookmark.image_url || bookmark.url
                 if (fallback && fallback !== e.currentTarget.src) {
