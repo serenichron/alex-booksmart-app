@@ -31,7 +31,17 @@ export interface Bookmark {
   todo_items?: TodoItem[]
 }
 
-const STORAGE_KEY = 'booksmart_bookmarks'
+export interface Board {
+  id: string
+  name: string
+  bookmarks: Bookmark[]
+  created_at: string
+  updated_at: string
+}
+
+const STORAGE_KEY = 'booksmart_bookmarks' // Legacy key for migration
+const BOARDS_KEY = 'booksmart_boards'
+const CURRENT_BOARD_KEY = 'booksmart_current_board'
 const CATEGORIES_KEY = 'booksmart_categories'
 const TAGS_KEY = 'booksmart_tags'
 
@@ -62,25 +72,132 @@ function migrateBookmark(bookmark: any): Bookmark {
   return bookmark as Bookmark
 }
 
-// Bookmarks
-export function getBookmarks(): Bookmark[] {
-  const data = localStorage.getItem(STORAGE_KEY)
-  if (!data) return []
+// Board Migration - Convert old bookmark storage to board-based structure
+function migrateToBoards(): void {
+  const boardsData = localStorage.getItem(BOARDS_KEY)
 
-  const bookmarks = JSON.parse(data)
-  // Migrate any old format bookmarks
-  const migrated = bookmarks.map(migrateBookmark)
+  // If boards already exist, no migration needed
+  if (boardsData) return
 
-  // Save migrated data back if needed
-  if (bookmarks.some((b: any) => typeof b.notes === 'string' || !b.updated_at || b.show_meta_description === undefined)) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
+  // Check for old bookmarks
+  const oldBookmarksData = localStorage.getItem(STORAGE_KEY)
+  const oldBookmarks = oldBookmarksData ? JSON.parse(oldBookmarksData).map(migrateBookmark) : []
+
+  // Create default board with existing bookmarks
+  const now = new Date().toISOString()
+  const defaultBoard: Board = {
+    id: crypto.randomUUID(),
+    name: 'My Board',
+    bookmarks: oldBookmarks,
+    created_at: now,
+    updated_at: now
   }
 
-  return migrated
+  // Save boards and set current board
+  localStorage.setItem(BOARDS_KEY, JSON.stringify([defaultBoard]))
+  localStorage.setItem(CURRENT_BOARD_KEY, defaultBoard.id)
+
+  // Remove old storage key
+  localStorage.removeItem(STORAGE_KEY)
+}
+
+// Board Management
+export function getBoards(): Board[] {
+  migrateToBoards()
+  const data = localStorage.getItem(BOARDS_KEY)
+  return data ? JSON.parse(data) : []
+}
+
+function saveBoards(boards: Board[]): void {
+  localStorage.setItem(BOARDS_KEY, JSON.stringify(boards))
+}
+
+export function getCurrentBoardId(): string | null {
+  migrateToBoards()
+  return localStorage.getItem(CURRENT_BOARD_KEY)
+}
+
+export function setCurrentBoardId(boardId: string): void {
+  localStorage.setItem(CURRENT_BOARD_KEY, boardId)
+}
+
+export function getCurrentBoard(): Board | null {
+  const boards = getBoards()
+  const currentId = getCurrentBoardId()
+  return boards.find(b => b.id === currentId) || boards[0] || null
+}
+
+export function createBoard(name: string): Board {
+  const boards = getBoards()
+  const now = new Date().toISOString()
+  const newBoard: Board = {
+    id: crypto.randomUUID(),
+    name,
+    bookmarks: [],
+    created_at: now,
+    updated_at: now
+  }
+  boards.push(newBoard)
+  saveBoards(boards)
+  return newBoard
+}
+
+export function renameBoard(boardId: string, newName: string): void {
+  const boards = getBoards()
+  const board = boards.find(b => b.id === boardId)
+  if (board) {
+    board.name = newName
+    board.updated_at = new Date().toISOString()
+    saveBoards(boards)
+  }
+}
+
+export function deleteBoard(boardId: string): void {
+  let boards = getBoards()
+
+  // Don't allow deleting the last board
+  if (boards.length <= 1) return
+
+  boards = boards.filter(b => b.id !== boardId)
+  saveBoards(boards)
+
+  // If we deleted the current board, switch to the first board
+  if (getCurrentBoardId() === boardId) {
+    setCurrentBoardId(boards[0].id)
+  }
+}
+
+// Get all bookmarks from all boards (for global search)
+export function getAllBookmarksWithBoard(): Array<Bookmark & { boardId: string; boardName: string }> {
+  const boards = getBoards()
+  const allBookmarks: Array<Bookmark & { boardId: string; boardName: string }> = []
+
+  boards.forEach(board => {
+    board.bookmarks.forEach(bookmark => {
+      allBookmarks.push({
+        ...bookmark,
+        boardId: board.id,
+        boardName: board.name
+      })
+    })
+  })
+
+  return allBookmarks
+}
+
+// Bookmarks - Now operates on current board
+export function getBookmarks(): Bookmark[] {
+  const board = getCurrentBoard()
+  return board ? board.bookmarks : []
 }
 
 export function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' | 'updated_at'>): Bookmark {
-  const bookmarks = getBookmarks()
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
+  if (!board) throw new Error('No current board found')
+
   const now = new Date().toISOString()
   const newBookmark: Bookmark = {
     ...bookmark,
@@ -88,86 +205,130 @@ export function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' | 'upd
     created_at: now,
     updated_at: now,
   }
-  bookmarks.unshift(newBookmark)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+
+  board.bookmarks.unshift(newBookmark)
+  board.updated_at = now
+  saveBoards(boards)
+
   return newBookmark
 }
 
 export function deleteBookmark(id: string): void {
-  const bookmarks = getBookmarks().filter(b => b.id !== id)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
+  if (!board) return
+
+  board.bookmarks = board.bookmarks.filter(b => b.id !== id)
+  board.updated_at = new Date().toISOString()
+  saveBoards(boards)
 }
 
 export function updateBookmark(id: string, updates: Partial<Bookmark>): void {
-  const bookmarks = getBookmarks()
-  const index = bookmarks.findIndex(b => b.id === id)
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
+  if (!board) return
+
+  const index = board.bookmarks.findIndex(b => b.id === id)
   if (index !== -1) {
-    bookmarks[index] = {
-      ...bookmarks[index],
+    board.bookmarks[index] = {
+      ...board.bookmarks[index],
       ...updates,
       updated_at: new Date().toISOString()
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+    board.updated_at = new Date().toISOString()
+    saveBoards(boards)
   }
 }
 
 // Note management
 export function addNoteToBookmark(bookmarkId: string, content: string): Note {
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
   const note: Note = {
     id: crypto.randomUUID(),
     content,
     created_at: new Date().toISOString()
   }
 
-  const bookmarks = getBookmarks()
-  const bookmark = bookmarks.find(b => b.id === bookmarkId)
-  if (bookmark) {
-    bookmark.notes.unshift(note) // Add to beginning (newest first)
-    bookmark.updated_at = new Date().toISOString()
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  if (board) {
+    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
+    if (bookmark) {
+      bookmark.notes.unshift(note) // Add to beginning (newest first)
+      bookmark.updated_at = new Date().toISOString()
+      board.updated_at = new Date().toISOString()
+      saveBoards(boards)
+    }
   }
 
   return note
 }
 
 export function deleteNoteFromBookmark(bookmarkId: string, noteId: string): void {
-  const bookmarks = getBookmarks()
-  const bookmark = bookmarks.find(b => b.id === bookmarkId)
-  if (bookmark) {
-    bookmark.notes = bookmark.notes.filter(n => n.id !== noteId)
-    bookmark.updated_at = new Date().toISOString()
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
+  if (board) {
+    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
+    if (bookmark) {
+      bookmark.notes = bookmark.notes.filter(n => n.id !== noteId)
+      bookmark.updated_at = new Date().toISOString()
+      board.updated_at = new Date().toISOString()
+      saveBoards(boards)
+    }
   }
 }
 
 export function updateNoteInBookmark(bookmarkId: string, noteId: string, content: string): void {
-  const bookmarks = getBookmarks()
-  const bookmark = bookmarks.find(b => b.id === bookmarkId)
-  if (bookmark) {
-    const note = bookmark.notes.find(n => n.id === noteId)
-    if (note) {
-      note.content = content
-      bookmark.updated_at = new Date().toISOString()
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
+  if (board) {
+    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
+    if (bookmark) {
+      const note = bookmark.notes.find(n => n.id === noteId)
+      if (note) {
+        note.content = content
+        bookmark.updated_at = new Date().toISOString()
+        board.updated_at = new Date().toISOString()
+        saveBoards(boards)
+      }
     }
   }
 }
 
 // Todo items management
 export function toggleTodoItem(bookmarkId: string, todoId: string): void {
-  const bookmarks = getBookmarks()
-  const bookmark = bookmarks.find(b => b.id === bookmarkId)
-  if (bookmark && bookmark.todo_items) {
-    const todoItem = bookmark.todo_items.find(t => t.id === todoId)
-    if (todoItem) {
-      todoItem.completed = !todoItem.completed
-      bookmark.updated_at = new Date().toISOString()
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
+  if (board) {
+    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
+    if (bookmark && bookmark.todo_items) {
+      const todoItem = bookmark.todo_items.find(t => t.id === todoId)
+      if (todoItem) {
+        todoItem.completed = !todoItem.completed
+        bookmark.updated_at = new Date().toISOString()
+        board.updated_at = new Date().toISOString()
+        saveBoards(boards)
+      }
     }
   }
 }
 
 export function addTodoItem(bookmarkId: string, text: string): TodoItem {
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
   const todoItem: TodoItem = {
     id: crypto.randomUUID(),
     text,
@@ -175,39 +336,53 @@ export function addTodoItem(bookmarkId: string, text: string): TodoItem {
     created_at: new Date().toISOString()
   }
 
-  const bookmarks = getBookmarks()
-  const bookmark = bookmarks.find(b => b.id === bookmarkId)
-  if (bookmark) {
-    if (!bookmark.todo_items) {
-      bookmark.todo_items = []
+  if (board) {
+    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
+    if (bookmark) {
+      if (!bookmark.todo_items) {
+        bookmark.todo_items = []
+      }
+      bookmark.todo_items.push(todoItem)
+      bookmark.updated_at = new Date().toISOString()
+      board.updated_at = new Date().toISOString()
+      saveBoards(boards)
     }
-    bookmark.todo_items.push(todoItem)
-    bookmark.updated_at = new Date().toISOString()
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
   }
 
   return todoItem
 }
 
 export function deleteTodoItem(bookmarkId: string, todoId: string): void {
-  const bookmarks = getBookmarks()
-  const bookmark = bookmarks.find(b => b.id === bookmarkId)
-  if (bookmark && bookmark.todo_items) {
-    bookmark.todo_items = bookmark.todo_items.filter(t => t.id !== todoId)
-    bookmark.updated_at = new Date().toISOString()
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
+  if (board) {
+    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
+    if (bookmark && bookmark.todo_items) {
+      bookmark.todo_items = bookmark.todo_items.filter(t => t.id !== todoId)
+      bookmark.updated_at = new Date().toISOString()
+      board.updated_at = new Date().toISOString()
+      saveBoards(boards)
+    }
   }
 }
 
 export function updateTodoItem(bookmarkId: string, todoId: string, text: string): void {
-  const bookmarks = getBookmarks()
-  const bookmark = bookmarks.find(b => b.id === bookmarkId)
-  if (bookmark && bookmark.todo_items) {
-    const todoItem = bookmark.todo_items.find(t => t.id === todoId)
-    if (todoItem) {
-      todoItem.text = text
-      bookmark.updated_at = new Date().toISOString()
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks))
+  const boards = getBoards()
+  const currentBoardId = getCurrentBoardId()
+  const board = boards.find(b => b.id === currentBoardId)
+
+  if (board) {
+    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
+    if (bookmark && bookmark.todo_items) {
+      const todoItem = bookmark.todo_items.find(t => t.id === todoId)
+      if (todoItem) {
+        todoItem.text = text
+        bookmark.updated_at = new Date().toISOString()
+        board.updated_at = new Date().toISOString()
+        saveBoards(boards)
+      }
     }
   }
 }

@@ -6,13 +6,35 @@ import { Input } from '@/components/ui/input'
 import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare } from 'lucide-react'
+import { BoardManagementDialog } from '@/components/BoardManagementDialog'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, MoreVertical, Edit, Layers } from 'lucide-react'
 import { format } from 'date-fns'
-import { getBookmarks, getStats, deleteBookmark, toggleTodoItem, type Bookmark as BookmarkType, type Note, type TodoItem } from '@/lib/storage'
+import {
+  getBookmarks,
+  getStats,
+  deleteBookmark,
+  toggleTodoItem,
+  getBoards,
+  getCurrentBoardId,
+  setCurrentBoardId,
+  deleteBoard,
+  getAllBookmarksWithBoard,
+  type Bookmark as BookmarkType,
+  type Note,
+  type TodoItem,
+  type Board
+} from '@/lib/storage'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface BookmarkWithDetails extends BookmarkType {}
 
 type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo'
+type SearchMode = 'board' | 'global'
 
 export function Dashboard() {
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -33,16 +55,58 @@ export function Dashboard() {
   const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image', 'todo']))
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
+  const [searchMode, setSearchMode] = useState<SearchMode>('board')
+
+  // Board management state
+  const [boards, setBoards] = useState<Board[]>([])
+  const [currentBoardId, setCurrentBoardIdState] = useState<string | null>(null)
+  const [showBoardDialog, setShowBoardDialog] = useState(false)
+  const [boardDialogMode, setBoardDialogMode] = useState<'create' | 'rename'>('create')
+  const [editingBoard, setEditingBoard] = useState<Board | null>(null)
 
   const fetchBookmarks = () => {
     try {
       const bookmarksData = getBookmarks()
+      const boardsData = getBoards()
+      const currentId = getCurrentBoardId()
+
       setBookmarks(bookmarksData)
+      setBoards(boardsData)
+      setCurrentBoardIdState(currentId)
       setStats(getStats())
     } catch (error) {
       console.error('Error fetching bookmarks:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleSwitchBoard = (boardId: string) => {
+    setCurrentBoardId(boardId)
+    fetchBookmarks()
+  }
+
+  const handleCreateBoard = () => {
+    setBoardDialogMode('create')
+    setEditingBoard(null)
+    setShowBoardDialog(true)
+  }
+
+  const handleRenameBoard = (board: Board) => {
+    setBoardDialogMode('rename')
+    setEditingBoard(board)
+    setShowBoardDialog(true)
+  }
+
+  const handleDeleteBoard = (boardId: string) => {
+    if (boards.length <= 1) {
+      alert('Cannot delete the last board')
+      return
+    }
+
+    if (confirm('Are you sure you want to delete this board? All bookmarks in it will be lost.')) {
+      deleteBoard(boardId)
+      fetchBookmarks()
     }
   }
 
@@ -202,15 +266,33 @@ export function Dashboard() {
 
   // Filter bookmarks based on selected types and search query
   const filteredBookmarks = (() => {
-    // First filter by type
-    let filtered = bookmarks.filter(bookmark => {
-      if (selectedTypes.size === 0) return false
-      return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
-    })
+    let filtered: BookmarkWithDetails[]
 
-    // Then apply search
-    if (searchQuery.trim()) {
+    // Check if we're using global search mode
+    if (searchMode === 'global' && searchQuery.trim()) {
+      // Global search across all boards
+      const allBookmarks = getAllBookmarksWithBoard()
+
+      // Filter by type
+      filtered = allBookmarks.filter(bookmark => {
+        if (selectedTypes.size === 0) return false
+        return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
+      })
+
+      // Apply search
       filtered = searchBookmarks(filtered, searchQuery)
+    } else {
+      // Board-wise search (default)
+      // First filter by type
+      filtered = bookmarks.filter(bookmark => {
+        if (selectedTypes.size === 0) return false
+        return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
+      })
+
+      // Then apply search
+      if (searchQuery.trim()) {
+        filtered = searchBookmarks(filtered, searchQuery)
+      }
     }
 
     return filtered
@@ -236,21 +318,43 @@ export function Dashboard() {
             <div className="flex items-center gap-4">
               {showSearchInput ? (
                 <div className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Search bookmarks..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64"
-                    autoFocus
-                  />
+                  <div className="flex flex-col gap-1">
+                    <Input
+                      type="text"
+                      placeholder={searchMode === 'board' ? "Search in current board..." : "Search all boards..."}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-64"
+                      autoFocus
+                    />
+                    <div className="flex items-center gap-2 text-xs">
+                      <Button
+                        variant={searchMode === 'board' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        onClick={() => setSearchMode('board')}
+                        className="h-6 text-[10px] px-2"
+                      >
+                        This Board
+                      </Button>
+                      <Button
+                        variant={searchMode === 'global' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        onClick={() => setSearchMode('global')}
+                        className="h-6 text-[10px] px-2"
+                      >
+                        All Boards
+                      </Button>
+                    </div>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
                       setSearchQuery('')
                       setShowSearchInput(false)
+                      setSearchMode('board')
                     }}
+                    className="self-start"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -272,9 +376,76 @@ export function Dashboard() {
 
       {/* Sidebar - Fixed Position */}
       <aside className="fixed left-0 top-16 w-64 bg-white border-r border-gray-200 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40">
-        <div className="space-y-3">
+        <div className="space-y-4">
+          {/* Board Selector */}
+          <div className="board-section">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-gray-900">Boards</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCreateBoard}
+                className="h-6 w-6 p-0"
+                title="Create new board"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+
+            <div className="space-y-0.5">
+              {boards.map((board) => (
+                <div
+                  key={board.id}
+                  className={`flex items-center justify-between p-1.5 rounded cursor-pointer group ${
+                    board.id === currentBoardId
+                      ? 'bg-blue-50 border border-blue-200'
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleSwitchBoard(board.id)}
+                >
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Layers className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 truncate">{board.name}</span>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100"
+                      >
+                        <MoreVertical className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation()
+                        handleRenameBoard(board)
+                      }}>
+                        <Edit className="w-3.5 h-3.5 mr-2" />
+                        Rename
+                      </DropdownMenuItem>
+                      {boards.length > 1 && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteBoard(board.id)
+                          }}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Bookmark Type Filter */}
-          <div className="filter-section">
+          <div className="filter-section pt-3 border-t border-gray-200">
             <h3 className="text-sm font-semibold text-gray-900 mb-2">Bookmark Types</h3>
 
             <div className="space-y-1 mb-3">
@@ -635,6 +806,16 @@ export function Dashboard() {
                         </div>
                       )}
 
+                      {/* Board badge in global search */}
+                      {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
+                        <div className="mb-2">
+                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-blue-50 text-blue-700 border-blue-300">
+                            <Layers className="w-2.5 h-2.5 mr-1" />
+                            {(bookmark as any).boardName}
+                          </Badge>
+                        </div>
+                      )}
+
                       {/* Timestamps for todo */}
                       <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
                         <div className="bookmark-timestamp flex items-center gap-1">
@@ -764,6 +945,16 @@ export function Dashboard() {
                       </div>
                     )}
 
+                    {/* Board badge in global search */}
+                    {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
+                      <div className="mb-2">
+                        <Badge variant="outline" className="text-[10px] py-0 h-5 bg-blue-50 text-blue-700 border-blue-300">
+                          <Layers className="w-2.5 h-2.5 mr-1" />
+                          {(bookmark as any).boardName}
+                        </Badge>
+                      </div>
+                    )}
+
                     <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
                       <div className="bookmark-timestamp flex items-center gap-1">
                         <Clock className="w-2 h-2" />
@@ -859,6 +1050,15 @@ export function Dashboard() {
         note={selectedNote}
         bookmarkId={selectedNoteBookmarkId}
         onSuccess={fetchBookmarks}
+      />
+
+      {/* Board Management Dialog */}
+      <BoardManagementDialog
+        open={showBoardDialog}
+        onOpenChange={setShowBoardDialog}
+        onSuccess={fetchBookmarks}
+        mode={boardDialogMode}
+        board={editingBoard}
       />
     </div>
   )
