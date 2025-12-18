@@ -166,20 +166,34 @@ export async function deleteBoard(boardId: string): Promise<void> {
 
 // Get all bookmarks from all boards (for global search)
 export async function getAllBookmarksWithBoard(): Promise<Array<Bookmark & { boardId: string; boardName: string }>> {
-  const boards = await getBoards()
-  const allBookmarks: Array<Bookmark & { boardId: string; boardName: string }> = []
+  const userId = await getCurrentUserId()
 
-  boards.forEach(board => {
-    board.bookmarks.forEach(bookmark => {
-      allBookmarks.push({
-        ...bookmark,
-        boardId: board.id,
-        boardName: board.name
-      })
-    })
-  })
+  // Fetch all bookmarks with their board info, notes, and todos in one efficient query
+  const { data: bookmarks, error } = await supabase
+    .from('bookmarks')
+    .select(`
+      *,
+      board:boards(id, name),
+      notes(*),
+      todo_items(*)
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
 
-  return allBookmarks
+  if (error) throw error
+
+  // Transform to match expected format
+  return (bookmarks || []).map(bookmark => ({
+    ...bookmark,
+    boardId: bookmark.board.id,
+    boardName: bookmark.board.name,
+    notes: (bookmark.notes || []).sort((a: Note, b: Note) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    ),
+    todo_items: (bookmark.todo_items || []).sort((a: TodoItem, b: TodoItem) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+  }))
 }
 
 // Bookmarks - Now operates on current board
