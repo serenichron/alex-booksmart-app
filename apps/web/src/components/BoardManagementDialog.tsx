@@ -79,7 +79,7 @@ export function BoardManagementDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
+          <div className="px-6 py-4">
             <div className="grid gap-2">
               <label htmlFor="boardName" className="text-sm font-medium">
                 Board Name

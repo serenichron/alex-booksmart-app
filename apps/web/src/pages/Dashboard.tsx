@@ -329,33 +329,36 @@ export function Dashboard() {
             <div className="flex items-center gap-4">
               {showSearchInput ? (
                 <div className="flex items-center gap-2">
-                  <div className="flex flex-col gap-1">
-                    <Input
-                      type="text"
-                      placeholder={searchMode === 'board' ? "Search in current board..." : "Search all boards..."}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-64"
-                      autoFocus
-                    />
-                    <div className="flex items-center gap-2 text-xs">
-                      <Button
-                        variant={searchMode === 'board' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setSearchMode('board')}
-                        className="h-6 text-[10px] px-2"
-                      >
-                        This Board
-                      </Button>
-                      <Button
-                        variant={searchMode === 'global' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setSearchMode('global')}
-                        className="h-6 text-[10px] px-2"
-                      >
-                        All Boards
-                      </Button>
-                    </div>
+                  <Input
+                    type="text"
+                    placeholder={searchMode === 'board' ? "Search in current board..." : "Search all boards..."}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-64"
+                    autoFocus
+                  />
+                  <div className="flex items-center border border-gray-300 rounded-md overflow-hidden bg-white">
+                    <button
+                      onClick={() => setSearchMode('board')}
+                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                        searchMode === 'board'
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      This Board
+                    </button>
+                    <div className="w-px h-5 bg-gray-300" />
+                    <button
+                      onClick={() => setSearchMode('global')}
+                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                        searchMode === 'global'
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      All Boards
+                    </button>
                   </div>
                   <Button
                     variant="ghost"
@@ -365,7 +368,6 @@ export function Dashboard() {
                       setShowSearchInput(false)
                       setSearchMode('board')
                     }}
-                    className="self-start"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -681,8 +683,8 @@ export function Dashboard() {
 
                       {/* Title overlay at top center - only show if title exists */}
                       {bookmark.title && (
-                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent p-3 pt-16">
-                          <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-center">
+                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent pt-3 pb-8 px-16">
+                          <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-center mt-0.5">
                             {bookmark.title}
                           </h3>
                         </div>
@@ -1091,7 +1093,8 @@ export function Dashboard() {
         open={showImageViewer}
         onOpenChange={setShowImageViewer}
         bookmark={viewingImageBookmark}
-        onNoteClick={handleImageNoteClick}
+        onEdit={handleEdit}
+        onShare={handleShare}
       />
     </div>
   )
