@@ -8,8 +8,9 @@ import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut } from 'lucide-react'
 import { format } from 'date-fns'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   getBookmarks,
   getStats,
@@ -35,6 +36,7 @@ type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo'
 type SearchMode = 'board' | 'global'
 
 export function Dashboard() {
+  const { signOut, user } = useAuth()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingBookmark, setEditingBookmark] = useState<BookmarkType | null>(null)
@@ -445,6 +447,9 @@ export function Dashboard() {
               <Button size="sm" onClick={() => setShowAddDialog(true)}>
                 <Plus className="w-4 h-4" />
                 Add Bookmark
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => signOut()} title="Sign out">
+                <LogOut className="w-4 h-4" />
               </Button>
             </div>
           </div>
