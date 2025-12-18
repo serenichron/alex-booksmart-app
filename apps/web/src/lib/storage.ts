@@ -554,19 +554,41 @@ export async function addTag(tag: string): Promise<void> {
 
 // Stats
 export async function getStats() {
-  const bookmarks = await getBookmarks()
+  const currentBoardId = getCurrentBoardId()
+
+  if (!currentBoardId) {
+    return {
+      total: 0,
+      categories: 0,
+      tags: 0,
+      thisWeek: 0,
+    }
+  }
+
+  // Get actual total count from database
+  const total = await getBookmarkCount(currentBoardId)
+
+  // Get categories and tags (these are quick, no pagination needed)
   const categories = await getCategories()
   const tags = await getTags()
 
+  // Count bookmarks from this week
   const weekAgo = new Date()
   weekAgo.setDate(weekAgo.getDate() - 7)
-  const thisWeek = bookmarks.filter(b => new Date(b.created_at) >= weekAgo).length
+
+  const { count: thisWeekCount, error } = await supabase
+    .from('bookmarks')
+    .select('*', { count: 'exact', head: true })
+    .eq('board_id', currentBoardId)
+    .gte('created_at', weekAgo.toISOString())
+
+  if (error) throw error
 
   return {
-    total: bookmarks.length,
+    total,
     categories: categories.length,
     tags: tags.length,
-    thisWeek,
+    thisWeek: thisWeekCount || 0,
   }
 }
 
