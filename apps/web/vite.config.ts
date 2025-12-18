@@ -9,18 +9,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-    dedupe: ['@supabase/supabase-js'],
-    preserveSymlinks: false,
-  },
-  optimizeDeps: {
-    include: ['@supabase/supabase-js'],
-    force: true,
   },
   server: {
     port: 5173,
     host: true,
-    fs: {
-      strict: false,
-    },
   },
 })
