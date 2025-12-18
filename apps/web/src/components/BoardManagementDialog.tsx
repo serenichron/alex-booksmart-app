@@ -66,9 +66,9 @@ export function BoardManagementDialog({
 
     try {
       if (mode === 'create') {
-        createBoard(boardName.trim())
+        await createBoard(boardName.trim())
       } else if (mode === 'rename' && board) {
-        renameBoard(board.id, boardName.trim())
+        await renameBoard(board.id, boardName.trim())
       }
 
       onSuccess()
