@@ -749,15 +749,15 @@ export function Dashboard() {
 
                       {/* Title overlay at top - only show if title exists */}
                       {bookmark.title && (
-                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/24 to-transparent pt-3 pb-8 px-3">
-                          <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-left mt-0.5">
+                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent pt-3 pb-3 px-3">
+                          <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-left">
                             {bookmark.title}
                           </h3>
                         </div>
                       )}
 
                       {/* Timestamps overlay at bottom - always show */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/28 to-transparent p-3">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                         <div className="flex items-center gap-2 text-[9px] text-white/90">
                           <div className="flex items-center gap-1">
                             <Clock className="w-2 h-2" />
