@@ -8,7 +8,7 @@ import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 import {
   getBookmarks,
@@ -20,6 +20,9 @@ import {
   setCurrentBoardId,
   deleteBoard,
   getAllBookmarksWithBoard,
+  exportAllData,
+  importAllData,
+  clearAllData,
   type Bookmark as BookmarkType,
   type Note,
   type TodoItem,
@@ -118,6 +121,58 @@ export function Dashboard() {
       setSelectedNoteBookmarkId(viewingImageBookmark.id)
       setShowImageViewer(false)
       setShowNoteDialog(true)
+    }
+  }
+
+  const handleExport = () => {
+    try {
+      const data = exportAllData()
+      const json = JSON.stringify(data, null, 2)
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `booksmart-backup-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      alert('Data exported successfully!')
+    } catch (error) {
+      console.error('Export error:', error)
+      alert('Failed to export data')
+    }
+  }
+
+  const handleImport = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'application/json'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+
+      try {
+        const text = await file.text()
+        const data = JSON.parse(text)
+        importAllData(data)
+        fetchBookmarks()
+        alert('Data imported successfully!')
+      } catch (error) {
+        console.error('Import error:', error)
+        alert('Failed to import data. Please check the file format.')
+      }
+    }
+    input.click()
+  }
+
+  const handleClearAccount = () => {
+    if (confirm('⚠️ WARNING: This will delete ALL your bookmarks, boards, categories, and tags. This action cannot be undone!\n\nAre you sure you want to continue?')) {
+      if (confirm('Are you ABSOLUTELY sure? This is your last chance to back out.')) {
+        clearAllData()
+        fetchBookmarks()
+        alert('All data has been cleared.')
+      }
     }
   }
 
@@ -378,6 +433,15 @@ export function Dashboard() {
                   Search
                 </Button>
               )}
+              <Button size="sm" variant="outline" onClick={handleExport} title="Export all data">
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleImport} title="Import data">
+                <Upload className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <AlertTriangle className="w-4 h-4" />
+              </Button>
               <Button size="sm" onClick={() => setShowAddDialog(true)}>
                 <Plus className="w-4 h-4" />
                 Add Bookmark
@@ -521,20 +585,20 @@ export function Dashboard() {
       <main className="ml-64 px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="stats-card bg-gradient-to-br from-slate-500 to-slate-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-slate-100">Total Bookmarks</div>
+          <div className="stats-card bg-gradient-to-br from-teal-500 to-cyan-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-teal-100">Total Bookmarks</div>
             <div className="text-3xl font-bold text-white">{stats.total}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-teal-500 to-teal-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-teal-100">Categories</div>
+          <div className="stats-card bg-gradient-to-br from-rose-500 to-pink-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-rose-100">Categories</div>
             <div className="text-3xl font-bold text-white">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-indigo-500 to-indigo-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-indigo-100">Tags</div>
+          <div className="stats-card bg-gradient-to-br from-emerald-500 to-teal-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-emerald-100">Tags</div>
             <div className="text-3xl font-bold text-white">{stats.tags}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-purple-500 to-purple-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-purple-100">This Week</div>
+          <div className="stats-card bg-gradient-to-br from-violet-500 to-purple-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-violet-100">This Week</div>
             <div className="text-3xl font-bold text-white">{stats.thisWeek}</div>
           </div>
         </div>

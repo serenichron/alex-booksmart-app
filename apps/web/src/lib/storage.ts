@@ -432,3 +432,57 @@ export function getStats() {
     thisWeek,
   }
 }
+
+// Export/Import/Clear functions
+export interface ExportData {
+  boards: Board[]
+  currentBoardId: string | null
+  categories: string[]
+  tags: string[]
+  exportedAt: string
+  version: string
+}
+
+export function exportAllData(): ExportData {
+  return {
+    boards: getBoards(),
+    currentBoardId: getCurrentBoardId(),
+    categories: getCategories(),
+    tags: getTags(),
+    exportedAt: new Date().toISOString(),
+    version: '1.0'
+  }
+}
+
+export function importAllData(data: ExportData): void {
+  // Validate data structure
+  if (!data.boards || !Array.isArray(data.boards)) {
+    throw new Error('Invalid export data: missing boards array')
+  }
+
+  // Import boards
+  localStorage.setItem(BOARDS_KEY, JSON.stringify(data.boards))
+
+  // Import current board ID
+  if (data.currentBoardId) {
+    localStorage.setItem(CURRENT_BOARD_KEY, data.currentBoardId)
+  }
+
+  // Import categories
+  if (data.categories && Array.isArray(data.categories)) {
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(data.categories))
+  }
+
+  // Import tags
+  if (data.tags && Array.isArray(data.tags)) {
+    localStorage.setItem(TAGS_KEY, JSON.stringify(data.tags))
+  }
+}
+
+export function clearAllData(): void {
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(BOARDS_KEY)
+  localStorage.removeItem(CURRENT_BOARD_KEY)
+  localStorage.removeItem(CATEGORIES_KEY)
+  localStorage.removeItem(TAGS_KEY)
+}
