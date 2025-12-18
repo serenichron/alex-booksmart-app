@@ -7,7 +7,7 @@ import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, MoreVertical, Edit, Layers } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers } from 'lucide-react'
 import { format } from 'date-fns'
 import {
   getBookmarks,
@@ -24,12 +24,6 @@ import {
   type TodoItem,
   type Board
 } from '@/lib/storage'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 
 interface BookmarkWithDetails extends BookmarkType {}
 
@@ -407,38 +401,34 @@ export function Dashboard() {
                     <Layers className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
                     <span className="text-sm text-gray-700 truncate">{board.name}</span>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRenameBoard(board)
+                      }}
+                      className="h-5 w-5 p-0"
+                      title="Rename board"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    {boards.length > 1 && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteBoard(board.id)
+                        }}
+                        className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="Delete board"
                       >
-                        <MoreVertical className="w-3 h-3" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation()
-                        handleRenameBoard(board)
-                      }}>
-                        <Edit className="w-3.5 h-3.5 mr-2" />
-                        Rename
-                      </DropdownMenuItem>
-                      {boards.length > 1 && (
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDeleteBoard(board.id)
-                          }}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
