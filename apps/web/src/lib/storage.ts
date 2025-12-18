@@ -388,8 +388,8 @@ export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' 
     newBookmark.todo_items = bookmark.todo_items
   }
 
-  // Invalidate cache for this board
-  invalidateCache(`bookmarks_${currentBoardId}`)
+  // Invalidate cache for this board (v2 cache keys)
+  invalidateCache(`bookmarks_v2_${currentBoardId}`)
   invalidateCache(`count_${currentBoardId}`)
 
   return newBookmark
@@ -405,9 +405,9 @@ export async function deleteBookmark(id: string): Promise<void> {
 
   if (error) throw error
 
-  // Invalidate cache for this board
+  // Invalidate cache for this board (v2 cache keys)
   if (currentBoardId) {
-    invalidateCache(`bookmarks_${currentBoardId}`)
+    invalidateCache(`bookmarks_v2_${currentBoardId}`)
     invalidateCache(`count_${currentBoardId}`)
   }
 }
@@ -425,9 +425,9 @@ export async function updateBookmark(id: string, updates: Partial<Bookmark>): Pr
 
   if (error) throw error
 
-  // Invalidate cache for this board
+  // Invalidate cache for this board (v2 cache keys)
   if (currentBoardId) {
-    invalidateCache(`bookmarks_${currentBoardId}`)
+    invalidateCache(`bookmarks_v2_${currentBoardId}`)
   }
 }
 
