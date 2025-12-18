@@ -148,9 +148,10 @@ async function getBookmarksByBoardId(
 
   // Try cache first (only for first page)
   if (!skipCache && offset === 0) {
-    const cacheKey = `bookmarks_${boardId}_${limit}`
+    const cacheKey = `bookmarks_v2_${boardId}_${limit}`
     const cached = getCache<Bookmark[]>(cacheKey)
     if (cached) {
+      console.log('[Storage] Using cached bookmarks')
       return cached
     }
   }
@@ -180,9 +181,16 @@ async function getBookmarksByBoardId(
     )
   }))
 
-  // Cache first page results
+  // Debug logging
+  if (transformed.length > 0) {
+    console.log('[Storage] Fetched bookmarks order check:')
+    console.log('  First:', transformed[0].title, '→', transformed[0].created_at)
+    console.log('  Last:', transformed[transformed.length - 1].title, '→', transformed[transformed.length - 1].created_at)
+  }
+
+  // Cache first page results (with version to bust old cache)
   if (offset === 0) {
-    const cacheKey = `bookmarks_${boardId}_${limit}`
+    const cacheKey = `bookmarks_v2_${boardId}_${limit}`
     setCache(cacheKey, transformed)
   }
 
