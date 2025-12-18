@@ -57,7 +57,13 @@ export function AddBookmarkDialog({
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
 
   useEffect(() => {
-    setAvailableCategories(getCategories())
+    const loadCategories = async () => {
+      const categories = await getCategories()
+      setAvailableCategories(categories)
+    }
+    if (open) {
+      loadCategories()
+    }
   }, [open])
 
   useEffect(() => {
@@ -215,12 +221,12 @@ export function AddBookmarkDialog({
     }
   }
 
-  const handleAddNewCategory = () => {
+  const handleAddNewCategory = async () => {
     const trimmed = categoryInput.trim()
     if (trimmed && !selectedCategories.includes(trimmed)) {
       setSelectedCategories([...selectedCategories, trimmed])
       if (!availableCategories.includes(trimmed)) {
-        addCategory(trimmed)
+        await addCategory(trimmed)
         setAvailableCategories([...availableCategories, trimmed])
       }
       setCategoryInput('')
@@ -233,10 +239,10 @@ export function AddBookmarkDialog({
     cat.toLowerCase().includes(categoryInput.toLowerCase())
   )
 
-  const handleBringToTop = () => {
+  const handleBringToTop = async () => {
     if (duplicateBookmark) {
       // Update the bookmark's created_at to now, which brings it to top
-      updateBookmark(duplicateBookmark.id, {
+      await updateBookmark(duplicateBookmark.id, {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -246,7 +252,7 @@ export function AddBookmarkDialog({
     }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (mode === 'url' && !url.trim()) {
       setError('Please enter a URL')
       return
@@ -267,7 +273,9 @@ export function AddBookmarkDialog({
 
     try {
       // Add selected categories to storage
-      selectedCategories.forEach(cat => addCategory(cat))
+      for (const cat of selectedCategories) {
+        await addCategory(cat)
+      }
 
       // Convert notes to proper Note objects
       const now = new Date().toISOString()
@@ -282,7 +290,7 @@ export function AddBookmarkDialog({
         const normalizedUrl = normalizeUrl(url.trim())
 
         // Check for duplicate
-        const existingBookmarks = getBookmarks()
+        const existingBookmarks = await getBookmarks()
         const duplicate = existingBookmarks.find(b => b.url === normalizedUrl)
 
         if (duplicate) {
@@ -308,7 +316,7 @@ export function AddBookmarkDialog({
         }
 
         // Save URL bookmark
-        saveBookmark({
+        await saveBookmark({
           title: bookmarkTitle,
           summary: metaDescription || '',
           notes: notesArray,
@@ -325,7 +333,7 @@ export function AddBookmarkDialog({
         // Save text bookmark with optional title (no auto-generation)
         const bookmarkTitle = textTitle.trim()
 
-        saveBookmark({
+        await saveBookmark({
           title: bookmarkTitle,
           summary: textContent,
           notes: notesArray,
@@ -350,7 +358,7 @@ export function AddBookmarkDialog({
             created_at: now
           }))
 
-        saveBookmark({
+        await saveBookmark({
           title: todoTitle.trim(),
           summary: '',
           notes: notesArray,
