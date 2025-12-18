@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['@supabase/supabase-js'],
   },
   optimizeDeps: {
     include: ['@supabase/supabase-js'],
