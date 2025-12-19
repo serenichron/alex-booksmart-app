@@ -241,6 +241,18 @@ export function Dashboard() {
       })
     })
 
+    // Sort bookmarks within each category by created_at (newest first)
+    categorizedMap.forEach((bookmarks, category) => {
+      bookmarks.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+    })
+
+    // Also sort uncategorized bookmarks by created_at (newest first)
+    uncategorized.sort((a, b) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+
     // Sort categories alphabetically
     const sortedCategories = Array.from(categorizedMap.keys()).sort()
 
