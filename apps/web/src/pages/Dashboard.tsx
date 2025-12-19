@@ -7,8 +7,9 @@ import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
+import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Loader2 } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Loader2, Folder, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -20,6 +21,10 @@ import {
   getCurrentBoardId,
   setCurrentBoardId,
   deleteBoard,
+  getFolders,
+  getCurrentFolderId,
+  setCurrentFolderId,
+  deleteFolder,
   getAllBookmarksWithBoard,
   exportAllData,
   importAllData,
@@ -28,7 +33,8 @@ import {
   type Bookmark as BookmarkType,
   type Note,
   type TodoItem,
-  type Board
+  type Board,
+  type Folder as FolderType
 } from '@/lib/storage'
 
 interface BookmarkWithDetails extends BookmarkType {}
@@ -67,16 +73,32 @@ export function Dashboard() {
   const [showImageViewer, setShowImageViewer] = useState(false)
   const [viewingImageBookmark, setViewingImageBookmark] = useState<BookmarkType | null>(null)
 
+  // Folder management state
+  const [folders, setFolders] = useState<FolderType[]>([])
+  const [currentFolderId, setCurrentFolderIdState] = useState<string | null>(null)
+  const [showFolderDialog, setShowFolderDialog] = useState(false)
+  const [folderDialogMode, setFolderDialogMode] = useState<'create' | 'rename'>('create')
+  const [editingFolder, setEditingFolder] = useState<FolderType | null>(null)
+  const [expandedBoards, setExpandedBoards] = useState<Set<string>>(new Set())
+
   const fetchBookmarks = async (skipCache = false) => {
     try {
       const bookmarksData = await getBookmarks({ skipCache }) // Force fresh data when skipCache=true
       const boardsData = await getBoards()
       const currentId = getCurrentBoardId()
+      const currentFoldId = getCurrentFolderId()
 
       setBookmarks(bookmarksData)
       setBoards(boardsData)
       setCurrentBoardIdState(currentId)
+      setCurrentFolderIdState(currentFoldId)
       setStats(await getStats())
+
+      // Fetch folders for current board
+      if (currentId) {
+        const foldersData = await getFolders(currentId)
+        setFolders(foldersData)
+      }
     } catch (error) {
       console.error('Error fetching bookmarks:', error)
     } finally {
@@ -84,11 +106,18 @@ export function Dashboard() {
     }
   }
 
-  const handleSwitchBoard = (boardId: string) => {
+  const handleSwitchBoard = async (boardId: string) => {
     setCurrentBoardId(boardId)
+    setCurrentFolderId(null) // Clear folder selection when switching boards
     setBookmarks([]) // Clear bookmarks immediately for instant board switch
+    setFolders([]) // Clear folders
     setLoading(true)
-    fetchBookmarks()
+    await fetchBookmarks()
+  }
+
+  const handleSwitchFolder = (folderId: string | null) => {
+    setCurrentFolderId(folderId)
+    setCurrentFolderIdState(folderId)
   }
 
   const handleBoardHover = useCallback((boardId: string) => {
@@ -118,6 +147,37 @@ export function Dashboard() {
       await deleteBoard(boardId)
       await fetchBookmarks(true) // Skip cache to get fresh data
     }
+  }
+
+  const handleCreateFolder = () => {
+    setFolderDialogMode('create')
+    setEditingFolder(null)
+    setShowFolderDialog(true)
+  }
+
+  const handleRenameFolder = (folder: FolderType) => {
+    setFolderDialogMode('rename')
+    setEditingFolder(folder)
+    setShowFolderDialog(true)
+  }
+
+  const handleDeleteFolder = async (folderId: string) => {
+    if (confirm('Are you sure you want to delete this folder? Bookmarks will be moved to uncategorized.')) {
+      await deleteFolder(folderId)
+      await fetchBookmarks(true) // Skip cache to get fresh data
+    }
+  }
+
+  const handleToggleBoardExpanded = (boardId: string) => {
+    setExpandedBoards(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(boardId)) {
+        newSet.delete(boardId)
+      } else {
+        newSet.add(boardId)
+      }
+      return newSet
+    })
   }
 
   const handleViewImage = (bookmark: BookmarkType) => {
@@ -186,12 +246,71 @@ export function Dashboard() {
     }
   }
 
-  // Group bookmarks by category
+  // Group bookmarks by folder and category
   const groupedByCategory = () => {
-    const uncategorized = filteredBookmarks.filter(b => b.categories.length === 0)
-    const categorizedMap = new Map<string, BookmarkWithDetails[]>()
+    // If a folder is selected, use simpler category grouping
+    if (currentFolderId) {
+      const uncategorized = filteredBookmarks.filter(b => b.categories.length === 0)
+      const categorizedMap = new Map<string, BookmarkWithDetails[]>()
+
+      filteredBookmarks.forEach(bookmark => {
+        bookmark.categories.forEach(category => {
+          if (!categorizedMap.has(category)) {
+            categorizedMap.set(category, [])
+          }
+          categorizedMap.get(category)!.push(bookmark)
+        })
+      })
+
+      // Sort bookmarks within each category by created_at (newest first)
+      categorizedMap.forEach((bookmarks, category) => {
+        bookmarks.sort((a, b) => {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        })
+      })
+
+      uncategorized.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+
+      const sortedCategories = Array.from(categorizedMap.keys()).sort((catA, catB) => {
+        const bookmarksA = categorizedMap.get(catA)!
+        const bookmarksB = categorizedMap.get(catB)!
+        const earliestA = Math.min(...bookmarksA.map(b => new Date(b.created_at).getTime()))
+        const earliestB = Math.min(...bookmarksB.map(b => new Date(b.created_at).getTime()))
+        return earliestA - earliestB
+      })
+
+      return { uncategorized, categorizedMap, sortedCategories, folders: [], folderMap: new Map() }
+    }
+
+    // When no folder is selected, group by folders first
+    const folderMap = new Map<string, BookmarkWithDetails[]>()
+    const noFolderBookmarks: BookmarkWithDetails[] = []
 
     filteredBookmarks.forEach(bookmark => {
+      if (bookmark.folder_id) {
+        if (!folderMap.has(bookmark.folder_id)) {
+          folderMap.set(bookmark.folder_id, [])
+        }
+        folderMap.get(bookmark.folder_id)!.push(bookmark)
+      } else {
+        noFolderBookmarks.push(bookmark)
+      }
+    })
+
+    // Sort bookmarks within each folder by created_at (newest first)
+    folderMap.forEach((bookmarks) => {
+      bookmarks.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+    })
+
+    // Group no-folder bookmarks by category
+    const uncategorized = noFolderBookmarks.filter(b => b.categories.length === 0)
+    const categorizedMap = new Map<string, BookmarkWithDetails[]>()
+
+    noFolderBookmarks.forEach(bookmark => {
       bookmark.categories.forEach(category => {
         if (!categorizedMap.has(category)) {
           categorizedMap.set(category, [])
@@ -200,33 +319,25 @@ export function Dashboard() {
       })
     })
 
-    // Sort bookmarks within each category by created_at (newest first)
     categorizedMap.forEach((bookmarks, category) => {
       bookmarks.sort((a, b) => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       })
     })
 
-    // Also sort uncategorized bookmarks by created_at (newest first)
     uncategorized.sort((a, b) => {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
 
-    // Sort categories by creation order (oldest category first, newest last)
-    // Category creation is determined by the earliest bookmark in that category
     const sortedCategories = Array.from(categorizedMap.keys()).sort((catA, catB) => {
       const bookmarksA = categorizedMap.get(catA)!
       const bookmarksB = categorizedMap.get(catB)!
-
-      // Find the earliest (oldest) bookmark in each category
       const earliestA = Math.min(...bookmarksA.map(b => new Date(b.created_at).getTime()))
       const earliestB = Math.min(...bookmarksB.map(b => new Date(b.created_at).getTime()))
-
-      // Sort by earliest bookmark: oldest category first
       return earliestA - earliestB
     })
 
-    return { uncategorized, categorizedMap, sortedCategories }
+    return { uncategorized, categorizedMap, sortedCategories, folders, folderMap }
   }
 
   const handleDelete = async (id: string) => {
@@ -417,8 +528,14 @@ export function Dashboard() {
       filtered = searchBookmarks(filtered, searchQuery)
     } else {
       // Board-wise search (default)
-      // First filter by type
-      filtered = bookmarks.filter(bookmark => {
+      // First filter by folder if one is selected
+      let folderFiltered = bookmarks
+      if (currentFolderId) {
+        folderFiltered = bookmarks.filter(bookmark => bookmark.folder_id === currentFolderId)
+      }
+
+      // Then filter by type
+      filtered = folderFiltered.filter(bookmark => {
         if (selectedTypes.size === 0) return false
         return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
       })
@@ -430,7 +547,7 @@ export function Dashboard() {
     }
 
     return filtered
-  }, [bookmarks, selectedTypes, searchQuery, searchMode])
+  }, [bookmarks, selectedTypes, searchQuery, searchMode, currentFolderId])
 
   useEffect(() => {
     fetchBookmarks()
@@ -603,51 +720,157 @@ export function Dashboard() {
             </div>
 
             <div className="space-y-0.5">
-              {boards.map((board) => (
-                <div
-                  key={board.id}
-                  className={`flex items-center justify-between p-1.5 rounded cursor-pointer group ${
-                    board.id === currentBoardId
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'hover:bg-gray-50'
-                  }`}
-                  onClick={() => handleSwitchBoard(board.id)}
-                  onMouseEnter={() => handleBoardHover(board.id)}
-                >
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <Layers className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 truncate">{board.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleRenameBoard(board)
-                      }}
-                      className="h-5 w-5 p-0"
-                      title="Rename board"
+              {boards.map((board) => {
+                const boardFolders = board.id === currentBoardId ? folders : []
+                const isExpanded = expandedBoards.has(board.id)
+
+                return (
+                  <div key={board.id} className="space-y-1">
+                    {/* Board Row */}
+                    <div
+                      className={`flex items-center justify-between p-1.5 rounded group ${
+                        board.id === currentBoardId && !currentFolderId
+                          ? 'bg-blue-50 border border-blue-200'
+                          : 'hover:bg-gray-50'
+                      }`}
                     >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                    {boards.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteBoard(board.id)
+                      <div
+                        className="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer"
+                        onClick={() => {
+                          if (board.id !== currentBoardId) {
+                            handleSwitchBoard(board.id)
+                            setExpandedBoards(new Set([board.id]))
+                          } else {
+                            handleSwitchFolder(null)
+                          }
                         }}
-                        className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        title="Delete board"
+                        onMouseEnter={() => handleBoardHover(board.id)}
                       >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                        {board.id === currentBoardId && boardFolders.length > 0 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleToggleBoardExpanded(board.id)
+                            }}
+                            className="p-0.5 hover:bg-gray-200 rounded"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="w-3 h-3 text-gray-600" />
+                            ) : (
+                              <ChevronRight className="w-3 h-3 text-gray-600" />
+                            )}
+                          </button>
+                        )}
+                        <Layers className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 truncate">{board.name}</span>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRenameBoard(board)
+                          }}
+                          className="h-5 w-5 p-0"
+                          title="Rename board"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        {boards.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteBoard(board.id)
+                            }}
+                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            title="Delete board"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Folders List (only shown for current board when expanded) */}
+                    {board.id === currentBoardId && isExpanded && boardFolders.length > 0 && (
+                      <div className="ml-5 space-y-0.5">
+                        {boardFolders.map((folder) => (
+                          <div
+                            key={folder.id}
+                            className={`flex items-center justify-between p-1.5 rounded cursor-pointer group ${
+                              folder.id === currentFolderId
+                                ? 'bg-teal-50 border border-teal-200'
+                                : 'hover:bg-gray-50'
+                            }`}
+                            onClick={() => handleSwitchFolder(folder.id)}
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              {folder.id === currentFolderId ? (
+                                <FolderOpen className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+                              ) : (
+                                <Folder className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                              )}
+                              <span className="text-xs text-gray-600 truncate">{folder.name}</span>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleRenameFolder(folder)
+                                }}
+                                className="h-4 w-4 p-0"
+                                title="Rename folder"
+                              >
+                                <Edit className="w-2.5 h-2.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteFolder(folder.id)
+                                }}
+                                className="h-4 w-4 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title="Delete folder"
+                              >
+                                <Trash2 className="w-2.5 h-2.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Add Folder Button */}
+                        <div
+                          className="flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-gray-50 text-gray-500 hover:text-gray-700"
+                          onClick={handleCreateFolder}
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span className="text-xs">New Folder</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Add Folder button for current board when not expanded */}
+                    {board.id === currentBoardId && !isExpanded && (
+                      <div
+                        className="ml-5 flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-gray-50 text-gray-500 hover:text-gray-700"
+                        onClick={() => {
+                          setExpandedBoards(new Set([board.id]))
+                          handleCreateFolder()
+                        }}
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span className="text-xs">New Folder</span>
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
@@ -1222,6 +1445,16 @@ export function Dashboard() {
         onSuccess={handleDialogSuccess}
         mode={boardDialogMode}
         board={editingBoard}
+      />
+
+      {/* Folder Management Dialog */}
+      <FolderManagementDialog
+        open={showFolderDialog}
+        onOpenChange={setShowFolderDialog}
+        onSuccess={handleDialogSuccess}
+        mode={folderDialogMode}
+        boardId={currentBoardId || ''}
+        folder={editingFolder}
       />
 
       {/* Image Viewer Dialog */}
