@@ -28,6 +28,8 @@ export interface Bookmark {
   image_url: string | null
   meta_description: string | null
   show_meta_description?: boolean
+  board_id?: string
+  folder_id?: string | null
   notes: Note[]
   todo_items?: TodoItem[]
 }
@@ -36,6 +38,14 @@ export interface Board {
   id: string
   name: string
   bookmarks: Bookmark[]
+  created_at: string
+  updated_at: string
+}
+
+export interface Folder {
+  id: string
+  board_id: string
+  name: string
   created_at: string
   updated_at: string
 }
@@ -275,6 +285,73 @@ export async function deleteBoard(boardId: string): Promise<void> {
   }
 }
 
+// Folders
+const CURRENT_FOLDER_KEY = 'booksmart_current_folder'
+
+export async function getFolders(boardId: string): Promise<Folder[]> {
+  const userId = await getCurrentUserId()
+
+  const { data, error } = await supabase
+    .from('folders')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('board_id', boardId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+
+  return data || []
+}
+
+export function getCurrentFolderId(): string | null {
+  return localStorage.getItem(CURRENT_FOLDER_KEY)
+}
+
+export function setCurrentFolderId(folderId: string | null): void {
+  if (folderId === null) {
+    localStorage.removeItem(CURRENT_FOLDER_KEY)
+  } else {
+    localStorage.setItem(CURRENT_FOLDER_KEY, folderId)
+  }
+}
+
+export async function createFolder(boardId: string, name: string): Promise<Folder> {
+  const userId = await getCurrentUserId()
+
+  const { data, error } = await supabase
+    .from('folders')
+    .insert([{ name, board_id: boardId, user_id: userId }])
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return data
+}
+
+export async function renameFolder(folderId: string, newName: string): Promise<void> {
+  const { error } = await supabase
+    .from('folders')
+    .update({ name: newName })
+    .eq('id', folderId)
+
+  if (error) throw error
+}
+
+export async function deleteFolder(folderId: string): Promise<void> {
+  const { error } = await supabase
+    .from('folders')
+    .delete()
+    .eq('id', folderId)
+
+  if (error) throw error
+
+  // If we deleted the current folder, clear the current folder selection
+  if (getCurrentFolderId() === folderId) {
+    setCurrentFolderId(null)
+  }
+}
+
 // Get all bookmarks from all boards (for global search)
 export async function getAllBookmarksWithBoard(): Promise<Array<Bookmark & { boardId: string; boardName: string }>> {
   const userId = await getCurrentUserId()
@@ -334,7 +411,7 @@ export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' 
 
   if (!currentBoardId) throw new Error('No current board selected')
 
-  const { data, error } = await supabase
+  const { data, error} = await supabase
     .from('bookmarks')
     .insert([{
       title: bookmark.title,
@@ -348,7 +425,8 @@ export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' 
       meta_description: bookmark.meta_description,
       show_meta_description: bookmark.show_meta_description,
       user_id: userId,
-      board_id: currentBoardId
+      board_id: currentBoardId,
+      folder_id: bookmark.folder_id || null
     }])
     .select()
     .single()
