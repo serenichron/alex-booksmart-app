@@ -49,7 +49,7 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
           <div className="mb-8">
             <h1 className="text-5xl sm:text-6xl font-bold text-white mb-6 leading-tight">
               Tired of losing track?
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400 mt-2">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400 mt-2 pb-2">
                 Keep everything organized.
               </span>
             </h1>
@@ -67,8 +67,8 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
             </Button>
           </div>
 
-          {/* The Plan (3 Simple Steps) */}
-          <div className="grid md:grid-cols-3 gap-4 mt-8">
+          {/* The Plan (3 Simple Steps) + Coming Soon */}
+          <div className="grid md:grid-cols-4 gap-4 mt-8">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-cyan-400/50 transition-all">
               <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
                 <Bookmark className="w-6 h-6 text-cyan-400" />
@@ -98,22 +98,21 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
                 Search across everything. No more lost bookmarks.
               </p>
             </div>
-          </div>
 
-          {/* Coming Soon */}
-          <div className="mt-8 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-            <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">Coming Soon</h3>
-            <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-400">
-              <span className="bg-white/5 px-3 py-1.5 rounded-full border border-white/10">📍 Location bookmarks</span>
-              <span className="bg-white/5 px-3 py-1.5 rounded-full border border-white/10">🎥 Video support</span>
-              <span className="bg-white/5 px-3 py-1.5 rounded-full border border-white/10">👥 Shared boards</span>
-              <span className="bg-white/5 px-3 py-1.5 rounded-full border border-white/10">🔗 Shareable collections</span>
-              <span className="bg-white/5 px-3 py-1.5 rounded-full border border-white/10">🔌 Browser extension</span>
+            {/* Coming Soon */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-teal-400/50 transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center mb-3 mx-auto">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Coming Soon</h3>
+              <p className="text-gray-300 text-sm">
+                Locations, videos, shared boards, collections, browser extension
+              </p>
             </div>
           </div>
 
           {/* Beta Call to Action */}
-          <div className="mt-6 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
+          <div className="mt-8 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
             <p className="text-gray-300 text-sm">
               We're looking for early testers to help shape BookSmart. Join the beta and get early access to new features.
             </p>

@@ -48,9 +48,7 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
   }
 
   // Different styling for sign up vs log in - using consistent cyan/teal theme
-  const bgGradient = isSignUp
-    ? 'bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900'
-    : 'bg-gradient-to-br from-slate-900 via-teal-900 to-slate-900'
+  const bgGradient = 'bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900'
 
   const primaryColor = isSignUp
     ? 'bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700'
