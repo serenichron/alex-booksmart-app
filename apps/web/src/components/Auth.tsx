@@ -47,23 +47,23 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
     }
   }
 
-  // Different styling for sign up vs log in
+  // Different styling for sign up vs log in - using consistent cyan/teal theme
   const bgGradient = isSignUp
     ? 'bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900'
-    : 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'
+    : 'bg-gradient-to-br from-slate-900 via-teal-900 to-slate-900'
 
   const primaryColor = isSignUp
     ? 'bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700'
-    : 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700'
+    : 'bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700'
 
   const iconBg = isSignUp
     ? 'bg-gradient-to-br from-cyan-400 to-teal-500'
-    : 'bg-gradient-to-br from-purple-400 to-indigo-500'
+    : 'bg-gradient-to-br from-teal-400 to-cyan-500'
 
-  const glowColor = isSignUp ? 'shadow-cyan-500/20' : 'shadow-purple-500/20'
+  const glowColor = isSignUp ? 'shadow-cyan-500/20' : 'shadow-teal-500/20'
 
   return (
-    <div className={`min-h-screen flex items-center justify-center ${bgGradient} transition-colors duration-500 relative overflow-hidden`}>
+    <div className={`min-h-screen flex items-center justify-center ${bgGradient} relative overflow-hidden`}>
       {/* Animated gradient shapes - different per mode */}
       {isSignUp ? (
         <>
@@ -73,9 +73,9 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
         </>
       ) : (
         <>
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob"></div>
-          <div className="absolute top-0 -right-4 w-96 h-96 bg-indigo-500 rounded-[30%_70%_70%_30%/30%_30%_70%_70%] mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-80 h-80 bg-purple-400 rounded-[60%_40%_30%_70%/60%_30%_70%_40%] mix-blend-multiply filter blur-xl opacity-40 animate-blob animation-delay-4000"></div>
+          <div className="absolute top-0 -left-4 w-72 h-72 bg-teal-500 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob"></div>
+          <div className="absolute top-0 -right-4 w-96 h-96 bg-cyan-500 rounded-[30%_70%_70%_30%/30%_30%_70%_70%] mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-20 w-80 h-80 bg-teal-400 rounded-[60%_40%_30%_70%/60%_30%_70%_40%] mix-blend-multiply filter blur-xl opacity-40 animate-blob animation-delay-4000"></div>
         </>
       )}
 
@@ -94,7 +94,7 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
 
           {/* Header */}
           <div className="text-center mb-8">
-            <div className={`flex items-center justify-center w-16 h-16 ${iconBg} rounded-2xl mx-auto mb-4 transition-colors duration-300`}>
+            <div className={`flex items-center justify-center w-16 h-16 ${iconBg} rounded-2xl mx-auto mb-4`}>
               {isSignUp ? (
                 <UserPlus className="w-8 h-8 text-white" />
               ) : (
@@ -204,7 +204,7 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
               className={`text-sm font-medium transition-colors ${
                 isSignUp
                   ? 'text-cyan-300 hover:text-cyan-200'
-                  : 'text-purple-300 hover:text-purple-200'
+                  : 'text-teal-300 hover:text-teal-200'
               }`}
               disabled={loading}
             >
