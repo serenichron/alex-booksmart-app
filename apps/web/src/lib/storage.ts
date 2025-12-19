@@ -137,18 +137,16 @@ export async function getBoards(): Promise<Board[]> {
 // Pagination config
 const DEFAULT_PAGE_SIZE = 20
 
-// Helper function to get bookmarks for a specific board with pagination
+// Helper function to get bookmarks for a specific board
 async function getBookmarksByBoardId(
   boardId: string,
-  options?: { limit?: number; offset?: number; skipCache?: boolean }
+  options?: { skipCache?: boolean }
 ): Promise<Bookmark[]> {
-  const limit = options?.limit || DEFAULT_PAGE_SIZE
-  const offset = options?.offset || 0
   const skipCache = options?.skipCache || false
 
-  // Try cache first (only for first page)
-  if (!skipCache && offset === 0) {
-    const cacheKey = `bookmarks_v2_${boardId}_${limit}`
+  // Try cache first
+  if (!skipCache) {
+    const cacheKey = `bookmarks_v2_${boardId}_all`
     const cached = getCache<Bookmark[]>(cacheKey)
     if (cached) {
       console.log('[Storage] Using cached bookmarks')
@@ -156,7 +154,7 @@ async function getBookmarksByBoardId(
     }
   }
 
-  // Use Supabase's query expansion to fetch bookmarks with notes and todos in one query
+  // Use Supabase's query expansion to fetch ALL bookmarks with notes and todos in one query
   const { data: bookmarks, error } = await supabase
     .from('bookmarks')
     .select(`
@@ -166,7 +164,6 @@ async function getBookmarksByBoardId(
     `)
     .eq('board_id', boardId)
     .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
 
   if (error) throw error
 
@@ -188,11 +185,9 @@ async function getBookmarksByBoardId(
     console.log('  Last:', transformed[transformed.length - 1].title, '→', transformed[transformed.length - 1].created_at)
   }
 
-  // Cache first page results (with version to bust old cache)
-  if (offset === 0) {
-    const cacheKey = `bookmarks_v2_${boardId}_${limit}`
-    setCache(cacheKey, transformed)
-  }
+  // Cache results
+  const cacheKey = `bookmarks_v2_${boardId}_all`
+  setCache(cacheKey, transformed)
 
   return transformed
 }
@@ -313,7 +308,7 @@ export async function getAllBookmarksWithBoard(): Promise<Array<Bookmark & { boa
 }
 
 // Bookmarks - Now operates on current board with pagination support
-export async function getBookmarks(options?: { limit?: number; offset?: number; skipCache?: boolean }): Promise<Bookmark[]> {
+export async function getBookmarks(options?: { skipCache?: boolean }): Promise<Bookmark[]> {
   const currentBoardId = getCurrentBoardId()
   if (!currentBoardId) {
     // If no current board, fetch boards and set first one as current
@@ -327,15 +322,10 @@ export async function getBookmarks(options?: { limit?: number; offset?: number; 
   return getBookmarksByBoardId(currentBoardId, options)
 }
 
-// Load more bookmarks (for infinite scroll)
-export async function loadMoreBookmarks(offset: number, limit?: number): Promise<Bookmark[]> {
-  return getBookmarks({ offset, limit, skipCache: true })
-}
-
 // Prefetch board bookmarks (for hover optimization)
 export async function prefetchBoard(boardId: string): Promise<void> {
-  // Fetch and cache first page of bookmarks for this board
-  await getBookmarksByBoardId(boardId, { limit: DEFAULT_PAGE_SIZE, offset: 0, skipCache: false })
+  // Fetch and cache all bookmarks for this board
+  await getBookmarksByBoardId(boardId, { skipCache: false })
 }
 
 export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' | 'updated_at'>): Promise<Bookmark> {
@@ -389,7 +379,7 @@ export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' 
   }
 
   // Invalidate cache for this board (v2 cache keys)
-  invalidateCache(`bookmarks_v2_${currentBoardId}_${DEFAULT_PAGE_SIZE}`)
+  invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
   invalidateCache(`count_${currentBoardId}`)
 
   return newBookmark
@@ -407,7 +397,7 @@ export async function deleteBookmark(id: string): Promise<void> {
 
   // Invalidate cache for this board (v2 cache keys)
   if (currentBoardId) {
-    invalidateCache(`bookmarks_v2_${currentBoardId}_${DEFAULT_PAGE_SIZE}`)
+    invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
     invalidateCache(`count_${currentBoardId}`)
   }
 }
@@ -427,7 +417,7 @@ export async function updateBookmark(id: string, updates: Partial<Bookmark>): Pr
 
   // Invalidate cache for this board (v2 cache keys)
   if (currentBoardId) {
-    invalidateCache(`bookmarks_v2_${currentBoardId}_${DEFAULT_PAGE_SIZE}`)
+    invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
   }
 }
 
@@ -489,7 +479,7 @@ export async function toggleTodoItem(bookmarkId: string, todoId: string): Promis
 
   // Invalidate cache to ensure UI updates
   if (currentBoardId) {
-    invalidateCache(`bookmarks_v2_${currentBoardId}_${DEFAULT_PAGE_SIZE}`)
+    invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
   }
 }
 

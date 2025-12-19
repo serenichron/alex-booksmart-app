@@ -24,8 +24,6 @@ import {
   exportAllData,
   importAllData,
   clearAllData,
-  loadMoreBookmarks,
-  getBookmarkCount,
   prefetchBoard,
   type Bookmark as BookmarkType,
   type Note,
@@ -49,9 +47,6 @@ export function Dashboard() {
   const [expandedNotesBookmarks, setExpandedNotesBookmarks] = useState<Set<string>>(new Set())
   const [bookmarks, setBookmarks] = useState<BookmarkWithDetails[]>([])
   const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [totalCount, setTotalCount] = useState(0)
   const [stats, setStats] = useState({
     total: 0,
     categories: 0,
@@ -62,10 +57,6 @@ export function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
   const [searchMode, setSearchMode] = useState<SearchMode>('board')
-
-  // Infinite scroll ref
-  const loadMoreRef = useRef<HTMLDivElement>(null)
-  const bookmarksRef = useRef(bookmarks)
 
   // Board management state
   const [boards, setBoards] = useState<Board[]>([])
@@ -86,13 +77,6 @@ export function Dashboard() {
       setBoards(boardsData)
       setCurrentBoardIdState(currentId)
       setStats(await getStats())
-
-      // Get total count to determine if there are more bookmarks
-      if (currentId) {
-        const count = await getBookmarkCount(currentId)
-        setTotalCount(count)
-        setHasMore(bookmarksData.length < count)
-      }
     } catch (error) {
       console.error('Error fetching bookmarks:', error)
     } finally {
@@ -100,35 +84,10 @@ export function Dashboard() {
     }
   }
 
-  // Update ref when bookmarks change
-  useEffect(() => {
-    bookmarksRef.current = bookmarks
-  }, [bookmarks])
-
-  const handleLoadMore = useCallback(async () => {
-    if (loadingMore || !hasMore) return
-
-    setLoadingMore(true)
-    try {
-      const currentLength = bookmarksRef.current.length
-      const moreBookmarks = await loadMoreBookmarks(currentLength)
-      setBookmarks(prev => {
-        const newBookmarks = [...prev, ...moreBookmarks]
-        setHasMore(newBookmarks.length < totalCount)
-        return newBookmarks
-      })
-    } catch (error) {
-      console.error('Error loading more bookmarks:', error)
-    } finally {
-      setLoadingMore(false)
-    }
-  }, [loadingMore, hasMore, totalCount])
-
   const handleSwitchBoard = (boardId: string) => {
     setCurrentBoardId(boardId)
     setBookmarks([]) // Clear bookmarks immediately for instant board switch
     setLoading(true)
-    setHasMore(true)
     fetchBookmarks()
   }
 
@@ -446,27 +405,6 @@ export function Dashboard() {
   useEffect(() => {
     fetchBookmarks()
   }, [])
-
-  // Infinite scroll intersection observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          handleLoadMore()
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '100px' // Start loading 100px before reaching the trigger
-      }
-    )
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current)
-    }
-
-    return () => observer.disconnect()
-  }, [hasMore, loadingMore, handleLoadMore])
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f1f6f5' }}>
@@ -1219,36 +1157,6 @@ export function Dashboard() {
               )
             })()}
 
-            {/* Infinite scroll trigger and Load More button */}
-            {!loading && filteredBookmarks.length > 0 && (
-              <div className="flex flex-col items-center gap-4 py-8">
-                {/* Intersection observer trigger */}
-                <div ref={loadMoreRef} className="h-4" />
-
-                {loadingMore && (
-                  <div className="flex items-center gap-2 text-gray-500">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Loading more bookmarks...</span>
-                  </div>
-                )}
-
-                {!loadingMore && hasMore && (
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    className="min-w-[200px]"
-                  >
-                    Load More ({totalCount - filteredBookmarks.length} remaining)
-                  </Button>
-                )}
-
-                {!hasMore && filteredBookmarks.length > 0 && (
-                  <p className="text-sm text-gray-500">
-                    You've reached the end! ({filteredBookmarks.length} bookmarks)
-                  </p>
-                )}
-              </div>
-            )}
           </div>
         )}
       </main>
