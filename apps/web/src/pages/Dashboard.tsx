@@ -292,6 +292,11 @@ export function Dashboard() {
     const folderMap = new Map<string, BookmarkWithDetails[]>()
     const noFolderBookmarks: BookmarkWithDetails[] = []
 
+    // Initialize folderMap with all folders (including empty ones)
+    folders.forEach(folder => {
+      folderMap.set(folder.id, [])
+    })
+
     filteredBookmarks.forEach(bookmark => {
       if (bookmark.folder_id) {
         if (!folderMap.has(bookmark.folder_id)) {
@@ -901,8 +906,8 @@ export function Dashboard() {
             <div className="text-3xl font-bold text-white">{stats.categories}</div>
           </div>
           <div className="stats-card bg-gradient-to-br from-emerald-500 to-teal-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-emerald-100">Tags</div>
-            <div className="text-3xl font-bold text-white">{stats.tags}</div>
+            <div className="text-sm text-emerald-100">Folders</div>
+            <div className="text-3xl font-bold text-white">{folders.length}</div>
           </div>
           <div className="stats-card bg-gradient-to-br from-violet-500 to-purple-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
             <div className="text-sm text-violet-100">This Week</div>
@@ -1378,7 +1383,6 @@ export function Dashboard() {
                   {/* Folder Sections - Show First */}
                   {boardFolders && boardFolders.length > 0 && boardFolders.map((folder, idx) => {
                     const folderBookmarks = folderMap.get(folder.id) || []
-                    if (folderBookmarks.length === 0) return null
 
                     return (
                       <div key={folder.id}>
@@ -1392,9 +1396,17 @@ export function Dashboard() {
                               </span>
                             </h2>
                           </div>
-                          <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
-                            {folderBookmarks.map(renderBookmarkCard)}
-                          </div>
+                          {folderBookmarks.length > 0 ? (
+                            <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                              {folderBookmarks.map(renderBookmarkCard)}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                              <p className="text-sm">This folder is empty</p>
+                              <p className="text-xs mt-1">Add bookmarks and assign them to this folder</p>
+                            </div>
+                          )}
                         </div>
                         {(idx < boardFolders.length - 1 || uncategorized.length > 0 || sortedCategories.length > 0) && (
                           <div className="folder-separator border-t-2 border-gray-200 my-10"></div>
