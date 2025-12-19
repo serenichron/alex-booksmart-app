@@ -77,7 +77,9 @@ export function Dashboard() {
   const [showFolderDialog, setShowFolderDialog] = useState(false)
   const [folderDialogMode, setFolderDialogMode] = useState<'create' | 'rename'>('create')
   const [editingFolder, setEditingFolder] = useState<FolderType | null>(null)
+  const [parentFolderForNew, setParentFolderForNew] = useState<string | null>(null)
   const [expandedBoards, setExpandedBoards] = useState<Set<string>>(new Set())
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 
   const fetchBookmarks = async (skipCache = false) => {
     try {
@@ -147,11 +149,16 @@ export function Dashboard() {
     }
   }
 
-  const handleCreateFolder = () => {
+  const handleCreateFolder = (parentFolderId: string | null = null) => {
     // Ensure current board is expanded when creating folder
     if (currentBoardId) {
       setExpandedBoards(new Set([currentBoardId]))
     }
+    // If creating subfolder, expand parent folder
+    if (parentFolderId) {
+      setExpandedFolders(prev => new Set([...prev, parentFolderId]))
+    }
+    setParentFolderForNew(parentFolderId)
     setFolderDialogMode('create')
     setEditingFolder(null)
     setShowFolderDialog(true)
@@ -181,6 +188,47 @@ export function Dashboard() {
       return newSet
     })
   }
+
+  const handleToggleFolderExpanded = (folderId: string) => {
+    setExpandedFolders(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(folderId)) {
+        newSet.delete(folderId)
+      } else {
+        newSet.add(folderId)
+      }
+      return newSet
+    })
+  }
+
+  // Build folder tree structure
+  interface FolderNode extends FolderType {
+    children: FolderNode[]
+  }
+
+  const buildFolderTree = useCallback((allFolders: FolderType[]): FolderNode[] => {
+    const folderMap = new Map<string, FolderNode>()
+    const rootFolders: FolderNode[] = []
+
+    // Create nodes for all folders
+    allFolders.forEach(folder => {
+      folderMap.set(folder.id, { ...folder, children: [] })
+    })
+
+    // Build tree structure
+    allFolders.forEach(folder => {
+      const node = folderMap.get(folder.id)!
+      if (folder.parent_folder_id && folderMap.has(folder.parent_folder_id)) {
+        // Add to parent's children
+        folderMap.get(folder.parent_folder_id)!.children.push(node)
+      } else {
+        // Root level folder
+        rootFolders.push(node)
+      }
+    })
+
+    return rootFolders
+  }, [])
 
   const handleViewImage = (bookmark: BookmarkType) => {
     setViewingImageBookmark(bookmark)
@@ -281,8 +329,13 @@ export function Dashboard() {
     const folderMap = new Map<string, BookmarkWithDetails[]>()
     const noFolderBookmarks: BookmarkWithDetails[] = []
 
-    // Initialize folderMap with all folders (including empty ones)
-    folders.forEach(folder => {
+    // Filter folders to show only current level:
+    // - If no folder selected (currentFolderId is null), show only top-level folders (parent_folder_id is null)
+    // - If a folder is selected, show its direct children
+    const foldersToShow = folders.filter(folder => folder.parent_folder_id === currentFolderId)
+
+    // Initialize folderMap with folders at current level (including empty ones)
+    foldersToShow.forEach(folder => {
       folderMap.set(folder.id, [])
     })
 
@@ -335,7 +388,7 @@ export function Dashboard() {
       return earliestA - earliestB
     })
 
-    return { uncategorized, categorizedMap, sortedCategories, folders, folderMap }
+    return { uncategorized, categorizedMap, sortedCategories, folders: foldersToShow, folderMap }
   }
 
   const handleDelete = async (id: string) => {
@@ -547,6 +600,103 @@ export function Dashboard() {
     loadInitialData()
   }, [])
 
+  // Recursive folder tree item component
+  const FolderTreeItem = ({ folderNode, level }: { folderNode: FolderNode; level: number }) => {
+    const isExpanded = expandedFolders.has(folderNode.id)
+    const hasChildren = folderNode.children.length > 0
+    const indentClass = level > 0 ? `ml-${level * 3}` : ''
+
+    return (
+      <div className={`${indentClass} space-y-0.5`}>
+        <div
+          className={`flex items-center justify-between py-1 px-1.5 rounded cursor-pointer group ${
+            folderNode.id === currentFolderId
+              ? 'bg-teal-50 border border-teal-200'
+              : 'hover:bg-gray-50'
+          }`}
+        >
+          <div
+            className="flex items-center gap-1.5 flex-1 min-w-0"
+            onClick={() => handleSwitchFolder(folderNode.id)}
+          >
+            {hasChildren && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleToggleFolderExpanded(folderNode.id)
+                }}
+                className="p-0.5 hover:bg-gray-200 rounded"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-3 h-3 text-gray-600" />
+                ) : (
+                  <ChevronRight className="w-3 h-3 text-gray-600" />
+                )}
+              </button>
+            )}
+            {folderNode.id === currentFolderId ? (
+              <FolderOpen className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+            ) : (
+              <Folder className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+            )}
+            <span className="text-xs text-gray-600 truncate">{folderNode.name}</span>
+          </div>
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCreateFolder(folderNode.id)
+              }}
+              className="h-4 w-4 p-0 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+              title="New subfolder"
+            >
+              <Plus className="w-2.5 h-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleRenameFolder(folderNode)
+              }}
+              className="h-4 w-4 p-0"
+              title="Rename folder"
+            >
+              <Edit className="w-2.5 h-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDeleteFolder(folderNode.id)
+              }}
+              className="h-4 w-4 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+              title="Delete folder"
+            >
+              <Trash2 className="w-2.5 h-2.5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Recursively render children */}
+        {hasChildren && isExpanded && (
+          <div className="ml-3 space-y-0.5">
+            {folderNode.children.map((childNode) => (
+              <FolderTreeItem
+                key={childNode.id}
+                folderNode={childNode}
+                level={level + 1}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f1f6f5' }}>
       {/* Header - Full Width */}
@@ -621,7 +771,7 @@ export function Dashboard() {
               <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                 <AlertTriangle className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={handleCreateFolder} className="text-teal-600 hover:text-teal-700 hover:bg-teal-50">
+              <Button size="sm" variant="outline" onClick={() => handleCreateFolder()} className="text-teal-600 hover:text-teal-700 hover:bg-teal-50">
                 <Folder className="w-4 h-4" />
                 New Folder
               </Button>
@@ -810,52 +960,13 @@ export function Dashboard() {
 
                     {/* Folders List (only shown for current board when expanded) */}
                     {board.id === currentBoardId && isExpanded && boardFolders.length > 0 && (
-                      <div className="ml-5 space-y-0.5">
-                        {boardFolders.map((folder) => (
-                          <div
-                            key={folder.id}
-                            className={`flex items-center justify-between p-1.5 rounded cursor-pointer group ${
-                              folder.id === currentFolderId
-                                ? 'bg-teal-50 border border-teal-200'
-                                : 'hover:bg-gray-50'
-                            }`}
-                            onClick={() => handleSwitchFolder(folder.id)}
-                          >
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              {folder.id === currentFolderId ? (
-                                <FolderOpen className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
-                              ) : (
-                                <Folder className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
-                              )}
-                              <span className="text-xs text-gray-600 truncate">{folder.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleRenameFolder(folder)
-                                }}
-                                className="h-4 w-4 p-0"
-                                title="Rename folder"
-                              >
-                                <Edit className="w-2.5 h-2.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleDeleteFolder(folder.id)
-                                }}
-                                className="h-4 w-4 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                title="Delete folder"
-                              >
-                                <Trash2 className="w-2.5 h-2.5" />
-                              </Button>
-                            </div>
-                          </div>
+                      <div className="ml-5 max-h-96 overflow-y-auto">
+                        {buildFolderTree(boardFolders).map((folderNode) => (
+                          <FolderTreeItem
+                            key={folderNode.id}
+                            folderNode={folderNode}
+                            level={0}
+                          />
                         ))}
                       </div>
                     )}
@@ -1513,6 +1624,7 @@ export function Dashboard() {
         mode={folderDialogMode}
         boardId={currentBoardId || ''}
         folder={editingFolder}
+        parentFolderId={parentFolderForNew}
       />
 
       {/* Image Viewer Dialog */}
