@@ -482,6 +482,15 @@ export function AddBookmarkDialog({
           </Button>
           <Button
             type="button"
+            variant={mode === 'multi-url' ? 'default' : 'outline'}
+            onClick={() => setMode('multi-url')}
+            className="flex-1"
+          >
+            <List className="w-4 h-4 mr-2" />
+            Multi-URL
+          </Button>
+          <Button
+            type="button"
             variant={mode === 'text' ? 'default' : 'outline'}
             onClick={() => setMode('text')}
             className="flex-1"
@@ -497,15 +506,6 @@ export function AddBookmarkDialog({
           >
             <CheckSquare className="w-4 h-4 mr-2" />
             To-do
-          </Button>
-          <Button
-            type="button"
-            variant={mode === 'multi-url' ? 'default' : 'outline'}
-            onClick={() => setMode('multi-url')}
-            className="flex-1"
-          >
-            <List className="w-4 h-4 mr-2" />
-            Multi-URL
           </Button>
         </div>
 

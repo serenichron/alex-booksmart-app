@@ -389,7 +389,7 @@ export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' 
   }
 
   // Invalidate cache for this board (v2 cache keys)
-  invalidateCache(`bookmarks_v2_${currentBoardId}`)
+  invalidateCache(`bookmarks_v2_${currentBoardId}_${DEFAULT_PAGE_SIZE}`)
   invalidateCache(`count_${currentBoardId}`)
 
   return newBookmark
@@ -407,7 +407,7 @@ export async function deleteBookmark(id: string): Promise<void> {
 
   // Invalidate cache for this board (v2 cache keys)
   if (currentBoardId) {
-    invalidateCache(`bookmarks_v2_${currentBoardId}`)
+    invalidateCache(`bookmarks_v2_${currentBoardId}_${DEFAULT_PAGE_SIZE}`)
     invalidateCache(`count_${currentBoardId}`)
   }
 }
@@ -427,7 +427,7 @@ export async function updateBookmark(id: string, updates: Partial<Bookmark>): Pr
 
   // Invalidate cache for this board (v2 cache keys)
   if (currentBoardId) {
-    invalidateCache(`bookmarks_v2_${currentBoardId}`)
+    invalidateCache(`bookmarks_v2_${currentBoardId}_${DEFAULT_PAGE_SIZE}`)
   }
 }
 
@@ -466,6 +466,8 @@ export async function updateNoteInBookmark(bookmarkId: string, noteId: string, c
 
 // Todo items management
 export async function toggleTodoItem(bookmarkId: string, todoId: string): Promise<void> {
+  const currentBoardId = getCurrentBoardId()
+
   // First get the current todo item
   const { data: todoItem, error: fetchError } = await supabase
     .from('todo_items')
@@ -484,6 +486,11 @@ export async function toggleTodoItem(bookmarkId: string, todoId: string): Promis
     .eq('bookmark_id', bookmarkId)
 
   if (error) throw error
+
+  // Invalidate cache to ensure UI updates
+  if (currentBoardId) {
+    invalidateCache(`bookmarks_v2_${currentBoardId}_${DEFAULT_PAGE_SIZE}`)
+  }
 }
 
 export async function addTodoItem(bookmarkId: string, text: string): Promise<TodoItem> {
