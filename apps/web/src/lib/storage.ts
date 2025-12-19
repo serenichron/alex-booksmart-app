@@ -46,6 +46,7 @@ export interface Folder {
   id: string
   board_id: string
   name: string
+  parent_folder_id: string | null
   created_at: string
   updated_at: string
 }
@@ -312,12 +313,12 @@ export function setCurrentFolderId(folderId: string | null): void {
   }
 }
 
-export async function createFolder(boardId: string, name: string): Promise<Folder> {
+export async function createFolder(boardId: string, name: string, parentFolderId: string | null = null): Promise<Folder> {
   const userId = await getCurrentUserId()
 
   const { data, error } = await supabase
     .from('folders')
-    .insert([{ name, board_id: boardId, user_id: userId }])
+    .insert([{ name, board_id: boardId, user_id: userId, parent_folder_id: parentFolderId }])
     .select()
     .single()
 

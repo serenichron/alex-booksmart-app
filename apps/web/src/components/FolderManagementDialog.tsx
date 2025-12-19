@@ -18,6 +18,7 @@ interface FolderManagementDialogProps {
   mode: 'create' | 'rename'
   boardId: string
   folder?: Folder | null
+  parentFolderId?: string | null
 }
 
 export function FolderManagementDialog({
@@ -27,6 +28,7 @@ export function FolderManagementDialog({
   mode,
   boardId,
   folder,
+  parentFolderId = null,
 }: FolderManagementDialogProps) {
   const [folderName, setFolderName] = useState('')
   const [error, setError] = useState('')
@@ -68,7 +70,7 @@ export function FolderManagementDialog({
 
     try {
       if (mode === 'create') {
-        await createFolder(boardId, folderName.trim())
+        await createFolder(boardId, folderName.trim(), parentFolderId)
       } else if (mode === 'rename' && folder) {
         await renameFolder(folder.id, folderName.trim())
       }
