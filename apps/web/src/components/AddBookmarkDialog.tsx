@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { saveBookmark, getCategories, addCategory, getBookmarks, updateBookmark, type Note, type TodoItem } from '@/lib/storage'
+import { saveBookmark, getCategories, addCategory, getBookmarks, updateBookmark, getFolders, getCurrentBoardId, getCurrentFolderId, type Note, type TodoItem, type Folder } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
 import { normalizeUrl, isImageUrl } from '@/lib/urlUtils'
 import {
@@ -42,6 +42,8 @@ export function AddBookmarkDialog({
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [categoryInput, setCategoryInput] = useState('')
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
+  const [availableFolders, setAvailableFolders] = useState<Folder[]>([])
   const [duplicateBookmark, setDuplicateBookmark] = useState<any>(null)
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
 
@@ -67,8 +69,19 @@ export function AddBookmarkDialog({
       const categories = await getCategories()
       setAvailableCategories(categories)
     }
+    const loadFolders = async () => {
+      const boardId = getCurrentBoardId()
+      if (boardId) {
+        const folders = await getFolders(boardId)
+        setAvailableFolders(folders)
+        // Set default selected folder from current folder if any
+        const currentFolderId = getCurrentFolderId()
+        setSelectedFolder(currentFolderId)
+      }
+    }
     if (open) {
       loadCategories()
+      loadFolders()
     }
   }, [open])
 
@@ -105,6 +118,7 @@ export function AddBookmarkDialog({
     setSelectedCategories([])
     setCategoryInput('')
     setShowCategoryDropdown(false)
+    setSelectedFolder(null)
     setError('')
     setLoading(false)
     setFetchingMetadata(false)
@@ -385,6 +399,7 @@ export function AddBookmarkDialog({
           image_url: imageUrl || null,
           meta_description: metaDescription || null,
           show_meta_description: showMetaDescription,
+          folder_id: selectedFolder,
         })
       } else if (mode === 'text') {
         // Save text bookmark with optional title (no auto-generation)
@@ -401,6 +416,7 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: null,
           meta_description: null,
+          folder_id: selectedFolder,
         })
       } else if (mode === 'todo') {
         // Parse todo items from textarea (each line becomes a todo item)
@@ -427,6 +443,7 @@ export function AddBookmarkDialog({
           image_url: null,
           meta_description: null,
           todo_items: todoItems,
+          folder_id: selectedFolder,
         })
       } else if (mode === 'multi-url') {
         // Save all URLs as separate bookmarks
@@ -446,6 +463,7 @@ export function AddBookmarkDialog({
             image_url: metadata.image || null,
             meta_description: metadata.description || null,
             show_meta_description: true,
+            folder_id: selectedFolder,
           })
         }
       }
@@ -658,6 +676,27 @@ export function AddBookmarkDialog({
                 </div>
               </div>
 
+              {/* Folder Selector */}
+              {availableFolders.length > 0 && (
+                <div className="folder-field space-y-2">
+                  <label className="text-sm font-medium">
+                    Folder (optional)
+                  </label>
+                  <select
+                    value={selectedFolder || ''}
+                    onChange={(e) => setSelectedFolder(e.target.value || null)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No folder</option>
+                    {availableFolders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="categories-field space-y-2">
                 <label className="text-sm font-medium">
                   Categories (optional)
@@ -818,6 +857,27 @@ export function AddBookmarkDialog({
                   </Button>
                 </div>
               </div>
+
+              {/* Folder Selector */}
+              {availableFolders.length > 0 && (
+                <div className="folder-field space-y-2">
+                  <label className="text-sm font-medium">
+                    Folder (optional)
+                  </label>
+                  <select
+                    value={selectedFolder || ''}
+                    onChange={(e) => setSelectedFolder(e.target.value || null)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No folder</option>
+                    {availableFolders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="categories-field space-y-2">
                 <label className="text-sm font-medium">
@@ -980,6 +1040,27 @@ export function AddBookmarkDialog({
                 </div>
               </div>
 
+              {/* Folder Selector */}
+              {availableFolders.length > 0 && (
+                <div className="folder-field space-y-2">
+                  <label className="text-sm font-medium">
+                    Folder (optional)
+                  </label>
+                  <select
+                    value={selectedFolder || ''}
+                    onChange={(e) => setSelectedFolder(e.target.value || null)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No folder</option>
+                    {availableFolders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="categories-field space-y-2">
                 <label className="text-sm font-medium">
                   Categories (optional)
@@ -1109,6 +1190,27 @@ export function AddBookmarkDialog({
                       style={{ width: `${multiUrlFetchProgress}%` }}
                     ></div>
                   </div>
+                </div>
+              )}
+
+              {/* Folder Selector */}
+              {availableFolders.length > 0 && (
+                <div className="folder-field space-y-2">
+                  <label className="text-sm font-medium">
+                    Folder (optional)
+                  </label>
+                  <select
+                    value={selectedFolder || ''}
+                    onChange={(e) => setSelectedFolder(e.target.value || null)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No folder</option>
+                    {availableFolders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
 

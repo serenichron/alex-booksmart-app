@@ -948,7 +948,7 @@ export function Dashboard() {
           /* Bookmarks Organized by Category */
           <div className="bookmarks-by-category space-y-10">
             {(() => {
-              const { uncategorized, categorizedMap, sortedCategories } = groupedByCategory()
+              const { uncategorized, categorizedMap, sortedCategories, folders: boardFolders, folderMap } = groupedByCategory()
 
               const renderBookmarkCard = (bookmark: BookmarkWithDetails) => {
                 const isTextBookmark = !bookmark.url && bookmark.type === 'text'
@@ -1363,6 +1363,34 @@ export function Dashboard() {
 
               return (
                 <>
+                  {/* Folder Sections - Show First */}
+                  {boardFolders && boardFolders.length > 0 && boardFolders.map((folder, idx) => {
+                    const folderBookmarks = folderMap.get(folder.id) || []
+                    if (folderBookmarks.length === 0) return null
+
+                    return (
+                      <div key={folder.id}>
+                        <div className="folder-section">
+                          <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg px-6 py-3 mb-6 border-l-4 border-cyan-500 shadow-md">
+                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                              <FolderOpen className="w-5 h-5 text-cyan-600" />
+                              {folder.name}
+                              <span className="text-sm font-normal bg-cyan-100 px-3 py-1 rounded-full text-cyan-700 border border-cyan-300">
+                                {folderBookmarks.length}
+                              </span>
+                            </h2>
+                          </div>
+                          <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                            {folderBookmarks.map(renderBookmarkCard)}
+                          </div>
+                        </div>
+                        {(idx < boardFolders.length - 1 || uncategorized.length > 0 || sortedCategories.length > 0) && (
+                          <div className="folder-separator border-t-2 border-gray-200 my-10"></div>
+                        )}
+                      </div>
+                    )
+                  })}
+
                   {/* Uncategorized Section */}
                   {uncategorized.length > 0 && (
                     <>
