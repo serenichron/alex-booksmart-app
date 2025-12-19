@@ -150,6 +150,10 @@ export function Dashboard() {
   }
 
   const handleCreateFolder = () => {
+    // Ensure current board is expanded when creating folder
+    if (currentBoardId) {
+      setExpandedBoards(new Set([currentBoardId]))
+    }
     setFolderDialogMode('create')
     setEditingFolder(null)
     setShowFolderDialog(true)
@@ -419,8 +423,12 @@ export function Dashboard() {
   }
 
   // Handler for dialog success callbacks - always skip cache for fresh data
-  const handleDialogSuccess = () => {
-    fetchBookmarks(true)
+  const handleDialogSuccess = async () => {
+    await fetchBookmarks(true)
+    // Keep current board expanded after folder operations
+    if (currentBoardId) {
+      setExpandedBoards(new Set([currentBoardId]))
+    }
   }
 
   const handleToggleType = (type: BookmarkTypeFilter, checked?: boolean) => {
@@ -550,7 +558,14 @@ export function Dashboard() {
   }, [bookmarks, selectedTypes, searchQuery, searchMode, currentFolderId])
 
   useEffect(() => {
-    fetchBookmarks()
+    const loadInitialData = async () => {
+      await fetchBookmarks()
+      // Auto-expand current board if it has folders
+      if (currentBoardId && folders.length > 0) {
+        setExpandedBoards(new Set([currentBoardId]))
+      }
+    }
+    loadInitialData()
   }, [])
 
   return (
@@ -626,6 +641,10 @@ export function Dashboard() {
               </Button>
               <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                 <AlertTriangle className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleCreateFolder} className="text-teal-600 hover:text-teal-700 hover:bg-teal-50">
+                <Folder className="w-4 h-4" />
+                New Folder
               </Button>
               <Button size="sm" onClick={() => setShowAddDialog(true)}>
                 <Plus className="w-4 h-4" />
@@ -770,6 +789,22 @@ export function Dashboard() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
+                            if (board.id !== currentBoardId) {
+                              handleSwitchBoard(board.id)
+                            }
+                            setExpandedBoards(new Set([board.id]))
+                            handleCreateFolder()
+                          }}
+                          className="h-5 w-5 p-0 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                          title="New folder"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
                             handleRenameBoard(board)
                           }}
                           className="h-5 w-5 p-0"
@@ -843,29 +878,6 @@ export function Dashboard() {
                             </div>
                           </div>
                         ))}
-
-                        {/* Add Folder Button */}
-                        <div
-                          className="flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-gray-50 text-gray-500 hover:text-gray-700"
-                          onClick={handleCreateFolder}
-                        >
-                          <Plus className="w-3 h-3" />
-                          <span className="text-xs">New Folder</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Add Folder button for current board when not expanded */}
-                    {board.id === currentBoardId && !isExpanded && (
-                      <div
-                        className="ml-5 flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-gray-50 text-gray-500 hover:text-gray-700"
-                        onClick={() => {
-                          setExpandedBoards(new Set([board.id]))
-                          handleCreateFolder()
-                        }}
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span className="text-xs">New Folder</span>
                       </div>
                     )}
                   </div>
