@@ -1104,12 +1104,12 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200 shadow-sm'
+                      ? 'bg-purple-500/10 backdrop-blur-md border-purple-400/30 shadow-sm'
                       : isTextBookmark
-                      ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-sm'
+                      ? 'bg-amber-500/10 backdrop-blur-md border-amber-400/30 shadow-sm'
                       : isImageBookmark
                       ? 'bg-black border-gray-800'
-                      : 'bg-white border-gray-200/60 shadow-sm'
+                      : 'bg-white/10 backdrop-blur-md border-white/20 shadow-sm'
                   }`}
                 >
                   {/* Action Buttons */}
