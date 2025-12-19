@@ -41,8 +41,8 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
         <div className="main-content max-w-4xl w-full text-center py-8">
           {/* Hero */}
           <div className="hero-section mb-8">
-            <h1 className="hero-title text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight">
-              Tired of losing track of your digital assets?
+            <h1 className="hero-title font-bold text-white mb-6 leading-tight" style={{ fontSize: '2.7rem' }}>
+              Tired of losing track of your digital stuff?
               <span className="hero-subtitle block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400 mt-2 pb-2">
                 Keep everything organized.
               </span>
@@ -95,8 +95,8 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
 
             {/* Coming Soon */}
             <div className="feature-card feature-coming-soon bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-teal-400/50 transition-all">
-              <div className="feature-icon w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center mb-3 mx-auto">
-                <Sparkles className="w-6 h-6 text-white" />
+              <div className="feature-icon w-12 h-12 bg-teal-400/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
+                <Sparkles className="w-6 h-6 text-teal-300" />
               </div>
               <h3 className="feature-title text-lg font-semibold text-white mb-2">Coming Soon</h3>
               <p className="feature-description text-gray-300 text-sm">
@@ -113,12 +113,6 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="landing-footer border-t border-white/10 backdrop-blur-md py-4 flex-shrink-0 relative">
-        <div className="footer-content max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-400">
-        </div>
-      </footer>
 
       <style>{`
         @keyframes blob {
