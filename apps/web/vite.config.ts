@@ -4,6 +4,7 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.GITHUB_ACTIONS ? '/alex-booksmart-app/' : '/',
   plugins: [react()],
   resolve: {
     alias: {
