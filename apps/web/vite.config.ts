@@ -6,8 +6,6 @@ import path from 'path'
 export default defineConfig({
   base: process.env.GITHUB_ACTIONS ? '/alex-booksmart-app/' : '/',
   plugins: [react()],
-  // Base path for GitHub Pages deployment
-  base: '/alex-booksmart-app/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
