@@ -1,83 +1,112 @@
-# BookSmart - AI Bookmark Manager
+# BookSmart - Advanced Bookmark Manager
 
-> Save anything, organize effortlessly, discover endlessly.
+> Save anything, organize infinitely, find instantly.
 
-An AI-powered bookmark manager that helps you save, organize, and discover content across the web with intelligent automation.
+A modern bookmark manager with unlimited nested organization, multiple content types, and powerful search. Built with React, TypeScript, and Supabase.
 
 ## ✨ Key Features
 
-- 📚 **Save Anything**: Web links, images, text clips, documents
-- 🤖 **AI Organization**: Automatic categorization, tagging, and summarization
-- 🔍 **Smart Search**: Semantic search that understands what you mean
-- 🕸️ **Content Connections**: Discover relationships between your bookmarks
-- 🎯 **Mode-Based**: Different behaviors for student, business, research contexts
-- 🌟 **Discovery Engine**: StumbleUpon-style content suggestions
-- 🚀 **Cross-Platform**: Web app, browser extension, mobile app
+- 📚 **Multiple Content Types**: Links, images, text snippets, to-do lists
+- 🗂️ **Unlimited Organization**: Boards → Folders → Subfolders (infinite nesting)
+- 🔍 **Powerful Search**: Board-scoped or global search across all content
+- 📝 **Rich Notes**: Multiple notes per bookmark with timestamps
+- ✅ **To-Do Lists**: Checklists with progress tracking
+- 🎯 **Multi-URL Import**: Paste up to 20 URLs at once
+- 📤 **Export/Import**: Full data portability with JSON export
+- ⚡ **Performance**: Optimized for 1000+ bookmarks with caching and lazy loading
 
 ## 🗂️ Project Status
 
-Currently in **Phase 1: Foundation** (71% complete) - see [PROJECT_PLAN.md](./PROJECT_PLAN.md) for detailed roadmap.
+**Current Status:** Production-ready web application (~80% of MVP complete)
 
-### ✅ What's Working Now
-- **Authentication**: Email/password and Google OAuth
-- **Bookmark Management**: Save URLs and text snippets with automatic metadata fetching
-- **Modern Dashboard**: Beautiful UI with stats, categories, and tags
-- **Performance Optimized**: Pagination, caching, infinite scroll, lazy loading
-  - 80-90% faster page loads (< 500ms)
-  - Smooth scrolling with 1000+ bookmarks
-  - Instant board switching with prefetching
+### ✅ Fully Implemented
+- **Authentication**: Email/password and Google OAuth (Supabase)
+- **Boards**: Unlimited boards with instant switching
+- **Folders**: Unlimited nested subfolders (Google Drive-style)
+- **Bookmark Types**: Links, images, text, to-do lists
+- **Search**: Board-scoped and global search
+- **Notes**: Multiple notes per bookmark
+- **Categories & Tags**: Full support with filtering
+- **Export/Import**: Complete data portability
+- **Performance**: Caching, prefetching, lazy loading
+- **Responsive Design**: Mobile-friendly UI
 
-### 🚧 In Progress
-- Database migration (currently using localStorage)
-- AI-powered auto-categorization
-- Search functionality
+### 🚧 Not Yet Implemented
+- AI-powered auto-categorization (code exists, not integrated)
+- Browser extension
+- Mobile app
+- Content discovery features
 
-See [FEATURES_COVERAGE.md](./FEATURES_COVERAGE.md) for detailed implementation status.
+See [CURRENT_FEATURES.md](./CURRENT_FEATURES.md) for complete feature documentation.
 
 ## 📋 Documentation
 
-- [Project Plan](./PROJECT_PLAN.md) - Full development roadmap and architecture
+### Current Implementation
+- **[CURRENT_FEATURES.md](./CURRENT_FEATURES.md)** - Complete documentation of all implemented features
+- **[SUBFOLDER_MIGRATION.md](./SUBFOLDER_MIGRATION.md)** - Database migration guide for subfolder support
 - [Architecture Overview](./ARCHITECTURE.md) - System design, data flow, and performance optimizations
-- [Features Coverage](./FEATURES_COVERAGE.md) - Detailed implementation status and gaps analysis
-- [Getting Started](./GETTING_STARTED.md) - Setup instructions and development guide
-- [Tech Stack](./docs/TECH_STACK.md) - Technologies and why we chose them (coming soon)
-- [API Documentation](./docs/API.md) - Backend API reference (coming soon)
+
+### Original Planning
+- [Project Plan](./PROJECT_PLAN.md) - Original development roadmap (for reference)
+- [Features Coverage](./FEATURES_COVERAGE.md) - December 2024 snapshot (outdated - see CURRENT_FEATURES.md)
+- [Getting Started](./GETTING_STARTED.md) - Initial setup guide (for reference)
 
 ## 🏗️ Repository Structure
 
 ```
-alex-via-tr-app/
+alex-booksmart-app/
 ├── apps/
-│   ├── web/              # Web application (React + Vite)
-│   ├── extension/        # Browser extension
-│   ├── mobile/           # React Native mobile app
-│   └── desktop/          # Desktop app (future)
-├── packages/
-│   ├── ui/               # Shared UI components
-│   ├── api-client/       # API client library
-│   ├── types/            # Shared TypeScript types
-│   └── ai/               # AI utilities (Claude, embeddings)
-├── services/
-│   └── api/              # Backend API (Node.js + Express)
-├── docs/                 # Documentation
-└── scripts/              # Build and deployment scripts
+│   └── web/              # Web application (React + Vite + Supabase)
+│       ├── src/
+│       │   ├── components/       # UI components (dialogs, etc.)
+│       │   ├── contexts/         # React contexts (Auth)
+│       │   ├── lib/             # Utilities (storage, metadata, AI)
+│       │   ├── pages/           # Dashboard, Login, SignUp
+│       │   └── hooks/           # Custom React hooks
+│       └── dist/                # Production build output
+├── supabase/
+│   └── migrations/       # Database migrations (001, 002, 003)
+├── docs/                 # Additional documentation
+├── CURRENT_FEATURES.md   # Complete feature documentation
+├── SUBFOLDER_MIGRATION.md # Migration instructions
+├── PROJECT_PLAN.md       # Original roadmap
+└── README.md            # This file
 ```
 
-## 🚀 Quick Start (Coming Soon)
+## 🚀 Quick Start
+
+### Prerequisites
+1. **Supabase Account**: Create at [supabase.com](https://supabase.com)
+2. **Node.js**: Version 18+
+3. **Database Setup**: Run migrations in Supabase SQL Editor
+
+### Development Setup
 
 ```bash
-# Clone the repo
-git clone <repo-url>
+# Navigate to web app
+cd apps/web
 
 # Install dependencies
-pnpm install
+npm install
 
 # Setup environment variables
-cp .env.example .env
+# Create .env file with:
+# VITE_SUPABASE_URL=your_supabase_url
+# VITE_SUPABASE_ANON_KEY=your_anon_key
 
 # Run development server
-pnpm dev
+npm run dev
 ```
+
+### Production Build
+
+```bash
+cd apps/web
+npm run build
+# Output in: apps/web/dist/
+```
+
+See [SUBFOLDER_MIGRATION.md](./SUBFOLDER_MIGRATION.md) for database migration instructions.
 
 ## 🤝 Development Philosophy
 
