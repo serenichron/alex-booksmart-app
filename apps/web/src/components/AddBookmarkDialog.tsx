@@ -58,9 +58,8 @@ export function AddBookmarkDialog({
   const [imageUrl, setImageUrl] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
   const [showMetaDescription, setShowMetaDescription] = useState(true)
-  const [titleEdited, setTitleEdited] = useState(false)
 
-  const fetchTimeoutRef = useRef<NodeJS.Timeout>()
+  const fetchTimeoutRef = useRef<number>()
   const lastFetchedUrlRef = useRef<string>('')
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
 
@@ -114,7 +113,6 @@ export function AddBookmarkDialog({
     setImageUrl('')
     setMetaDescription('')
     setShowMetaDescription(true)
-    setTitleEdited(false)
     setSelectedCategories([])
     setCategoryInput('')
     setShowCategoryDropdown(false)
@@ -176,7 +174,6 @@ export function AddBookmarkDialog({
       setTitle(metadata.title)
       setMetaDescription(metadata.description)
       if (metadata.image) setImageUrl(metadata.image)
-      setTitleEdited(false)
       lastFetchedUrlRef.current = urlToFetch
     } catch (err) {
       console.error('Failed to fetch metadata:', err)
@@ -193,7 +190,6 @@ export function AddBookmarkDialog({
       setTitle('')
       setImageUrl('')
       setMetaDescription('')
-      setTitleEdited(false)
       lastFetchedUrlRef.current = ''
     }
 
@@ -213,7 +209,6 @@ export function AddBookmarkDialog({
         setImageUrl(normalizedUrl)
         setTitle('')
         setMetaDescription('')
-        setTitleEdited(false)
         lastFetchedUrlRef.current = normalizedUrl
       } else {
         // Debounce: wait 800ms after user stops typing for regular URLs
@@ -586,7 +581,6 @@ export function AddBookmarkDialog({
                           value={title}
                           onChange={(e) => {
                             setTitle(e.target.value)
-                            setTitleEdited(true)
                           }}
                           className="font-semibold pr-10"
                           placeholder="Enter title"

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
   updateBookmark,
   getCategories,
@@ -28,7 +28,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, Pencil, X, Plus, Trash2, RefreshCw, Image as ImageIcon, CheckSquare } from 'lucide-react'
+import { Loader2, Pencil, X, Plus, Trash2, RefreshCw, CheckSquare } from 'lucide-react'
 
 interface EditBookmarkDialogProps {
   open: boolean
@@ -177,11 +177,11 @@ export function EditBookmarkDialog({
     cat.toLowerCase().includes(categoryInput.toLowerCase())
   )
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!bookmark) return
     const trimmed = currentNoteInput.trim()
     if (trimmed) {
-      const newNote = addNoteToBookmark(bookmark.id, trimmed)
+      const newNote = await addNoteToBookmark(bookmark.id, trimmed)
       setLocalNotes([newNote, ...localNotes])
       setCurrentNoteInput('')
       onSuccess()
@@ -231,11 +231,11 @@ export function EditBookmarkDialog({
     onSuccess()
   }
 
-  const handleAddTodoItem = () => {
+  const handleAddTodoItem = async () => {
     if (!bookmark) return
     const trimmed = newTodoItemInput.trim()
     if (trimmed) {
-      const newItem = addTodoItem(bookmark.id, trimmed)
+      const newItem = await addTodoItem(bookmark.id, trimmed)
       setLocalTodoItems([...localTodoItems, newItem])
       setNewTodoItemInput('')
       onSuccess()

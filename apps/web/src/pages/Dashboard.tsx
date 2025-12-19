@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -9,7 +9,7 @@ import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Loader2, Folder, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -25,14 +25,12 @@ import {
   getCurrentFolderId,
   setCurrentFolderId,
   deleteFolder,
-  getAllBookmarksWithBoard,
   exportAllData,
   importAllData,
   clearAllData,
   prefetchBoard,
   type Bookmark as BookmarkType,
   type Note,
-  type TodoItem,
   type Board,
   type Folder as FolderType
 } from '@/lib/storage'
@@ -189,15 +187,6 @@ export function Dashboard() {
     setShowImageViewer(true)
   }
 
-  const handleImageNoteClick = (note: Note) => {
-    if (viewingImageBookmark) {
-      setSelectedNote(note)
-      setSelectedNoteBookmarkId(viewingImageBookmark.id)
-      setShowImageViewer(false)
-      setShowNoteDialog(true)
-    }
-  }
-
   const handleExport = async () => {
     try {
       const data = await exportAllData()
@@ -267,7 +256,7 @@ export function Dashboard() {
       })
 
       // Sort bookmarks within each category by created_at (newest first)
-      categorizedMap.forEach((bookmarks, category) => {
+      categorizedMap.forEach((bookmarks) => {
         bookmarks.sort((a, b) => {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         })
@@ -328,7 +317,7 @@ export function Dashboard() {
       })
     })
 
-    categorizedMap.forEach((bookmarks, category) => {
+    categorizedMap.forEach((bookmarks) => {
       bookmarks.sort((a, b) => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       })
@@ -526,41 +515,26 @@ export function Dashboard() {
   const filteredBookmarks = useMemo(() => {
     let filtered: BookmarkWithDetails[]
 
-    // Check if we're using global search mode
-    if (searchMode === 'global' && searchQuery.trim()) {
-      // Global search across all boards
-      const allBookmarks = getAllBookmarksWithBoard()
+    // Board-wise search (global search not implemented in this version)
+    // First filter by folder if one is selected
+    let folderFiltered = bookmarks
+    if (currentFolderId) {
+      folderFiltered = bookmarks.filter(bookmark => bookmark.folder_id === currentFolderId)
+    }
 
-      // Filter by type
-      filtered = allBookmarks.filter(bookmark => {
-        if (selectedTypes.size === 0) return false
-        return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
-      })
+    // Then filter by type
+    filtered = folderFiltered.filter(bookmark => {
+      if (selectedTypes.size === 0) return false
+      return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
+    })
 
-      // Apply search
+    // Then apply search
+    if (searchQuery.trim()) {
       filtered = searchBookmarks(filtered, searchQuery)
-    } else {
-      // Board-wise search (default)
-      // First filter by folder if one is selected
-      let folderFiltered = bookmarks
-      if (currentFolderId) {
-        folderFiltered = bookmarks.filter(bookmark => bookmark.folder_id === currentFolderId)
-      }
-
-      // Then filter by type
-      filtered = folderFiltered.filter(bookmark => {
-        if (selectedTypes.size === 0) return false
-        return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
-      })
-
-      // Then apply search
-      if (searchQuery.trim()) {
-        filtered = searchBookmarks(filtered, searchQuery)
-      }
     }
 
     return filtered
-  }, [bookmarks, selectedTypes, searchQuery, searchMode, currentFolderId])
+  }, [bookmarks, selectedTypes, searchQuery, currentFolderId])
 
   useEffect(() => {
     const loadInitialData = async () => {

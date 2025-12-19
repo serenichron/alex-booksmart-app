@@ -144,9 +144,6 @@ export async function getBoards(): Promise<Board[]> {
   }))
 }
 
-// Pagination config
-const DEFAULT_PAGE_SIZE = 20
-
 // Helper function to get bookmarks for a specific board
 async function getBookmarksByBoardId(
   boardId: string,
@@ -605,7 +602,7 @@ export async function getCategories(): Promise<string[]> {
   return Array.from(categoriesSet).sort()
 }
 
-export async function addCategory(category: string): Promise<void> {
+export async function addCategory(_category: string): Promise<void> {
   // Categories are stored as arrays in bookmarks, no separate storage needed
   // This function is kept for compatibility but doesn't need to do anything
 }
@@ -622,7 +619,7 @@ export async function getTags(): Promise<string[]> {
   return Array.from(tagsSet).sort()
 }
 
-export async function addTag(tag: string): Promise<void> {
+export async function addTag(_tag: string): Promise<void> {
   // Tags are stored as arrays in bookmarks, no separate storage needed
   // This function is kept for compatibility but doesn't need to do anything
 }
