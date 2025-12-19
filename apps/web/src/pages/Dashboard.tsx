@@ -612,8 +612,8 @@ export function Dashboard() {
         <div
           className={`flex items-center justify-between py-1 px-1.5 rounded cursor-pointer group ${
             folderNode.id === currentFolderId
-              ? 'bg-teal-50 border border-teal-200'
-              : 'hover:bg-gray-50'
+              ? 'bg-teal-500/20 border border-teal-400/50'
+              : 'hover:bg-white/10'
           }`}
         >
           <div
@@ -626,21 +626,21 @@ export function Dashboard() {
                   e.stopPropagation()
                   handleToggleFolderExpanded(folderNode.id)
                 }}
-                className="p-0.5 hover:bg-gray-200 rounded"
+                className="p-0.5 hover:bg-white/20 rounded"
               >
                 {isExpanded ? (
-                  <ChevronDown className="w-3 h-3 text-gray-600" />
+                  <ChevronDown className="w-3 h-3 text-gray-300" />
                 ) : (
-                  <ChevronRight className="w-3 h-3 text-gray-600" />
+                  <ChevronRight className="w-3 h-3 text-gray-300" />
                 )}
               </button>
             )}
             {folderNode.id === currentFolderId ? (
-              <FolderOpen className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+              <FolderOpen className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
             ) : (
-              <Folder className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+              <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
             )}
-            <span className="text-xs text-gray-600 truncate">{folderNode.name}</span>
+            <span className="text-xs text-gray-200 truncate">{folderNode.name}</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
             <Button
@@ -650,7 +650,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleCreateFolder(folderNode.id)
               }}
-              className="h-4 w-4 p-0 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+              className="h-4 w-4 p-0 text-teal-400 hover:text-teal-300 hover:bg-teal-500/20"
               title="New subfolder"
             >
               <Plus className="w-2.5 h-2.5" />
@@ -662,7 +662,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleRenameFolder(folderNode)
               }}
-              className="h-4 w-4 p-0"
+              className="h-4 w-4 p-0 text-gray-300 hover:text-white hover:bg-white/10"
               title="Rename folder"
             >
               <Edit className="w-2.5 h-2.5" />
@@ -674,7 +674,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleDeleteFolder(folderNode.id)
               }}
-              className="h-4 w-4 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="h-4 w-4 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
               title="Delete folder"
             >
               <Trash2 className="w-2.5 h-2.5" />
@@ -906,7 +906,7 @@ export function Dashboard() {
                               e.stopPropagation()
                               handleToggleBoardExpanded(board.id)
                             }}
-                            className="p-0.5 hover:bg-gray-200 rounded"
+                            className="p-0.5 hover:bg-white/20 rounded"
                           >
                             {isExpanded ? (
                               <ChevronDown className="w-3 h-3 text-gray-300" />
@@ -930,7 +930,7 @@ export function Dashboard() {
                             setExpandedBoards(new Set([board.id]))
                             handleCreateFolder()
                           }}
-                          className="h-5 w-5 p-0 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                          className="h-5 w-5 p-0 text-teal-400 hover:text-teal-300 hover:bg-teal-500/20"
                           title="New folder"
                         >
                           <Plus className="w-3 h-3" />
@@ -942,7 +942,7 @@ export function Dashboard() {
                             e.stopPropagation()
                             handleRenameBoard(board)
                           }}
-                          className="h-5 w-5 p-0"
+                          className="h-5 w-5 p-0 text-gray-300 hover:text-white hover:bg-white/10"
                           title="Rename board"
                         >
                           <Edit className="w-3 h-3" />
@@ -955,7 +955,7 @@ export function Dashboard() {
                               e.stopPropagation()
                               handleDeleteBoard(board.id)
                             }}
-                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-5 w-5 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
                             title="Delete board"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -1226,29 +1226,29 @@ export function Dashboard() {
                       {/* Title and Completion */}
                       <div className="flex items-center justify-between mb-3">
                         {bookmark.title ? (
-                          <h3 className="text-sm font-semibold text-gray-900 flex-1 leading-tight">
+                          <h3 className="text-sm font-semibold text-white flex-1 leading-tight">
                             {bookmark.title}
                           </h3>
                         ) : (
-                          <h3 className="text-sm font-semibold text-gray-500 flex-1 leading-tight">
+                          <h3 className="text-sm font-semibold text-gray-300 flex-1 leading-tight">
                             To-do List
                           </h3>
                         )}
                         {bookmark.is_favorite && (
-                          <Heart className="w-3.5 h-3.5 text-red-500 fill-current flex-shrink-0 ml-2" />
+                          <Heart className="w-3.5 h-3.5 text-red-400 fill-current flex-shrink-0 ml-2" />
                         )}
                       </div>
 
                       {/* Completion Percentage */}
                       {todoCompletion && (
                         <div className="mb-3">
-                          <div className="flex items-center justify-between text-[10px] text-gray-600 mb-1">
+                          <div className="flex items-center justify-between text-[10px] text-gray-300 mb-1">
                             <span className="font-medium">Progress</span>
                             <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
                           </div>
-                          <div className="w-full bg-purple-100 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-purple-500/20 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-purple-500 to-violet-500 h-full transition-all duration-300 rounded-full"
+                              className="bg-gradient-to-r from-purple-400 to-violet-400 h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -1261,7 +1261,7 @@ export function Dashboard() {
                           {bookmark.todo_items.map((item) => (
                             <label
                               key={item.id}
-                              className="flex items-start gap-2 cursor-pointer group hover:bg-purple-100 p-0.5 rounded transition-colors"
+                              className="flex items-start gap-2 cursor-pointer group hover:bg-purple-500/20 p-0.5 rounded transition-colors"
                             >
                               <Checkbox
                                 checked={item.completed}
@@ -1271,8 +1271,8 @@ export function Dashboard() {
                               <span
                                 className={`text-xs flex-1 leading-relaxed ${
                                   item.completed
-                                    ? 'text-gray-400 line-through'
-                                    : 'text-gray-700'
+                                    ? 'text-gray-500 line-through'
+                                    : 'text-gray-200'
                                 }`}
                               >
                                 {item.text}
@@ -1284,8 +1284,8 @@ export function Dashboard() {
 
                       {/* Notes for todo */}
                       {bookmark.notes.length > 0 && (
-                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-purple-300">
-                          <label className="text-[10px] font-semibold text-gray-700 mb-1.5 block">Notes</label>
+                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-purple-400/30">
+                          <label className="text-[10px] font-semibold text-white mb-1.5 block">Notes</label>
                           <div className="space-y-1.5">
                             {(expandedNotesBookmarks.has(bookmark.id)
                               ? bookmark.notes
@@ -1293,10 +1293,10 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-gradient-to-r from-teal-50 to-cyan-50 border-l-3 border-teal-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-cyan-500/10 border-l-3 border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
-                                <p className="text-[11px] text-gray-700 line-clamp-3 leading-relaxed pr-1">
+                                <p className="text-[11px] text-gray-200 line-clamp-3 leading-relaxed pr-1">
                                   {note.content}
                                 </p>
                               </div>
@@ -1305,7 +1305,7 @@ export function Dashboard() {
                           {bookmark.notes.length > 3 && (
                             <button
                               onClick={() => handleToggleOlderNotes(bookmark.id)}
-                              className="text-[10px] text-blue-600 hover:text-blue-800 mt-1.5 font-medium"
+                              className="text-[10px] text-cyan-400 hover:text-cyan-300 mt-1.5 font-medium"
                             >
                               {expandedNotesBookmarks.has(bookmark.id)
                                 ? '− Show less'
@@ -1319,7 +1319,7 @@ export function Dashboard() {
                       {bookmark.categories.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {bookmark.categories.map((cat, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-purple-200 text-purple-900 border-purple-400">
+                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-purple-400/20 text-purple-200 border-purple-400/50">
                               {cat}
                             </Badge>
                           ))}
@@ -1329,7 +1329,7 @@ export function Dashboard() {
                       {/* Board badge in global search */}
                       {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
                         <div className="mb-2">
-                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-blue-50 text-blue-700 border-blue-300">
+                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-cyan-500/20 text-cyan-200 border-cyan-400/50">
                             <Layers className="w-2.5 h-2.5 mr-1" />
                             {(bookmark as any).boardName}
                           </Badge>
@@ -1337,7 +1337,7 @@ export function Dashboard() {
                       )}
 
                       {/* Timestamps for todo */}
-                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
+                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-400 mt-2 pt-1.5 border-t border-purple-400/30 bg-purple-500/10 -mx-3 px-3 -mb-3 pb-2">
                         <div className="bookmark-timestamp flex items-center gap-1">
                           <Clock className="w-2 h-2" />
                           <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
@@ -1361,7 +1361,7 @@ export function Dashboard() {
                           href={bookmark.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[11px] text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 truncate leading-tight"
+                          className="text-[11px] text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1 truncate leading-tight"
                         >
                           <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
                           <span className="truncate">{bookmark.url}</span>
@@ -1377,38 +1377,38 @@ export function Dashboard() {
                             href={bookmark.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 hover:text-blue-600 transition-colors cursor-pointer leading-tight"
+                            className="bookmark-title text-sm font-semibold text-white line-clamp-2 flex-1 hover:text-cyan-300 transition-colors cursor-pointer leading-tight"
                           >
                             {bookmark.title}
                           </a>
                         ) : (
-                          <h3 className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 leading-tight">
+                          <h3 className="bookmark-title text-sm font-semibold text-white line-clamp-2 flex-1 leading-tight">
                             {bookmark.title}
                           </h3>
                         )}
                         {bookmark.is_favorite && (
-                          <Heart className="bookmark-favorite-icon w-3.5 h-3.5 text-red-500 fill-current flex-shrink-0 ml-2" />
+                          <Heart className="bookmark-favorite-icon w-3.5 h-3.5 text-red-400 fill-current flex-shrink-0 ml-2" />
                         )}
                       </div>
                     )}
 
                     {/* For text bookmarks, show summary (text content) when no title or when title is provided */}
                     {isTextBookmark && bookmark.summary && (
-                      <p className="bookmark-text-content text-xs text-gray-700 mb-2 line-clamp-3 leading-snug">
+                      <p className="bookmark-text-content text-xs text-gray-200 mb-2 line-clamp-3 leading-snug">
                         {bookmark.summary}
                       </p>
                     )}
 
                     {/* For URL bookmarks, show meta description if enabled */}
                     {!isTextBookmark && bookmark.meta_description && bookmark.show_meta_description !== false && (
-                      <p className="bookmark-meta-description text-xs text-gray-500 mb-2 line-clamp-2 italic leading-snug">
+                      <p className="bookmark-meta-description text-xs text-gray-400 mb-2 line-clamp-2 italic leading-snug">
                         {bookmark.meta_description}
                       </p>
                     )}
 
                     {bookmark.notes.length > 0 && (
                       <div className="bookmark-notes-container mb-2">
-                        <label className="text-[10px] font-semibold text-gray-700 mb-1.5 block">Notes</label>
+                        <label className="text-[10px] font-semibold text-white mb-1.5 block">Notes</label>
                         <div className="space-y-1.5">
                           {(expandedNotesBookmarks.has(bookmark.id)
                             ? bookmark.notes
@@ -1416,11 +1416,11 @@ export function Dashboard() {
                           ).map((note) => (
                             <div
                               key={note.id}
-                              className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-500 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                              className="bookmark-note bg-cyan-500/10 border-l-3 border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                               onClick={() => handleNoteClick(note, bookmark.id)}
                               title="Click to view full note"
                             >
-                              <p className="bookmark-note-text text-xs text-blue-800 line-clamp-2 leading-snug">
+                              <p className="bookmark-note-text text-xs text-gray-200 line-clamp-2 leading-snug">
                                 {note.content}
                               </p>
                             </div>
@@ -1428,7 +1428,7 @@ export function Dashboard() {
                           {bookmark.notes.length > 3 && (
                             <button
                               onClick={() => handleToggleOlderNotes(bookmark.id)}
-                              className="text-[10px] text-blue-600 hover:text-blue-800 font-medium"
+                              className="text-[10px] text-cyan-400 hover:text-cyan-300 font-medium"
                             >
                               {expandedNotesBookmarks.has(bookmark.id)
                                 ? '- Show fewer notes'
@@ -1443,7 +1443,7 @@ export function Dashboard() {
                     {bookmark.categories.length > 0 && (
                       <div className="bookmark-categories flex flex-wrap gap-1 mb-2">
                         {bookmark.categories.map((cat, idx) => (
-                          <Badge key={idx} variant="secondary" className="bookmark-category text-[10px] py-0 h-5">
+                          <Badge key={idx} variant="secondary" className="bookmark-category text-[10px] py-0 h-5 bg-white/20 text-white border-white/30">
                             {cat}
                           </Badge>
                         ))}
@@ -1453,12 +1453,12 @@ export function Dashboard() {
                     {bookmark.tags.length > 0 && (
                       <div className="bookmark-tags flex flex-wrap gap-1 mb-2">
                         {bookmark.tags.slice(0, 3).map((tag, idx) => (
-                          <Badge key={idx} variant="outline" className="bookmark-tag text-[10px] py-0 h-5">
+                          <Badge key={idx} variant="outline" className="bookmark-tag text-[10px] py-0 h-5 bg-white/10 text-gray-300 border-white/30">
                             {tag}
                           </Badge>
                         ))}
                         {bookmark.tags.length > 3 && (
-                          <Badge variant="outline" className="bookmark-tags-more text-[10px] py-0 h-5">
+                          <Badge variant="outline" className="bookmark-tags-more text-[10px] py-0 h-5 bg-white/10 text-gray-300 border-white/30">
                             +{bookmark.tags.length - 3}
                           </Badge>
                         )}
@@ -1468,14 +1468,14 @@ export function Dashboard() {
                     {/* Board badge in global search */}
                     {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
                       <div className="mb-2">
-                        <Badge variant="outline" className="text-[10px] py-0 h-5 bg-blue-50 text-blue-700 border-blue-300">
+                        <Badge variant="outline" className="text-[10px] py-0 h-5 bg-cyan-500/20 text-cyan-200 border-cyan-400/50">
                           <Layers className="w-2.5 h-2.5 mr-1" />
                           {(bookmark as any).boardName}
                         </Badge>
                       </div>
                     )}
 
-                    <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
+                    <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-400 mt-2 pt-1.5 border-t border-white/20 bg-white/5 -mx-3 px-3 -mb-3 pb-2">
                       <div className="bookmark-timestamp flex items-center gap-1">
                         <Clock className="w-2 h-2" />
                         <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
@@ -1511,19 +1511,19 @@ export function Dashboard() {
                                 onClick={() => handleSwitchFolder(folder.id)}
                                 className={`folder-item cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
                                   folder.id === currentFolderId
-                                    ? 'border-cyan-500 bg-cyan-50'
-                                    : 'border-gray-200 bg-white hover:border-cyan-300'
+                                    ? 'border-cyan-400 bg-cyan-500/20 backdrop-blur-md'
+                                    : 'border-white/20 bg-white/10 backdrop-blur-md hover:border-cyan-400/50'
                                 }`}
                               >
                                 <div className="flex flex-col items-center text-center gap-2">
                                   <Folder className={`w-16 h-16 ${
-                                    folder.id === currentFolderId ? 'text-cyan-600' : 'text-gray-400'
+                                    folder.id === currentFolderId ? 'text-cyan-400' : 'text-gray-400'
                                   }`} />
                                   <div className="w-full">
-                                    <p className="text-sm font-medium text-gray-900 truncate" title={folder.name}>
+                                    <p className="text-sm font-medium text-white truncate" title={folder.name}>
                                       {folder.name}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-0.5">
+                                    <p className="text-xs text-gray-300 mt-0.5">
                                       {folderBookmarks.length} {folderBookmarks.length === 1 ? 'item' : 'items'}
                                     </p>
                                   </div>
@@ -1534,7 +1534,7 @@ export function Dashboard() {
                         </div>
                       </div>
                       {(uncategorized.length > 0 || sortedCategories.length > 0) && (
-                        <div className="folder-separator border-t-2 border-gray-200 my-10"></div>
+                        <div className="folder-separator border-t-2 border-white/20 my-10"></div>
                       )}
                     </>
                   )}
@@ -1543,10 +1543,10 @@ export function Dashboard() {
                   {uncategorized.length > 0 && (
                     <>
                       <div className="category-section">
-                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-teal-500 shadow-sm">
-                          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                        <div className="bg-white/10 backdrop-blur-md rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-400 shadow-sm">
+                          <h2 className="text-xl font-bold text-white flex items-center gap-3">
                             Uncategorized
-                            <span className="text-sm font-normal bg-teal-50 px-3 py-1 rounded-full text-teal-700 border border-teal-200">
+                            <span className="text-sm font-normal bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-200 border border-cyan-400/50">
                               {uncategorized.length}
                             </span>
                           </h2>
@@ -1556,7 +1556,7 @@ export function Dashboard() {
                         </div>
                       </div>
                       {sortedCategories.length > 0 && (
-                        <div className="category-separator border-t-2 border-gray-200 my-10"></div>
+                        <div className="category-separator border-t-2 border-white/20 my-10"></div>
                       )}
                     </>
                   )}
@@ -1565,10 +1565,10 @@ export function Dashboard() {
                   {sortedCategories.map((category, idx) => (
                     <div key={category}>
                       <div className="category-section">
-                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-teal-500 shadow-sm">
-                          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                        <div className="bg-white/10 backdrop-blur-md rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-400 shadow-sm">
+                          <h2 className="text-xl font-bold text-white flex items-center gap-3">
                             {category}
-                            <span className="text-sm font-normal bg-teal-50 px-3 py-1 rounded-full text-teal-700 border border-teal-200">
+                            <span className="text-sm font-normal bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-200 border border-cyan-400/50">
                               {categorizedMap.get(category)!.length}
                             </span>
                           </h2>
@@ -1578,7 +1578,7 @@ export function Dashboard() {
                         </div>
                       </div>
                       {idx < sortedCategories.length - 1 && (
-                        <div className="category-separator border-t-2 border-gray-200 my-10"></div>
+                        <div className="category-separator border-t-2 border-white/20 my-10"></div>
                       )}
                     </div>
                   ))}
