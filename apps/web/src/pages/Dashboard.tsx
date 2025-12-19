@@ -76,9 +76,9 @@ export function Dashboard() {
   const [showImageViewer, setShowImageViewer] = useState(false)
   const [viewingImageBookmark, setViewingImageBookmark] = useState<BookmarkType | null>(null)
 
-  const fetchBookmarks = async () => {
+  const fetchBookmarks = async (skipCache = false) => {
     try {
-      const bookmarksData = await getBookmarks() // Gets first 20 from cache or DB
+      const bookmarksData = await getBookmarks({ skipCache }) // Force fresh data when skipCache=true
       const boardsData = await getBoards()
       const currentId = getCurrentBoardId()
 
@@ -157,7 +157,7 @@ export function Dashboard() {
 
     if (confirm('Are you sure you want to delete this board? All bookmarks in it will be lost.')) {
       await deleteBoard(boardId)
-      await fetchBookmarks()
+      await fetchBookmarks(true) // Skip cache to get fresh data
     }
   }
 
@@ -207,7 +207,7 @@ export function Dashboard() {
         const text = await file.text()
         const data = JSON.parse(text)
         await importAllData(data)
-        await fetchBookmarks()
+        await fetchBookmarks(true) // Skip cache to get fresh data
         alert('Data imported successfully!')
       } catch (error) {
         console.error('Import error:', error)
@@ -221,7 +221,7 @@ export function Dashboard() {
     if (confirm('⚠️ WARNING: This will delete ALL your bookmarks, boards, categories, and tags. This action cannot be undone!\n\nAre you sure you want to continue?')) {
       if (confirm('Are you ABSOLUTELY sure? This is your last chance to back out.')) {
         await clearAllData()
-        await fetchBookmarks()
+        await fetchBookmarks(true) // Skip cache to get fresh data
         alert('All data has been cleared.')
       }
     }
@@ -253,8 +253,19 @@ export function Dashboard() {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
 
-    // Sort categories alphabetically
-    const sortedCategories = Array.from(categorizedMap.keys()).sort()
+    // Sort categories by creation order (oldest category first, newest last)
+    // Category creation is determined by the earliest bookmark in that category
+    const sortedCategories = Array.from(categorizedMap.keys()).sort((catA, catB) => {
+      const bookmarksA = categorizedMap.get(catA)!
+      const bookmarksB = categorizedMap.get(catB)!
+
+      // Find the earliest (oldest) bookmark in each category
+      const earliestA = Math.min(...bookmarksA.map(b => new Date(b.created_at).getTime()))
+      const earliestB = Math.min(...bookmarksB.map(b => new Date(b.created_at).getTime()))
+
+      // Sort by earliest bookmark: oldest category first
+      return earliestA - earliestB
+    })
 
     return { uncategorized, categorizedMap, sortedCategories }
   }
@@ -262,7 +273,7 @@ export function Dashboard() {
   const handleDelete = async (id: string) => {
     if (confirm('Delete this bookmark?')) {
       await deleteBookmark(id)
-      await fetchBookmarks()
+      await fetchBookmarks(true) // Skip cache to get fresh data
     }
   }
 
@@ -313,7 +324,12 @@ export function Dashboard() {
 
   const handleToggleTodo = async (bookmarkId: string, todoId: string) => {
     await toggleTodoItem(bookmarkId, todoId)
-    await fetchBookmarks()
+    await fetchBookmarks(true) // Skip cache to get fresh data
+  }
+
+  // Handler for dialog success callbacks - always skip cache for fresh data
+  const handleDialogSuccess = () => {
+    fetchBookmarks(true)
   }
 
   const handleToggleType = (type: BookmarkTypeFilter) => {
@@ -1241,14 +1257,14 @@ export function Dashboard() {
       <AddBookmarkDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
-        onSuccess={fetchBookmarks}
+        onSuccess={handleDialogSuccess}
       />
 
       {/* Edit Bookmark Dialog */}
       <EditBookmarkDialog
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
-        onSuccess={fetchBookmarks}
+        onSuccess={handleDialogSuccess}
         bookmark={editingBookmark}
       />
 
@@ -1258,14 +1274,14 @@ export function Dashboard() {
         onOpenChange={setShowNoteDialog}
         note={selectedNote}
         bookmarkId={selectedNoteBookmarkId}
-        onSuccess={fetchBookmarks}
+        onSuccess={handleDialogSuccess}
       />
 
       {/* Board Management Dialog */}
       <BoardManagementDialog
         open={showBoardDialog}
         onOpenChange={setShowBoardDialog}
-        onSuccess={fetchBookmarks}
+        onSuccess={handleDialogSuccess}
         mode={boardDialogMode}
         board={editingBoard}
       />
