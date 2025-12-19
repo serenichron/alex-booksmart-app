@@ -869,6 +869,32 @@ export function Dashboard() {
 
       {/* Main Content - With left margin for sidebar */}
       <main className="ml-64 px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumbs */}
+        <div className="breadcrumbs mb-6">
+          <div className="flex items-center gap-2 text-sm">
+            <Layers className="w-4 h-4 text-gray-400" />
+            <button
+              onClick={() => handleSwitchFolder(null)}
+              className={`font-semibold transition-colors ${
+                currentFolderId === null
+                  ? 'text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {boards.find(b => b.id === currentBoardId)?.name || 'Board'}
+            </button>
+            {currentFolderId && (
+              <>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <Folder className="w-4 h-4 text-gray-400" />
+                <span className="font-semibold text-gray-900">
+                  {folders.find(f => f.id === currentFolderId)?.name || 'Folder'}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="stats-card bg-gradient-to-br from-teal-500 to-cyan-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
