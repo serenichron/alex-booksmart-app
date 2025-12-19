@@ -780,7 +780,7 @@ export function Dashboard() {
                 <Plus className="w-4 h-4" />
                 Add Bookmark
               </Button>
-              <Button size="sm" variant="outline" onClick={() => signOut()} title="Sign out">
+              <Button size="sm" variant="outline" onClick={() => signOut()} title="Log out">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>

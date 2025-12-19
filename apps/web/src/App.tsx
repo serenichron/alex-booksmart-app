@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dashboard } from '@/pages/Dashboard'
 import { Landing } from '@/pages/Landing'
 import { Auth } from '@/components/Auth'
@@ -10,6 +10,34 @@ type View = 'landing' | 'signup' | 'signin'
 function AppContent() {
   const { user, loading } = useAuth()
   const [view, setView] = useState<View>('landing')
+
+  // Initialize history state on mount
+  useEffect(() => {
+    // Set initial state if none exists
+    if (!window.history.state?.view) {
+      window.history.replaceState({ view: 'landing' }, '', window.location.href)
+    }
+  }, [])
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.view) {
+        setView(event.state.view)
+      } else {
+        setView('landing')
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // Helper function to change view with history support
+  const navigateToView = (newView: View) => {
+    setView(newView)
+    window.history.pushState({ view: newView }, '', window.location.href)
+  }
 
   if (loading) {
     return (
@@ -28,8 +56,8 @@ function AppContent() {
   if (view === 'landing') {
     return (
       <Landing
-        onGetStarted={() => setView('signup')}
-        onSignIn={() => setView('signin')}
+        onGetStarted={() => navigateToView('signup')}
+        onSignIn={() => navigateToView('signin')}
       />
     )
   }
@@ -38,7 +66,7 @@ function AppContent() {
   return (
     <Auth
       mode={view === 'signup' ? 'signup' : 'signin'}
-      onBack={() => setView('landing')}
+      onBack={() => navigateToView('landing')}
     />
   )
 }
