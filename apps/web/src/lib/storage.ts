@@ -1,4 +1,5 @@
-// Local storage utilities for bookmarks
+// Supabase storage utilities for bookmarks
+import { supabase } from './supabase'
 
 export interface Note {
   id: string
@@ -27,6 +28,8 @@ export interface Bookmark {
   image_url: string | null
   meta_description: string | null
   show_meta_description?: boolean
+  board_id?: string
+  folder_id?: string | null
   notes: Note[]
   todo_items?: TodoItem[]
 }
@@ -39,81 +42,185 @@ export interface Board {
   updated_at: string
 }
 
-const STORAGE_KEY = 'booksmart_bookmarks' // Legacy key for migration
-const BOARDS_KEY = 'booksmart_boards'
+export interface Folder {
+  id: string
+  board_id: string
+  name: string
+  created_at: string
+  updated_at: string
+}
+
+// Cache management
+const CACHE_PREFIX = 'booksmart_cache_'
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+function getCacheKey(key: string): string {
+  return `${CACHE_PREFIX}${key}`
+}
+
+function setCache<T>(key: string, data: T): void {
+  try {
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: Date.now()
+    }
+    localStorage.setItem(getCacheKey(key), JSON.stringify(entry))
+  } catch (err) {
+    console.warn('Failed to set cache:', err)
+  }
+}
+
+function getCache<T>(key: string): T | null {
+  try {
+    const item = localStorage.getItem(getCacheKey(key))
+    if (!item) return null
+
+    const entry: CacheEntry<T> = JSON.parse(item)
+    const age = Date.now() - entry.timestamp
+
+    // Return cached data if it's fresh enough
+    if (age < CACHE_TTL) {
+      return entry.data
+    }
+
+    // Clear stale cache
+    localStorage.removeItem(getCacheKey(key))
+    return null
+  } catch (err) {
+    console.warn('Failed to get cache:', err)
+    return null
+  }
+}
+
+function invalidateCache(pattern?: string): void {
+  try {
+    const keys = Object.keys(localStorage)
+    keys.forEach(key => {
+      if (key.startsWith(CACHE_PREFIX)) {
+        if (!pattern || key.includes(pattern)) {
+          localStorage.removeItem(key)
+        }
+      }
+    })
+  } catch (err) {
+    console.warn('Failed to invalidate cache:', err)
+  }
+}
+
+// Helper to get current user ID
+async function getCurrentUserId(): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('User not authenticated')
+  return user.id
+}
+
+// Board Management - Fetch boards without bookmarks for better performance
+export async function getBoards(): Promise<Board[]> {
+  const userId = await getCurrentUserId()
+
+  const { data: boards, error } = await supabase
+    .from('boards')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+
+  // If no boards exist, create a default one
+  if (!boards || boards.length === 0) {
+    const defaultBoard = await createBoard('My Board')
+    return [defaultBoard]
+  }
+
+  // Return boards with empty bookmarks array (we'll fetch bookmarks separately for current board)
+  return boards.map(board => ({
+    ...board,
+    bookmarks: []
+  }))
+}
+
+// Helper function to get bookmarks for a specific board
+async function getBookmarksByBoardId(
+  boardId: string,
+  options?: { skipCache?: boolean }
+): Promise<Bookmark[]> {
+  const skipCache = options?.skipCache || false
+
+  // Try cache first
+  if (!skipCache) {
+    const cacheKey = `bookmarks_v2_${boardId}_all`
+    const cached = getCache<Bookmark[]>(cacheKey)
+    if (cached) {
+      console.log('[Storage] Using cached bookmarks')
+      return cached
+    }
+  }
+
+  // Use Supabase's query expansion to fetch ALL bookmarks with notes and todos in one query
+  const { data: bookmarks, error } = await supabase
+    .from('bookmarks')
+    .select(`
+      *,
+      notes(*),
+      todo_items(*)
+    `)
+    .eq('board_id', boardId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  // Transform the data to match our Bookmark interface
+  const transformed = (bookmarks || []).map(bookmark => ({
+    ...bookmark,
+    notes: (bookmark.notes || []).sort((a: Note, b: Note) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    ),
+    todo_items: (bookmark.todo_items || []).sort((a: TodoItem, b: TodoItem) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+  }))
+
+  // Debug logging
+  if (transformed.length > 0) {
+    console.log('[Storage] Fetched bookmarks order check:')
+    console.log('  First:', transformed[0].title, '→', transformed[0].created_at)
+    console.log('  Last:', transformed[transformed.length - 1].title, '→', transformed[transformed.length - 1].created_at)
+  }
+
+  // Cache results
+  const cacheKey = `bookmarks_v2_${boardId}_all`
+  setCache(cacheKey, transformed)
+
+  return transformed
+}
+
+// Get bookmark count for a board
+export async function getBookmarkCount(boardId: string): Promise<number> {
+  const cacheKey = `count_${boardId}`
+  const cached = getCache<number>(cacheKey)
+  if (cached !== null) return cached
+
+  const { count, error } = await supabase
+    .from('bookmarks')
+    .select('*', { count: 'exact', head: true })
+    .eq('board_id', boardId)
+
+  if (error) throw error
+
+  const total = count || 0
+  setCache(cacheKey, total)
+  return total
+}
+
+// Current board ID management (stored in localStorage for now)
 const CURRENT_BOARD_KEY = 'booksmart_current_board'
-const CATEGORIES_KEY = 'booksmart_categories'
-const TAGS_KEY = 'booksmart_tags'
-
-// Migrate old bookmarks to new format
-function migrateBookmark(bookmark: any): Bookmark {
-  // If notes is a string, convert to array
-  if (typeof bookmark.notes === 'string') {
-    const notes = bookmark.notes.trim()
-      ? [{
-          id: crypto.randomUUID(),
-          content: bookmark.notes,
-          created_at: bookmark.created_at
-        }]
-      : []
-    bookmark.notes = notes
-  }
-
-  // Add updated_at if missing
-  if (!bookmark.updated_at) {
-    bookmark.updated_at = bookmark.created_at
-  }
-
-  // Add show_meta_description default if missing
-  if (bookmark.show_meta_description === undefined) {
-    bookmark.show_meta_description = true
-  }
-
-  return bookmark as Bookmark
-}
-
-// Board Migration - Convert old bookmark storage to board-based structure
-function migrateToBoards(): void {
-  const boardsData = localStorage.getItem(BOARDS_KEY)
-
-  // If boards already exist, no migration needed
-  if (boardsData) return
-
-  // Check for old bookmarks
-  const oldBookmarksData = localStorage.getItem(STORAGE_KEY)
-  const oldBookmarks = oldBookmarksData ? JSON.parse(oldBookmarksData).map(migrateBookmark) : []
-
-  // Create default board with existing bookmarks
-  const now = new Date().toISOString()
-  const defaultBoard: Board = {
-    id: crypto.randomUUID(),
-    name: 'My Board',
-    bookmarks: oldBookmarks,
-    created_at: now,
-    updated_at: now
-  }
-
-  // Save boards and set current board
-  localStorage.setItem(BOARDS_KEY, JSON.stringify([defaultBoard]))
-  localStorage.setItem(CURRENT_BOARD_KEY, defaultBoard.id)
-
-  // Remove old storage key
-  localStorage.removeItem(STORAGE_KEY)
-}
-
-// Board Management
-export function getBoards(): Board[] {
-  migrateToBoards()
-  const data = localStorage.getItem(BOARDS_KEY)
-  return data ? JSON.parse(data) : []
-}
-
-function saveBoards(boards: Board[]): void {
-  localStorage.setItem(BOARDS_KEY, JSON.stringify(boards))
-}
 
 export function getCurrentBoardId(): string | null {
-  migrateToBoards()
   return localStorage.getItem(CURRENT_BOARD_KEY)
 }
 
@@ -121,314 +228,554 @@ export function setCurrentBoardId(boardId: string): void {
   localStorage.setItem(CURRENT_BOARD_KEY, boardId)
 }
 
-export function getCurrentBoard(): Board | null {
-  const boards = getBoards()
+export async function getCurrentBoard(): Promise<Board | null> {
+  const boards = await getBoards()
   const currentId = getCurrentBoardId()
   return boards.find(b => b.id === currentId) || boards[0] || null
 }
 
-export function createBoard(name: string): Board {
-  const boards = getBoards()
-  const now = new Date().toISOString()
-  const newBoard: Board = {
-    id: crypto.randomUUID(),
-    name,
-    bookmarks: [],
-    created_at: now,
-    updated_at: now
-  }
-  boards.push(newBoard)
-  saveBoards(boards)
-  return newBoard
-}
+export async function createBoard(name: string): Promise<Board> {
+  const userId = await getCurrentUserId()
 
-export function renameBoard(boardId: string, newName: string): void {
-  const boards = getBoards()
-  const board = boards.find(b => b.id === boardId)
-  if (board) {
-    board.name = newName
-    board.updated_at = new Date().toISOString()
-    saveBoards(boards)
+  const { data, error } = await supabase
+    .from('boards')
+    .insert([{ name, user_id: userId }])
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return {
+    ...data,
+    bookmarks: []
   }
 }
 
-export function deleteBoard(boardId: string): void {
-  let boards = getBoards()
+export async function renameBoard(boardId: string, newName: string): Promise<void> {
+  const { error } = await supabase
+    .from('boards')
+    .update({ name: newName })
+    .eq('id', boardId)
+
+  if (error) throw error
+}
+
+export async function deleteBoard(boardId: string): Promise<void> {
+  const boards = await getBoards()
 
   // Don't allow deleting the last board
   if (boards.length <= 1) return
 
-  boards = boards.filter(b => b.id !== boardId)
-  saveBoards(boards)
+  const { error } = await supabase
+    .from('boards')
+    .delete()
+    .eq('id', boardId)
 
-  // If we deleted the current board, switch to the first board
+  if (error) throw error
+
+  // If we deleted the current board, switch to the first remaining board
   if (getCurrentBoardId() === boardId) {
-    setCurrentBoardId(boards[0].id)
+    const remainingBoards = boards.filter(b => b.id !== boardId)
+    if (remainingBoards.length > 0) {
+      setCurrentBoardId(remainingBoards[0].id)
+    }
+  }
+}
+
+// Folders
+const CURRENT_FOLDER_KEY = 'booksmart_current_folder'
+
+export async function getFolders(boardId: string): Promise<Folder[]> {
+  const userId = await getCurrentUserId()
+
+  const { data, error } = await supabase
+    .from('folders')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('board_id', boardId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+
+  return data || []
+}
+
+export function getCurrentFolderId(): string | null {
+  return localStorage.getItem(CURRENT_FOLDER_KEY)
+}
+
+export function setCurrentFolderId(folderId: string | null): void {
+  if (folderId === null) {
+    localStorage.removeItem(CURRENT_FOLDER_KEY)
+  } else {
+    localStorage.setItem(CURRENT_FOLDER_KEY, folderId)
+  }
+}
+
+export async function createFolder(boardId: string, name: string): Promise<Folder> {
+  const userId = await getCurrentUserId()
+
+  const { data, error } = await supabase
+    .from('folders')
+    .insert([{ name, board_id: boardId, user_id: userId }])
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return data
+}
+
+export async function renameFolder(folderId: string, newName: string): Promise<void> {
+  const { error } = await supabase
+    .from('folders')
+    .update({ name: newName })
+    .eq('id', folderId)
+
+  if (error) throw error
+}
+
+export async function deleteFolder(folderId: string): Promise<void> {
+  const { error } = await supabase
+    .from('folders')
+    .delete()
+    .eq('id', folderId)
+
+  if (error) throw error
+
+  // If we deleted the current folder, clear the current folder selection
+  if (getCurrentFolderId() === folderId) {
+    setCurrentFolderId(null)
   }
 }
 
 // Get all bookmarks from all boards (for global search)
-export function getAllBookmarksWithBoard(): Array<Bookmark & { boardId: string; boardName: string }> {
-  const boards = getBoards()
-  const allBookmarks: Array<Bookmark & { boardId: string; boardName: string }> = []
+export async function getAllBookmarksWithBoard(): Promise<Array<Bookmark & { boardId: string; boardName: string }>> {
+  const userId = await getCurrentUserId()
 
-  boards.forEach(board => {
-    board.bookmarks.forEach(bookmark => {
-      allBookmarks.push({
-        ...bookmark,
-        boardId: board.id,
-        boardName: board.name
-      })
-    })
-  })
+  // Fetch all bookmarks with their board info, notes, and todos in one efficient query
+  const { data: bookmarks, error } = await supabase
+    .from('bookmarks')
+    .select(`
+      *,
+      board:boards(id, name),
+      notes(*),
+      todo_items(*)
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
 
-  return allBookmarks
-}
+  if (error) throw error
 
-// Bookmarks - Now operates on current board
-export function getBookmarks(): Bookmark[] {
-  const board = getCurrentBoard()
-  return board ? board.bookmarks : []
-}
-
-export function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' | 'updated_at'>): Bookmark {
-  const boards = getBoards()
-  const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
-
-  if (!board) throw new Error('No current board found')
-
-  const now = new Date().toISOString()
-  const newBookmark: Bookmark = {
+  // Transform to match expected format
+  return (bookmarks || []).map(bookmark => ({
     ...bookmark,
-    id: crypto.randomUUID(),
-    created_at: now,
-    updated_at: now,
+    boardId: bookmark.board.id,
+    boardName: bookmark.board.name,
+    notes: (bookmark.notes || []).sort((a: Note, b: Note) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    ),
+    todo_items: (bookmark.todo_items || []).sort((a: TodoItem, b: TodoItem) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+  }))
+}
+
+// Bookmarks - Now operates on current board with pagination support
+export async function getBookmarks(options?: { skipCache?: boolean }): Promise<Bookmark[]> {
+  const currentBoardId = getCurrentBoardId()
+  if (!currentBoardId) {
+    // If no current board, fetch boards and set first one as current
+    const boards = await getBoards()
+    if (boards.length > 0) {
+      setCurrentBoardId(boards[0].id)
+      return getBookmarksByBoardId(boards[0].id, options)
+    }
+    return []
+  }
+  return getBookmarksByBoardId(currentBoardId, options)
+}
+
+// Prefetch board bookmarks (for hover optimization)
+export async function prefetchBoard(boardId: string): Promise<void> {
+  // Fetch and cache all bookmarks for this board
+  await getBookmarksByBoardId(boardId, { skipCache: false })
+}
+
+export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' | 'updated_at'>): Promise<Bookmark> {
+  const userId = await getCurrentUserId()
+  const currentBoardId = getCurrentBoardId()
+
+  if (!currentBoardId) throw new Error('No current board selected')
+
+  const { data, error} = await supabase
+    .from('bookmarks')
+    .insert([{
+      title: bookmark.title,
+      summary: bookmark.summary,
+      url: bookmark.url,
+      type: bookmark.type,
+      is_favorite: bookmark.is_favorite,
+      categories: bookmark.categories,
+      tags: bookmark.tags,
+      image_url: bookmark.image_url,
+      meta_description: bookmark.meta_description,
+      show_meta_description: bookmark.show_meta_description,
+      user_id: userId,
+      board_id: currentBoardId,
+      folder_id: bookmark.folder_id || null
+    }])
+    .select()
+    .single()
+
+  if (error) throw error
+
+  // If there are notes or todo_items in the bookmark object, save them
+  const newBookmark: Bookmark = {
+    ...data,
+    notes: [],
+    todo_items: []
   }
 
-  board.bookmarks.unshift(newBookmark)
-  board.updated_at = now
-  saveBoards(boards)
+  // Save notes if provided
+  if (bookmark.notes && bookmark.notes.length > 0) {
+    for (const note of bookmark.notes) {
+      await addNoteToBookmark(newBookmark.id, note.content)
+    }
+    newBookmark.notes = bookmark.notes
+  }
+
+  // Save todo items if provided
+  if (bookmark.todo_items && bookmark.todo_items.length > 0) {
+    for (const todo of bookmark.todo_items) {
+      await addTodoItem(newBookmark.id, todo.text)
+    }
+    newBookmark.todo_items = bookmark.todo_items
+  }
+
+  // Invalidate cache for this board (v2 cache keys)
+  invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
+  invalidateCache(`count_${currentBoardId}`)
 
   return newBookmark
 }
 
-export function deleteBookmark(id: string): void {
-  const boards = getBoards()
+export async function deleteBookmark(id: string): Promise<void> {
   const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
 
-  if (!board) return
+  const { error } = await supabase
+    .from('bookmarks')
+    .delete()
+    .eq('id', id)
 
-  board.bookmarks = board.bookmarks.filter(b => b.id !== id)
-  board.updated_at = new Date().toISOString()
-  saveBoards(boards)
+  if (error) throw error
+
+  // Invalidate cache for this board (v2 cache keys)
+  if (currentBoardId) {
+    invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
+    invalidateCache(`count_${currentBoardId}`)
+  }
 }
 
-export function updateBookmark(id: string, updates: Partial<Bookmark>): void {
-  const boards = getBoards()
+export async function updateBookmark(id: string, updates: Partial<Bookmark>): Promise<void> {
   const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
 
-  if (!board) return
+  // Extract only the fields that exist in the bookmarks table
+  const { notes, todo_items, ...bookmarkUpdates } = updates
 
-  const index = board.bookmarks.findIndex(b => b.id === id)
-  if (index !== -1) {
-    board.bookmarks[index] = {
-      ...board.bookmarks[index],
-      ...updates,
-      updated_at: new Date().toISOString()
-    }
-    board.updated_at = new Date().toISOString()
-    saveBoards(boards)
+  const { error } = await supabase
+    .from('bookmarks')
+    .update(bookmarkUpdates)
+    .eq('id', id)
+
+  if (error) throw error
+
+  // Invalidate cache for this board (v2 cache keys)
+  if (currentBoardId) {
+    invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
   }
 }
 
 // Note management
-export function addNoteToBookmark(bookmarkId: string, content: string): Note {
-  const boards = getBoards()
-  const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
+export async function addNoteToBookmark(bookmarkId: string, content: string): Promise<Note> {
+  const { data, error } = await supabase
+    .from('notes')
+    .insert([{ bookmark_id: bookmarkId, content }])
+    .select()
+    .single()
 
-  const note: Note = {
-    id: crypto.randomUUID(),
-    content,
-    created_at: new Date().toISOString()
-  }
+  if (error) throw error
 
-  if (board) {
-    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
-    if (bookmark) {
-      bookmark.notes.unshift(note) // Add to beginning (newest first)
-      bookmark.updated_at = new Date().toISOString()
-      board.updated_at = new Date().toISOString()
-      saveBoards(boards)
-    }
-  }
-
-  return note
+  return data
 }
 
-export function deleteNoteFromBookmark(bookmarkId: string, noteId: string): void {
-  const boards = getBoards()
-  const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
+export async function deleteNoteFromBookmark(bookmarkId: string, noteId: string): Promise<void> {
+  const { error } = await supabase
+    .from('notes')
+    .delete()
+    .eq('id', noteId)
+    .eq('bookmark_id', bookmarkId)
 
-  if (board) {
-    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
-    if (bookmark) {
-      bookmark.notes = bookmark.notes.filter(n => n.id !== noteId)
-      bookmark.updated_at = new Date().toISOString()
-      board.updated_at = new Date().toISOString()
-      saveBoards(boards)
-    }
-  }
+  if (error) throw error
 }
 
-export function updateNoteInBookmark(bookmarkId: string, noteId: string, content: string): void {
-  const boards = getBoards()
-  const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
+export async function updateNoteInBookmark(bookmarkId: string, noteId: string, content: string): Promise<void> {
+  const { error } = await supabase
+    .from('notes')
+    .update({ content })
+    .eq('id', noteId)
+    .eq('bookmark_id', bookmarkId)
 
-  if (board) {
-    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
-    if (bookmark) {
-      const note = bookmark.notes.find(n => n.id === noteId)
-      if (note) {
-        note.content = content
-        bookmark.updated_at = new Date().toISOString()
-        board.updated_at = new Date().toISOString()
-        saveBoards(boards)
-      }
-    }
-  }
+  if (error) throw error
 }
 
 // Todo items management
-export function toggleTodoItem(bookmarkId: string, todoId: string): void {
-  const boards = getBoards()
+export async function toggleTodoItem(bookmarkId: string, todoId: string): Promise<void> {
   const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
 
-  if (board) {
-    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
-    if (bookmark && bookmark.todo_items) {
-      const todoItem = bookmark.todo_items.find(t => t.id === todoId)
-      if (todoItem) {
-        todoItem.completed = !todoItem.completed
-        bookmark.updated_at = new Date().toISOString()
-        board.updated_at = new Date().toISOString()
-        saveBoards(boards)
-      }
-    }
+  // First get the current todo item
+  const { data: todoItem, error: fetchError } = await supabase
+    .from('todo_items')
+    .select('completed')
+    .eq('id', todoId)
+    .eq('bookmark_id', bookmarkId)
+    .single()
+
+  if (fetchError) throw fetchError
+
+  // Toggle the completed state
+  const { error } = await supabase
+    .from('todo_items')
+    .update({ completed: !todoItem.completed })
+    .eq('id', todoId)
+    .eq('bookmark_id', bookmarkId)
+
+  if (error) throw error
+
+  // Invalidate cache to ensure UI updates
+  if (currentBoardId) {
+    invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
   }
 }
 
-export function addTodoItem(bookmarkId: string, text: string): TodoItem {
-  const boards = getBoards()
-  const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
+export async function addTodoItem(bookmarkId: string, text: string): Promise<TodoItem> {
+  const { data, error } = await supabase
+    .from('todo_items')
+    .insert([{ bookmark_id: bookmarkId, text, completed: false }])
+    .select()
+    .single()
 
-  const todoItem: TodoItem = {
-    id: crypto.randomUUID(),
-    text,
-    completed: false,
-    created_at: new Date().toISOString()
-  }
+  if (error) throw error
 
-  if (board) {
-    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
-    if (bookmark) {
-      if (!bookmark.todo_items) {
-        bookmark.todo_items = []
-      }
-      bookmark.todo_items.push(todoItem)
-      bookmark.updated_at = new Date().toISOString()
-      board.updated_at = new Date().toISOString()
-      saveBoards(boards)
-    }
-  }
-
-  return todoItem
+  return data
 }
 
-export function deleteTodoItem(bookmarkId: string, todoId: string): void {
-  const boards = getBoards()
-  const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
+export async function deleteTodoItem(bookmarkId: string, todoId: string): Promise<void> {
+  const { error } = await supabase
+    .from('todo_items')
+    .delete()
+    .eq('id', todoId)
+    .eq('bookmark_id', bookmarkId)
 
-  if (board) {
-    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
-    if (bookmark && bookmark.todo_items) {
-      bookmark.todo_items = bookmark.todo_items.filter(t => t.id !== todoId)
-      bookmark.updated_at = new Date().toISOString()
-      board.updated_at = new Date().toISOString()
-      saveBoards(boards)
-    }
-  }
+  if (error) throw error
 }
 
-export function updateTodoItem(bookmarkId: string, todoId: string, text: string): void {
-  const boards = getBoards()
-  const currentBoardId = getCurrentBoardId()
-  const board = boards.find(b => b.id === currentBoardId)
+export async function updateTodoItem(bookmarkId: string, todoId: string, text: string): Promise<void> {
+  const { error } = await supabase
+    .from('todo_items')
+    .update({ text })
+    .eq('id', todoId)
+    .eq('bookmark_id', bookmarkId)
 
-  if (board) {
-    const bookmark = board.bookmarks.find(b => b.id === bookmarkId)
-    if (bookmark && bookmark.todo_items) {
-      const todoItem = bookmark.todo_items.find(t => t.id === todoId)
-      if (todoItem) {
-        todoItem.text = text
-        bookmark.updated_at = new Date().toISOString()
-        board.updated_at = new Date().toISOString()
-        saveBoards(boards)
-      }
-    }
-  }
+  if (error) throw error
 }
 
-// Categories
-export function getCategories(): string[] {
-  const data = localStorage.getItem(CATEGORIES_KEY)
-  return data ? JSON.parse(data) : []
+// Categories - Extract from all bookmarks
+export async function getCategories(): Promise<string[]> {
+  const bookmarks = await getBookmarks()
+  const categoriesSet = new Set<string>()
+
+  bookmarks.forEach(bookmark => {
+    bookmark.categories.forEach(cat => categoriesSet.add(cat))
+  })
+
+  return Array.from(categoriesSet).sort()
 }
 
-export function addCategory(category: string): void {
-  const categories = getCategories()
-  if (!categories.includes(category)) {
-    categories.push(category)
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories))
-  }
+export async function addCategory(_category: string): Promise<void> {
+  // Categories are stored as arrays in bookmarks, no separate storage needed
+  // This function is kept for compatibility but doesn't need to do anything
 }
 
-// Tags
-export function getTags(): string[] {
-  const data = localStorage.getItem(TAGS_KEY)
-  return data ? JSON.parse(data) : []
+// Tags - Extract from all bookmarks
+export async function getTags(): Promise<string[]> {
+  const bookmarks = await getBookmarks()
+  const tagsSet = new Set<string>()
+
+  bookmarks.forEach(bookmark => {
+    bookmark.tags.forEach(tag => tagsSet.add(tag))
+  })
+
+  return Array.from(tagsSet).sort()
 }
 
-export function addTag(tag: string): void {
-  const tags = getTags()
-  if (!tags.includes(tag)) {
-    tags.push(tag)
-    localStorage.setItem(TAGS_KEY, JSON.stringify(tags))
-  }
+export async function addTag(_tag: string): Promise<void> {
+  // Tags are stored as arrays in bookmarks, no separate storage needed
+  // This function is kept for compatibility but doesn't need to do anything
 }
 
 // Stats
-export function getStats() {
-  const bookmarks = getBookmarks()
-  const categories = getCategories()
-  const tags = getTags()
+export async function getStats() {
+  const currentBoardId = getCurrentBoardId()
 
+  if (!currentBoardId) {
+    return {
+      total: 0,
+      categories: 0,
+      tags: 0,
+      thisWeek: 0,
+    }
+  }
+
+  // Get actual total count from database
+  const total = await getBookmarkCount(currentBoardId)
+
+  // Get categories and tags (these are quick, no pagination needed)
+  const categories = await getCategories()
+  const tags = await getTags()
+
+  // Count bookmarks from this week
   const weekAgo = new Date()
   weekAgo.setDate(weekAgo.getDate() - 7)
-  const thisWeek = bookmarks.filter(b => new Date(b.created_at) >= weekAgo).length
+
+  const { count: thisWeekCount, error } = await supabase
+    .from('bookmarks')
+    .select('*', { count: 'exact', head: true })
+    .eq('board_id', currentBoardId)
+    .gte('created_at', weekAgo.toISOString())
+
+  if (error) throw error
 
   return {
-    total: bookmarks.length,
+    total,
     categories: categories.length,
     tags: tags.length,
-    thisWeek,
+    thisWeek: thisWeekCount || 0,
   }
+}
+
+// Export/Import/Clear functions
+export interface ExportData {
+  boards: Board[]
+  currentBoardId: string | null
+  categories: string[]
+  tags: string[]
+  exportedAt: string
+  version: string
+}
+
+export async function exportAllData(): Promise<ExportData> {
+  return {
+    boards: await getBoards(),
+    currentBoardId: getCurrentBoardId(),
+    categories: await getCategories(),
+    tags: await getTags(),
+    exportedAt: new Date().toISOString(),
+    version: '1.0'
+  }
+}
+
+export async function importAllData(data: ExportData): Promise<void> {
+  // Validate data structure
+  if (!data.boards || !Array.isArray(data.boards)) {
+    throw new Error('Invalid export data: missing boards array')
+  }
+
+  const userId = await getCurrentUserId()
+
+  // Import each board
+  for (const board of data.boards) {
+    // Create the board
+    const { data: newBoard, error: boardError } = await supabase
+      .from('boards')
+      .insert([{ name: board.name, user_id: userId }])
+      .select()
+      .single()
+
+    if (boardError) throw boardError
+
+    // Import bookmarks for this board
+    for (const bookmark of board.bookmarks) {
+      // Create bookmark
+      const { data: newBookmark, error: bookmarkError } = await supabase
+        .from('bookmarks')
+        .insert([{
+          title: bookmark.title,
+          summary: bookmark.summary,
+          url: bookmark.url,
+          type: bookmark.type,
+          is_favorite: bookmark.is_favorite,
+          categories: bookmark.categories,
+          tags: bookmark.tags,
+          image_url: bookmark.image_url,
+          meta_description: bookmark.meta_description,
+          show_meta_description: bookmark.show_meta_description,
+          user_id: userId,
+          board_id: newBoard.id
+        }])
+        .select()
+        .single()
+
+      if (bookmarkError) throw bookmarkError
+
+      // Import notes
+      if (bookmark.notes && bookmark.notes.length > 0) {
+        const notesToInsert = bookmark.notes.map(note => ({
+          bookmark_id: newBookmark.id,
+          content: note.content
+        }))
+
+        const { error: notesError } = await supabase
+          .from('notes')
+          .insert(notesToInsert)
+
+        if (notesError) throw notesError
+      }
+
+      // Import todo items
+      if (bookmark.todo_items && bookmark.todo_items.length > 0) {
+        const todosToInsert = bookmark.todo_items.map(todo => ({
+          bookmark_id: newBookmark.id,
+          text: todo.text,
+          completed: todo.completed
+        }))
+
+        const { error: todosError } = await supabase
+          .from('todo_items')
+          .insert(todosToInsert)
+
+        if (todosError) throw todosError
+      }
+    }
+
+    // Set the first imported board as current if no current board is set
+    if (!getCurrentBoardId() && newBoard) {
+      setCurrentBoardId(newBoard.id)
+    }
+  }
+}
+
+export async function clearAllData(): Promise<void> {
+  const userId = await getCurrentUserId()
+
+  // Delete all boards (cascades to bookmarks, notes, and todos)
+  const { error } = await supabase
+    .from('boards')
+    .delete()
+    .eq('user_id', userId)
+
+  if (error) throw error
+
+  // Clear current board from localStorage
+  localStorage.removeItem(CURRENT_BOARD_KEY)
 }

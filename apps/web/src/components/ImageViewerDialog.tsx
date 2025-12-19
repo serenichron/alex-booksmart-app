@@ -1,4 +1,4 @@
-import { ExternalLink, X, Share2, Edit } from 'lucide-react'
+import { ExternalLink, X, Share2, Pencil } from 'lucide-react'
 import { useEffect } from 'react'
 import type { Bookmark } from '@/lib/storage'
 
@@ -53,7 +53,7 @@ export function ImageViewerDialog({
       <div className="relative flex flex-col items-center max-w-[90vw] max-h-[90vh]">
         {/* Title above image */}
         {bookmark.title && (
-          <h2 className="text-white text-xl font-semibold mb-4 text-center max-w-3xl">
+          <h2 className="text-white text-xl font-semibold mb-4 text-left max-w-3xl w-full">
             {bookmark.title}
           </h2>
         )}
@@ -64,8 +64,8 @@ export function ImageViewerDialog({
             <img
               src={imageUrl}
               alt={bookmark.title || 'Image'}
-              className="max-w-full max-h-[calc(90vh-100px)] object-contain border-2 rounded-sm"
-              style={{ borderColor: '#cacaca' }}
+              className="max-w-full max-h-[calc(90vh-100px)] object-contain border-2 rounded-lg"
+              style={{ borderColor: '#666' }}
               onError={(e) => {
                 const fallback = bookmark.image_url || bookmark.url
                 if (fallback && fallback !== e.currentTarget.src) {
@@ -104,7 +104,7 @@ export function ImageViewerDialog({
                 className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg transition-all backdrop-blur-sm"
                 title="Edit"
               >
-                <Edit className="w-5 h-5" />
+                <Pencil className="w-5 h-5" />
               </button>
             )}
             <button

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -7,9 +7,11 @@ import { AddBookmarkDialog } from '@/components/AddBookmarkDialog'
 import { EditBookmarkDialog } from '@/components/EditBookmarkDialog'
 import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
+import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react'
 import { format } from 'date-fns'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   getBookmarks,
   getStats,
@@ -19,11 +21,18 @@ import {
   getCurrentBoardId,
   setCurrentBoardId,
   deleteBoard,
-  getAllBookmarksWithBoard,
+  getFolders,
+  getCurrentFolderId,
+  setCurrentFolderId,
+  deleteFolder,
+  exportAllData,
+  importAllData,
+  clearAllData,
+  prefetchBoard,
   type Bookmark as BookmarkType,
   type Note,
-  type TodoItem,
-  type Board
+  type Board,
+  type Folder as FolderType
 } from '@/lib/storage'
 
 interface BookmarkWithDetails extends BookmarkType {}
@@ -32,6 +41,7 @@ type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo'
 type SearchMode = 'board' | 'global'
 
 export function Dashboard() {
+  const { signOut } = useAuth()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingBookmark, setEditingBookmark] = useState<BookmarkType | null>(null)
@@ -61,16 +71,32 @@ export function Dashboard() {
   const [showImageViewer, setShowImageViewer] = useState(false)
   const [viewingImageBookmark, setViewingImageBookmark] = useState<BookmarkType | null>(null)
 
-  const fetchBookmarks = () => {
+  // Folder management state
+  const [folders, setFolders] = useState<FolderType[]>([])
+  const [currentFolderId, setCurrentFolderIdState] = useState<string | null>(null)
+  const [showFolderDialog, setShowFolderDialog] = useState(false)
+  const [folderDialogMode, setFolderDialogMode] = useState<'create' | 'rename'>('create')
+  const [editingFolder, setEditingFolder] = useState<FolderType | null>(null)
+  const [expandedBoards, setExpandedBoards] = useState<Set<string>>(new Set())
+
+  const fetchBookmarks = async (skipCache = false) => {
     try {
-      const bookmarksData = getBookmarks()
-      const boardsData = getBoards()
+      const bookmarksData = await getBookmarks({ skipCache }) // Force fresh data when skipCache=true
+      const boardsData = await getBoards()
       const currentId = getCurrentBoardId()
+      const currentFoldId = getCurrentFolderId()
 
       setBookmarks(bookmarksData)
       setBoards(boardsData)
       setCurrentBoardIdState(currentId)
-      setStats(getStats())
+      setCurrentFolderIdState(currentFoldId)
+      setStats(await getStats())
+
+      // Fetch folders for current board
+      if (currentId) {
+        const foldersData = await getFolders(currentId)
+        setFolders(foldersData)
+      }
     } catch (error) {
       console.error('Error fetching bookmarks:', error)
     } finally {
@@ -78,10 +104,24 @@ export function Dashboard() {
     }
   }
 
-  const handleSwitchBoard = (boardId: string) => {
+  const handleSwitchBoard = async (boardId: string) => {
     setCurrentBoardId(boardId)
-    fetchBookmarks()
+    setCurrentFolderId(null) // Clear folder selection when switching boards
+    setBookmarks([]) // Clear bookmarks immediately for instant board switch
+    setFolders([]) // Clear folders
+    setLoading(true)
+    await fetchBookmarks()
   }
+
+  const handleSwitchFolder = (folderId: string | null) => {
+    setCurrentFolderId(folderId)
+    setCurrentFolderIdState(folderId)
+  }
+
+  const handleBoardHover = useCallback((boardId: string) => {
+    // Prefetch board bookmarks on hover
+    prefetchBoard(boardId)
+  }, [])
 
   const handleCreateBoard = () => {
     setBoardDialogMode('create')
@@ -95,16 +135,51 @@ export function Dashboard() {
     setShowBoardDialog(true)
   }
 
-  const handleDeleteBoard = (boardId: string) => {
+  const handleDeleteBoard = async (boardId: string) => {
     if (boards.length <= 1) {
       alert('Cannot delete the last board')
       return
     }
 
     if (confirm('Are you sure you want to delete this board? All bookmarks in it will be lost.')) {
-      deleteBoard(boardId)
-      fetchBookmarks()
+      await deleteBoard(boardId)
+      await fetchBookmarks(true) // Skip cache to get fresh data
     }
+  }
+
+  const handleCreateFolder = () => {
+    // Ensure current board is expanded when creating folder
+    if (currentBoardId) {
+      setExpandedBoards(new Set([currentBoardId]))
+    }
+    setFolderDialogMode('create')
+    setEditingFolder(null)
+    setShowFolderDialog(true)
+  }
+
+  const handleRenameFolder = (folder: FolderType) => {
+    setFolderDialogMode('rename')
+    setEditingFolder(folder)
+    setShowFolderDialog(true)
+  }
+
+  const handleDeleteFolder = async (folderId: string) => {
+    if (confirm('Are you sure you want to delete this folder? Bookmarks will be moved to uncategorized.')) {
+      await deleteFolder(folderId)
+      await fetchBookmarks(true) // Skip cache to get fresh data
+    }
+  }
+
+  const handleToggleBoardExpanded = (boardId: string) => {
+    setExpandedBoards(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(boardId)) {
+        newSet.delete(boardId)
+      } else {
+        newSet.add(boardId)
+      }
+      return newSet
+    })
   }
 
   const handleViewImage = (bookmark: BookmarkType) => {
@@ -112,21 +187,128 @@ export function Dashboard() {
     setShowImageViewer(true)
   }
 
-  const handleImageNoteClick = (note: Note) => {
-    if (viewingImageBookmark) {
-      setSelectedNote(note)
-      setSelectedNoteBookmarkId(viewingImageBookmark.id)
-      setShowImageViewer(false)
-      setShowNoteDialog(true)
+  const handleExport = async () => {
+    try {
+      const data = await exportAllData()
+      const json = JSON.stringify(data, null, 2)
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `booksmart-backup-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      alert('Data exported successfully!')
+    } catch (error) {
+      console.error('Export error:', error)
+      alert('Failed to export data')
     }
   }
 
-  // Group bookmarks by category
+  const handleImport = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'application/json'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+
+      try {
+        const text = await file.text()
+        const data = JSON.parse(text)
+        await importAllData(data)
+        await fetchBookmarks(true) // Skip cache to get fresh data
+        alert('Data imported successfully!')
+      } catch (error) {
+        console.error('Import error:', error)
+        alert('Failed to import data. Please check the file format.')
+      }
+    }
+    input.click()
+  }
+
+  const handleClearAccount = async () => {
+    if (confirm('⚠️ WARNING: This will delete ALL your bookmarks, boards, categories, and tags. This action cannot be undone!\n\nAre you sure you want to continue?')) {
+      if (confirm('Are you ABSOLUTELY sure? This is your last chance to back out.')) {
+        await clearAllData()
+        await fetchBookmarks(true) // Skip cache to get fresh data
+        alert('All data has been cleared.')
+      }
+    }
+  }
+
+  // Group bookmarks by folder and category
   const groupedByCategory = () => {
-    const uncategorized = filteredBookmarks.filter(b => b.categories.length === 0)
-    const categorizedMap = new Map<string, BookmarkWithDetails[]>()
+    // If a folder is selected, use simpler category grouping
+    if (currentFolderId) {
+      const uncategorized = filteredBookmarks.filter(b => b.categories.length === 0)
+      const categorizedMap = new Map<string, BookmarkWithDetails[]>()
+
+      filteredBookmarks.forEach(bookmark => {
+        bookmark.categories.forEach(category => {
+          if (!categorizedMap.has(category)) {
+            categorizedMap.set(category, [])
+          }
+          categorizedMap.get(category)!.push(bookmark)
+        })
+      })
+
+      // Sort bookmarks within each category by created_at (newest first)
+      categorizedMap.forEach((bookmarks) => {
+        bookmarks.sort((a, b) => {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        })
+      })
+
+      uncategorized.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+
+      const sortedCategories = Array.from(categorizedMap.keys()).sort((catA, catB) => {
+        const bookmarksA = categorizedMap.get(catA)!
+        const bookmarksB = categorizedMap.get(catB)!
+        const earliestA = Math.min(...bookmarksA.map(b => new Date(b.created_at).getTime()))
+        const earliestB = Math.min(...bookmarksB.map(b => new Date(b.created_at).getTime()))
+        return earliestA - earliestB
+      })
+
+      return { uncategorized, categorizedMap, sortedCategories, folders: [], folderMap: new Map() }
+    }
+
+    // When no folder is selected, group by folders first
+    const folderMap = new Map<string, BookmarkWithDetails[]>()
+    const noFolderBookmarks: BookmarkWithDetails[] = []
+
+    // Initialize folderMap with all folders (including empty ones)
+    folders.forEach(folder => {
+      folderMap.set(folder.id, [])
+    })
 
     filteredBookmarks.forEach(bookmark => {
+      if (bookmark.folder_id) {
+        if (!folderMap.has(bookmark.folder_id)) {
+          folderMap.set(bookmark.folder_id, [])
+        }
+        folderMap.get(bookmark.folder_id)!.push(bookmark)
+      } else {
+        noFolderBookmarks.push(bookmark)
+      }
+    })
+
+    // Sort bookmarks within each folder by created_at (newest first)
+    folderMap.forEach((bookmarks) => {
+      bookmarks.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+    })
+
+    // Group no-folder bookmarks by category
+    const uncategorized = noFolderBookmarks.filter(b => b.categories.length === 0)
+    const categorizedMap = new Map<string, BookmarkWithDetails[]>()
+
+    noFolderBookmarks.forEach(bookmark => {
       bookmark.categories.forEach(category => {
         if (!categorizedMap.has(category)) {
           categorizedMap.set(category, [])
@@ -135,16 +317,31 @@ export function Dashboard() {
       })
     })
 
-    // Sort categories alphabetically
-    const sortedCategories = Array.from(categorizedMap.keys()).sort()
+    categorizedMap.forEach((bookmarks) => {
+      bookmarks.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+    })
 
-    return { uncategorized, categorizedMap, sortedCategories }
+    uncategorized.sort((a, b) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+
+    const sortedCategories = Array.from(categorizedMap.keys()).sort((catA, catB) => {
+      const bookmarksA = categorizedMap.get(catA)!
+      const bookmarksB = categorizedMap.get(catB)!
+      const earliestA = Math.min(...bookmarksA.map(b => new Date(b.created_at).getTime()))
+      const earliestB = Math.min(...bookmarksB.map(b => new Date(b.created_at).getTime()))
+      return earliestA - earliestB
+    })
+
+    return { uncategorized, categorizedMap, sortedCategories, folders, folderMap }
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Delete this bookmark?')) {
-      deleteBookmark(id)
-      fetchBookmarks()
+      await deleteBookmark(id)
+      await fetchBookmarks(true) // Skip cache to get fresh data
     }
   }
 
@@ -193,18 +390,57 @@ export function Dashboard() {
     })
   }
 
-  const handleToggleTodo = (bookmarkId: string, todoId: string) => {
-    toggleTodoItem(bookmarkId, todoId)
-    fetchBookmarks()
+  const handleToggleTodo = async (bookmarkId: string, todoId: string) => {
+    // Optimistic update: immediately update UI
+    setBookmarks(prev => prev.map(bookmark => {
+      if (bookmark.id === bookmarkId && bookmark.todo_items) {
+        return {
+          ...bookmark,
+          todo_items: bookmark.todo_items.map(item =>
+            item.id === todoId
+              ? { ...item, completed: !item.completed }
+              : item
+          )
+        }
+      }
+      return bookmark
+    }))
+
+    // Update database in background
+    try {
+      await toggleTodoItem(bookmarkId, todoId)
+    } catch (error) {
+      console.error('Failed to toggle todo:', error)
+      // Revert optimistic update on error
+      await fetchBookmarks(true)
+    }
   }
 
-  const handleToggleType = (type: BookmarkTypeFilter) => {
+  // Handler for dialog success callbacks - always skip cache for fresh data
+  const handleDialogSuccess = async () => {
+    await fetchBookmarks(true)
+    // Keep current board expanded after folder operations
+    if (currentBoardId) {
+      setExpandedBoards(new Set([currentBoardId]))
+    }
+  }
+
+  const handleToggleType = (type: BookmarkTypeFilter, checked?: boolean) => {
     setSelectedTypes(prev => {
       const newSet = new Set(prev)
-      if (newSet.has(type)) {
-        newSet.delete(type)
+      // Use the checked parameter if provided, otherwise toggle
+      if (checked !== undefined) {
+        if (checked) {
+          newSet.add(type)
+        } else {
+          newSet.delete(type)
+        }
       } else {
-        newSet.add(type)
+        if (newSet.has(type)) {
+          newSet.delete(type)
+        } else {
+          newSet.add(type)
+        }
       }
       return newSet
     })
@@ -275,46 +511,44 @@ export function Dashboard() {
       .map(item => item.bookmark)
   }
 
-  // Filter bookmarks based on selected types and search query
-  const filteredBookmarks = (() => {
+  // Filter bookmarks based on selected types and search query (memoized for performance)
+  const filteredBookmarks = useMemo(() => {
     let filtered: BookmarkWithDetails[]
 
-    // Check if we're using global search mode
-    if (searchMode === 'global' && searchQuery.trim()) {
-      // Global search across all boards
-      const allBookmarks = getAllBookmarksWithBoard()
+    // Board-wise search (global search not implemented in this version)
+    // First filter by folder if one is selected
+    let folderFiltered = bookmarks
+    if (currentFolderId) {
+      folderFiltered = bookmarks.filter(bookmark => bookmark.folder_id === currentFolderId)
+    }
 
-      // Filter by type
-      filtered = allBookmarks.filter(bookmark => {
-        if (selectedTypes.size === 0) return false
-        return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
-      })
+    // Then filter by type
+    filtered = folderFiltered.filter(bookmark => {
+      if (selectedTypes.size === 0) return false
+      return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
+    })
 
-      // Apply search
+    // Then apply search
+    if (searchQuery.trim()) {
       filtered = searchBookmarks(filtered, searchQuery)
-    } else {
-      // Board-wise search (default)
-      // First filter by type
-      filtered = bookmarks.filter(bookmark => {
-        if (selectedTypes.size === 0) return false
-        return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
-      })
-
-      // Then apply search
-      if (searchQuery.trim()) {
-        filtered = searchBookmarks(filtered, searchQuery)
-      }
     }
 
     return filtered
-  })()
+  }, [bookmarks, selectedTypes, searchQuery, currentFolderId])
 
   useEffect(() => {
-    fetchBookmarks()
+    const loadInitialData = async () => {
+      await fetchBookmarks()
+      // Auto-expand current board if it has folders
+      if (currentBoardId && folders.length > 0) {
+        setExpandedBoards(new Set([currentBoardId]))
+      }
+    }
+    loadInitialData()
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/40 via-slate-50 to-indigo-50/40">
+    <div className="min-h-screen" style={{ backgroundColor: '#f1f6f5' }}>
       {/* Header - Full Width */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -378,9 +612,25 @@ export function Dashboard() {
                   Search
                 </Button>
               )}
+              <Button size="sm" variant="outline" onClick={handleExport} title="Export all data">
+                <Upload className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleImport} title="Import data">
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <AlertTriangle className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleCreateFolder} className="text-teal-600 hover:text-teal-700 hover:bg-teal-50">
+                <Folder className="w-4 h-4" />
+                New Folder
+              </Button>
               <Button size="sm" onClick={() => setShowAddDialog(true)}>
                 <Plus className="w-4 h-4" />
                 Add Bookmark
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => signOut()} title="Sign out">
+                <LogOut className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -398,7 +648,7 @@ export function Dashboard() {
               <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('link')}
-                  onCheckedChange={() => handleToggleType('link')}
+                  onCheckedChange={(checked) => handleToggleType('link', checked as boolean)}
                 />
                 <LinkIcon className="w-4 h-4 text-blue-600" />
                 <span className="text-sm text-gray-700">Links</span>
@@ -407,7 +657,7 @@ export function Dashboard() {
               <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('text')}
-                  onCheckedChange={() => handleToggleType('text')}
+                  onCheckedChange={(checked) => handleToggleType('text', checked as boolean)}
                 />
                 <FileText className="w-4 h-4 text-yellow-600" />
                 <span className="text-sm text-gray-700">Text</span>
@@ -416,7 +666,7 @@ export function Dashboard() {
               <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('image')}
-                  onCheckedChange={() => handleToggleType('image')}
+                  onCheckedChange={(checked) => handleToggleType('image', checked as boolean)}
                 />
                 <ImageIcon className="w-4 h-4 text-green-600" />
                 <span className="text-sm text-gray-700">Images</span>
@@ -425,7 +675,7 @@ export function Dashboard() {
               <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('todo')}
-                  onCheckedChange={() => handleToggleType('todo')}
+                  onCheckedChange={(checked) => handleToggleType('todo', checked as boolean)}
                 />
                 <CheckSquare className="w-4 h-4 text-purple-600" />
                 <span className="text-sm text-gray-700">To-dos</span>
@@ -468,50 +718,150 @@ export function Dashboard() {
             </div>
 
             <div className="space-y-0.5">
-              {boards.map((board) => (
-                <div
-                  key={board.id}
-                  className={`flex items-center justify-between p-1.5 rounded cursor-pointer group ${
-                    board.id === currentBoardId
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'hover:bg-gray-50'
-                  }`}
-                  onClick={() => handleSwitchBoard(board.id)}
-                >
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <Layers className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 truncate">{board.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleRenameBoard(board)
-                      }}
-                      className="h-5 w-5 p-0"
-                      title="Rename board"
+              {boards.map((board) => {
+                const boardFolders = board.id === currentBoardId ? folders : []
+                const isExpanded = expandedBoards.has(board.id)
+
+                return (
+                  <div key={board.id} className="space-y-1">
+                    {/* Board Row */}
+                    <div
+                      className={`flex items-center justify-between p-1.5 rounded group ${
+                        board.id === currentBoardId && !currentFolderId
+                          ? 'bg-blue-50 border border-blue-200'
+                          : 'hover:bg-gray-50'
+                      }`}
                     >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                    {boards.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteBoard(board.id)
+                      <div
+                        className="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer"
+                        onClick={() => {
+                          if (board.id !== currentBoardId) {
+                            handleSwitchBoard(board.id)
+                            setExpandedBoards(new Set([board.id]))
+                          } else {
+                            handleSwitchFolder(null)
+                          }
                         }}
-                        className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        title="Delete board"
+                        onMouseEnter={() => handleBoardHover(board.id)}
                       >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                        {board.id === currentBoardId && boardFolders.length > 0 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleToggleBoardExpanded(board.id)
+                            }}
+                            className="p-0.5 hover:bg-gray-200 rounded"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="w-3 h-3 text-gray-600" />
+                            ) : (
+                              <ChevronRight className="w-3 h-3 text-gray-600" />
+                            )}
+                          </button>
+                        )}
+                        <Layers className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 truncate">{board.name}</span>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (board.id !== currentBoardId) {
+                              handleSwitchBoard(board.id)
+                            }
+                            setExpandedBoards(new Set([board.id]))
+                            handleCreateFolder()
+                          }}
+                          className="h-5 w-5 p-0 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                          title="New folder"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRenameBoard(board)
+                          }}
+                          className="h-5 w-5 p-0"
+                          title="Rename board"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        {boards.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteBoard(board.id)
+                            }}
+                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            title="Delete board"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Folders List (only shown for current board when expanded) */}
+                    {board.id === currentBoardId && isExpanded && boardFolders.length > 0 && (
+                      <div className="ml-5 space-y-0.5">
+                        {boardFolders.map((folder) => (
+                          <div
+                            key={folder.id}
+                            className={`flex items-center justify-between p-1.5 rounded cursor-pointer group ${
+                              folder.id === currentFolderId
+                                ? 'bg-teal-50 border border-teal-200'
+                                : 'hover:bg-gray-50'
+                            }`}
+                            onClick={() => handleSwitchFolder(folder.id)}
+                          >
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              {folder.id === currentFolderId ? (
+                                <FolderOpen className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+                              ) : (
+                                <Folder className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                              )}
+                              <span className="text-xs text-gray-600 truncate">{folder.name}</span>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleRenameFolder(folder)
+                                }}
+                                className="h-4 w-4 p-0"
+                                title="Rename folder"
+                              >
+                                <Edit className="w-2.5 h-2.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteFolder(folder.id)
+                                }}
+                                className="h-4 w-4 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title="Delete folder"
+                              >
+                                <Trash2 className="w-2.5 h-2.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
@@ -519,22 +869,48 @@ export function Dashboard() {
 
       {/* Main Content - With left margin for sidebar */}
       <main className="ml-64 px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumbs */}
+        <div className="breadcrumbs mb-6">
+          <div className="flex items-center gap-2 text-sm">
+            <Layers className="w-4 h-4 text-gray-400" />
+            <button
+              onClick={() => handleSwitchFolder(null)}
+              className={`font-semibold transition-colors ${
+                currentFolderId === null
+                  ? 'text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {boards.find(b => b.id === currentBoardId)?.name || 'Board'}
+            </button>
+            {currentFolderId && (
+              <>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <Folder className="w-4 h-4 text-gray-400" />
+                <span className="font-semibold text-gray-900">
+                  {folders.find(f => f.id === currentFolderId)?.name || 'Folder'}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-blue-100">Total Bookmarks</div>
+          <div className="stats-card bg-gradient-to-br from-teal-500 to-cyan-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-teal-100">Total Bookmarks</div>
             <div className="text-3xl font-bold text-white">{stats.total}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-blue-100">Categories</div>
+          <div className="stats-card bg-gradient-to-br from-rose-500 to-pink-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-rose-100">Categories</div>
             <div className="text-3xl font-bold text-white">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-blue-100">Tags</div>
-            <div className="text-3xl font-bold text-white">{stats.tags}</div>
+          <div className="stats-card bg-gradient-to-br from-emerald-500 to-teal-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-emerald-100">Folders</div>
+            <div className="text-3xl font-bold text-white">{folders.length}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-blue-100">This Week</div>
+          <div className="stats-card bg-gradient-to-br from-violet-500 to-purple-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
+            <div className="text-sm text-violet-100">This Week</div>
             <div className="text-3xl font-bold text-white">{stats.thisWeek}</div>
           </div>
         </div>
@@ -589,7 +965,7 @@ export function Dashboard() {
           /* Bookmarks Organized by Category */
           <div className="bookmarks-by-category space-y-10">
             {(() => {
-              const { uncategorized, categorizedMap, sortedCategories } = groupedByCategory()
+              const { uncategorized, categorizedMap, sortedCategories, folders: boardFolders, folderMap } = groupedByCategory()
 
               const renderBookmarkCard = (bookmark: BookmarkWithDetails) => {
                 const isTextBookmark = !bookmark.url && bookmark.type === 'text'
@@ -608,11 +984,11 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg hover:scale-[1.01] transition-all duration-200 break-inside-avoid mb-4 relative group ${
+                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-sm'
+                      ? 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200 shadow-sm'
                       : isTextBookmark
-                      ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 shadow-sm'
+                      ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-sm'
                       : isImageBookmark
                       ? 'bg-black border-gray-800'
                       : 'bg-white border-gray-200/60 shadow-sm'
@@ -665,6 +1041,7 @@ export function Dashboard() {
                         alt={bookmark.title}
                         className="w-full h-auto object-contain"
                         style={{ maxHeight: '600px' }}
+                        loading="lazy"
                         onError={(e) => {
                           e.currentTarget.src = bookmark.image_url || ''
                         }}
@@ -672,16 +1049,16 @@ export function Dashboard() {
 
                       {/* Notes count badge - top left (if notes exist) */}
                       {bookmark.notes.length > 0 && (
-                        <div className="absolute top-3 left-3 bg-blue-600/90 text-white px-2 py-1 rounded-full shadow-lg flex items-center gap-1.5 text-xs font-medium z-10">
+                        <div className="absolute top-3 left-3 bg-teal-600/90 text-white px-2 py-1 rounded-full shadow-lg flex items-center gap-1.5 text-xs font-medium z-10">
                           <MessageSquare className="w-3 h-3" />
                           {bookmark.notes.length}
                         </div>
                       )}
 
-                      {/* Title overlay at top center - only show if title exists */}
+                      {/* Title overlay at top - only show if title exists */}
                       {bookmark.title && (
-                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent pt-3 pb-8 px-16">
-                          <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-center mt-0.5">
+                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent pt-3 pb-3 px-3">
+                          <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-left">
                             {bookmark.title}
                           </h3>
                         </div>
@@ -717,6 +1094,7 @@ export function Dashboard() {
                         src={bookmark.image_url}
                         alt={bookmark.title}
                         className="bookmark-image w-full h-36 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                        loading="lazy"
                         onError={(e) => {
                           e.currentTarget.parentElement!.parentElement!.style.display = 'none'
                         }}
@@ -750,9 +1128,9 @@ export function Dashboard() {
                             <span className="font-medium">Progress</span>
                             <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
                           </div>
-                          <div className="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-purple-100 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full transition-all duration-300 rounded-full"
+                              className="bg-gradient-to-r from-purple-500 to-violet-500 h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -797,7 +1175,7 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-gradient-to-r from-teal-50 to-cyan-50 border-l-3 border-teal-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
                                 <p className="text-[11px] text-gray-700 line-clamp-3 leading-relaxed pr-1">
@@ -1002,14 +1380,55 @@ export function Dashboard() {
 
               return (
                 <>
+                  {/* Folder Icons Grid - Show First */}
+                  {boardFolders && boardFolders.length > 0 && (
+                    <>
+                      <div className="folders-grid mb-10">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                          {boardFolders.map((folder) => {
+                            const folderBookmarks = folderMap.get(folder.id) || []
+                            return (
+                              <div
+                                key={folder.id}
+                                onClick={() => handleSwitchFolder(folder.id)}
+                                className={`folder-item cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
+                                  folder.id === currentFolderId
+                                    ? 'border-cyan-500 bg-cyan-50'
+                                    : 'border-gray-200 bg-white hover:border-cyan-300'
+                                }`}
+                              >
+                                <div className="flex flex-col items-center text-center gap-2">
+                                  <Folder className={`w-16 h-16 ${
+                                    folder.id === currentFolderId ? 'text-cyan-600' : 'text-gray-400'
+                                  }`} />
+                                  <div className="w-full">
+                                    <p className="text-sm font-medium text-gray-900 truncate" title={folder.name}>
+                                      {folder.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                      {folderBookmarks.length} {folderBookmarks.length === 1 ? 'item' : 'items'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      {(uncategorized.length > 0 || sortedCategories.length > 0) && (
+                        <div className="folder-separator border-t-2 border-gray-200 my-10"></div>
+                      )}
+                    </>
+                  )}
+
                   {/* Uncategorized Section */}
                   {uncategorized.length > 0 && (
                     <>
                       <div className="category-section">
-                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-blue-500 shadow-sm">
+                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-teal-500 shadow-sm">
                           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
                             Uncategorized
-                            <span className="text-sm font-normal bg-blue-50 px-3 py-1 rounded-full text-blue-700 border border-blue-200">
+                            <span className="text-sm font-normal bg-teal-50 px-3 py-1 rounded-full text-teal-700 border border-teal-200">
                               {uncategorized.length}
                             </span>
                           </h2>
@@ -1028,10 +1447,10 @@ export function Dashboard() {
                   {sortedCategories.map((category, idx) => (
                     <div key={category}>
                       <div className="category-section">
-                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-blue-500 shadow-sm">
+                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-teal-500 shadow-sm">
                           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
                             {category}
-                            <span className="text-sm font-normal bg-blue-50 px-3 py-1 rounded-full text-blue-700 border border-blue-200">
+                            <span className="text-sm font-normal bg-teal-50 px-3 py-1 rounded-full text-teal-700 border border-teal-200">
                               {categorizedMap.get(category)!.length}
                             </span>
                           </h2>
@@ -1048,6 +1467,7 @@ export function Dashboard() {
                 </>
               )
             })()}
+
           </div>
         )}
       </main>
@@ -1056,14 +1476,14 @@ export function Dashboard() {
       <AddBookmarkDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
-        onSuccess={fetchBookmarks}
+        onSuccess={handleDialogSuccess}
       />
 
       {/* Edit Bookmark Dialog */}
       <EditBookmarkDialog
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
-        onSuccess={fetchBookmarks}
+        onSuccess={handleDialogSuccess}
         bookmark={editingBookmark}
       />
 
@@ -1073,16 +1493,26 @@ export function Dashboard() {
         onOpenChange={setShowNoteDialog}
         note={selectedNote}
         bookmarkId={selectedNoteBookmarkId}
-        onSuccess={fetchBookmarks}
+        onSuccess={handleDialogSuccess}
       />
 
       {/* Board Management Dialog */}
       <BoardManagementDialog
         open={showBoardDialog}
         onOpenChange={setShowBoardDialog}
-        onSuccess={fetchBookmarks}
+        onSuccess={handleDialogSuccess}
         mode={boardDialogMode}
         board={editingBoard}
+      />
+
+      {/* Folder Management Dialog */}
+      <FolderManagementDialog
+        open={showFolderDialog}
+        onOpenChange={setShowFolderDialog}
+        onSuccess={handleDialogSuccess}
+        mode={folderDialogMode}
+        boardId={currentBoardId || ''}
+        folder={editingFolder}
       />
 
       {/* Image Viewer Dialog */}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createBoard, renameBoard, type Board } from '@/lib/storage'
+import { createFolder, renameFolder, type Folder } from '@/lib/storage'
 import {
   Dialog,
   DialogContent,
@@ -11,34 +11,36 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-interface BoardManagementDialogProps {
+interface FolderManagementDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
   mode: 'create' | 'rename'
-  board?: Board | null
+  boardId: string
+  folder?: Folder | null
 }
 
-export function BoardManagementDialog({
+export function FolderManagementDialog({
   open,
   onOpenChange,
   onSuccess,
   mode,
-  board,
-}: BoardManagementDialogProps) {
-  const [boardName, setBoardName] = useState('')
+  boardId,
+  folder,
+}: FolderManagementDialogProps) {
+  const [folderName, setFolderName] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (open) {
-      if (mode === 'rename' && board) {
-        setBoardName(board.name)
+      if (mode === 'rename' && folder) {
+        setFolderName(folder.name)
       } else {
-        setBoardName('')
+        setFolderName('')
       }
       setError('')
     }
-  }, [open, mode, board])
+  }, [open, mode, folder])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -59,23 +61,23 @@ export function BoardManagementDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!boardName.trim()) {
-      setError('Please enter a board name')
+    if (!folderName.trim()) {
+      setError('Please enter a folder name')
       return
     }
 
     try {
       if (mode === 'create') {
-        await createBoard(boardName.trim())
-      } else if (mode === 'rename' && board) {
-        await renameBoard(board.id, boardName.trim())
+        await createFolder(boardId, folderName.trim())
+      } else if (mode === 'rename' && folder) {
+        await renameFolder(folder.id, folderName.trim())
       }
 
       onSuccess()
       onOpenChange(false)
-      setBoardName('')
+      setFolderName('')
     } catch (err) {
-      setError('Failed to save board')
+      setError('Failed to save folder')
       console.error(err)
     }
   }
@@ -86,25 +88,25 @@ export function BoardManagementDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader className="pb-4">
             <DialogTitle>
-              {mode === 'create' ? 'Create New Board' : 'Rename Board'}
+              {mode === 'create' ? 'Create New Folder' : 'Rename Folder'}
             </DialogTitle>
             <DialogDescription>
               {mode === 'create'
-                ? 'Enter a name for your new board'
-                : 'Enter a new name for this board'}
+                ? 'Enter a name for your new folder'
+                : 'Enter a new name for this folder'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="px-6 py-4">
             <div className="grid gap-2">
-              <label htmlFor="boardName" className="text-sm font-medium">
-                Board Name
+              <label htmlFor="folderName" className="text-sm font-medium">
+                Folder Name
               </label>
               <Input
-                id="boardName"
-                value={boardName}
-                onChange={(e) => setBoardName(e.target.value)}
-                placeholder="Enter board name"
+                id="folderName"
+                value={folderName}
+                onChange={(e) => setFolderName(e.target.value)}
+                placeholder="Enter folder name"
                 autoFocus
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
@@ -120,7 +122,7 @@ export function BoardManagementDialog({
               Cancel
             </Button>
             <Button type="submit">
-              {mode === 'create' ? 'Create Board' : 'Rename Board'}
+              {mode === 'create' ? 'Create Folder' : 'Rename Folder'}
             </Button>
           </DialogFooter>
         </form>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { saveBookmark, getCategories, addCategory, getBookmarks, updateBookmark, type Note, type TodoItem } from '@/lib/storage'
+import { saveBookmark, getCategories, addCategory, getBookmarks, updateBookmark, getFolders, getCurrentBoardId, getCurrentFolderId, type Note, type TodoItem, type Folder } from '@/lib/storage'
 import { fetchURLMetadata } from '@/lib/metadata'
 import { normalizeUrl, isImageUrl } from '@/lib/urlUtils'
 import {
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, Link as LinkIcon, FileText, Pencil, X, Plus, Trash2, CheckSquare } from 'lucide-react'
+import { Loader2, Link as LinkIcon, FileText, Pencil, X, Plus, Trash2, CheckSquare, List } from 'lucide-react'
 
 interface AddBookmarkDialogProps {
   open: boolean
@@ -27,7 +27,7 @@ export function AddBookmarkDialog({
   onOpenChange,
   onSuccess,
 }: AddBookmarkDialogProps) {
-  const [mode, setMode] = useState<'url' | 'text' | 'todo'>('url')
+  const [mode, setMode] = useState<'url' | 'text' | 'todo' | 'multi-url'>('url')
   const [loading, setLoading] = useState(false)
   const [fetchingMetadata, setFetchingMetadata] = useState(false)
   const [error, setError] = useState('')
@@ -42,22 +42,46 @@ export function AddBookmarkDialog({
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [categoryInput, setCategoryInput] = useState('')
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
+  const [availableFolders, setAvailableFolders] = useState<Folder[]>([])
   const [duplicateBookmark, setDuplicateBookmark] = useState<any>(null)
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
+
+  // Multi-URL state
+  const [multiUrlInput, setMultiUrlInput] = useState('')
+  const [multiUrlParsed, setMultiUrlParsed] = useState<string[]>([])
+  const [multiUrlFetchProgress, setMultiUrlFetchProgress] = useState<number>(0)
+  const [multiUrlMetadata, setMultiUrlMetadata] = useState<Map<string, any>>(new Map())
 
   // Auto-fetched metadata
   const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
   const [showMetaDescription, setShowMetaDescription] = useState(true)
-  const [titleEdited, setTitleEdited] = useState(false)
 
-  const fetchTimeoutRef = useRef<NodeJS.Timeout>()
+  const fetchTimeoutRef = useRef<number>()
   const lastFetchedUrlRef = useRef<string>('')
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
 
   useEffect(() => {
-    setAvailableCategories(getCategories())
+    const loadCategories = async () => {
+      const categories = await getCategories()
+      setAvailableCategories(categories)
+    }
+    const loadFolders = async () => {
+      const boardId = getCurrentBoardId()
+      if (boardId) {
+        const folders = await getFolders(boardId)
+        setAvailableFolders(folders)
+        // Set default selected folder from current folder if any
+        const currentFolderId = getCurrentFolderId()
+        setSelectedFolder(currentFolderId)
+      }
+    }
+    if (open) {
+      loadCategories()
+      loadFolders()
+    }
   }, [open])
 
   useEffect(() => {
@@ -89,15 +113,19 @@ export function AddBookmarkDialog({
     setImageUrl('')
     setMetaDescription('')
     setShowMetaDescription(true)
-    setTitleEdited(false)
     setSelectedCategories([])
     setCategoryInput('')
     setShowCategoryDropdown(false)
+    setSelectedFolder(null)
     setError('')
     setLoading(false)
     setFetchingMetadata(false)
     setDuplicateBookmark(null)
     setShowDuplicateDialog(false)
+    setMultiUrlInput('')
+    setMultiUrlParsed([])
+    setMultiUrlFetchProgress(0)
+    setMultiUrlMetadata(new Map())
     lastFetchedUrlRef.current = ''
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current)
@@ -146,7 +174,6 @@ export function AddBookmarkDialog({
       setTitle(metadata.title)
       setMetaDescription(metadata.description)
       if (metadata.image) setImageUrl(metadata.image)
-      setTitleEdited(false)
       lastFetchedUrlRef.current = urlToFetch
     } catch (err) {
       console.error('Failed to fetch metadata:', err)
@@ -163,7 +190,6 @@ export function AddBookmarkDialog({
       setTitle('')
       setImageUrl('')
       setMetaDescription('')
-      setTitleEdited(false)
       lastFetchedUrlRef.current = ''
     }
 
@@ -183,7 +209,6 @@ export function AddBookmarkDialog({
         setImageUrl(normalizedUrl)
         setTitle('')
         setMetaDescription('')
-        setTitleEdited(false)
         lastFetchedUrlRef.current = normalizedUrl
       } else {
         // Debounce: wait 800ms after user stops typing for regular URLs
@@ -215,12 +240,12 @@ export function AddBookmarkDialog({
     }
   }
 
-  const handleAddNewCategory = () => {
+  const handleAddNewCategory = async () => {
     const trimmed = categoryInput.trim()
     if (trimmed && !selectedCategories.includes(trimmed)) {
       setSelectedCategories([...selectedCategories, trimmed])
       if (!availableCategories.includes(trimmed)) {
-        addCategory(trimmed)
+        await addCategory(trimmed)
         setAvailableCategories([...availableCategories, trimmed])
       }
       setCategoryInput('')
@@ -233,10 +258,10 @@ export function AddBookmarkDialog({
     cat.toLowerCase().includes(categoryInput.toLowerCase())
   )
 
-  const handleBringToTop = () => {
+  const handleBringToTop = async () => {
     if (duplicateBookmark) {
       // Update the bookmark's created_at to now, which brings it to top
-      updateBookmark(duplicateBookmark.id, {
+      await updateBookmark(duplicateBookmark.id, {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -246,7 +271,49 @@ export function AddBookmarkDialog({
     }
   }
 
-  const handleSave = () => {
+  // Parse and fetch metadata for multi-URL input
+  const handleMultiUrlFetch = async () => {
+    setError('')
+    setFetchingMetadata(true)
+    setMultiUrlFetchProgress(0)
+    setMultiUrlMetadata(new Map())
+
+    // Parse URLs from input - remove bullets, dashes, and empty lines
+    const lines = multiUrlInput.split('\n')
+    const urls = lines
+      .map(line => line.replace(/^[•\-\*\d+\.\)]\s*/, '').trim()) // Remove bullets, dashes, numbers
+      .filter(line => line.length > 0) // Remove empty lines
+      .map(url => normalizeUrl(url)) // Normalize URLs
+      .filter(url => url.startsWith('http')) // Only keep valid HTTP(S) URLs
+      .slice(0, 20) // Limit to 20 URLs
+
+    if (urls.length === 0) {
+      setError('No valid URLs found. Please paste at least one URL.')
+      setFetchingMetadata(false)
+      return
+    }
+
+    setMultiUrlParsed(urls)
+
+    // Fetch metadata for each URL
+    const metadataMap = new Map()
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i]
+      try {
+        const metadata = await fetchURLMetadata(url)
+        metadataMap.set(url, metadata)
+      } catch (err) {
+        console.error(`Failed to fetch metadata for ${url}:`, err)
+        metadataMap.set(url, { title: url, description: '', image: null })
+      }
+      setMultiUrlFetchProgress(((i + 1) / urls.length) * 100)
+    }
+
+    setMultiUrlMetadata(metadataMap)
+    setFetchingMetadata(false)
+  }
+
+  const handleSave = async () => {
     if (mode === 'url' && !url.trim()) {
       setError('Please enter a URL')
       return
@@ -262,12 +329,19 @@ export function AddBookmarkDialog({
       return
     }
 
+    if (mode === 'multi-url' && multiUrlParsed.length === 0) {
+      setError('Please parse URLs first by clicking "Fetch Metadata"')
+      return
+    }
+
     setLoading(true)
     setError('')
 
     try {
       // Add selected categories to storage
-      selectedCategories.forEach(cat => addCategory(cat))
+      for (const cat of selectedCategories) {
+        await addCategory(cat)
+      }
 
       // Convert notes to proper Note objects
       const now = new Date().toISOString()
@@ -282,7 +356,7 @@ export function AddBookmarkDialog({
         const normalizedUrl = normalizeUrl(url.trim())
 
         // Check for duplicate
-        const existingBookmarks = getBookmarks()
+        const existingBookmarks = await getBookmarks()
         const duplicate = existingBookmarks.find(b => b.url === normalizedUrl)
 
         if (duplicate) {
@@ -308,7 +382,7 @@ export function AddBookmarkDialog({
         }
 
         // Save URL bookmark
-        saveBookmark({
+        await saveBookmark({
           title: bookmarkTitle,
           summary: metaDescription || '',
           notes: notesArray,
@@ -320,12 +394,13 @@ export function AddBookmarkDialog({
           image_url: imageUrl || null,
           meta_description: metaDescription || null,
           show_meta_description: showMetaDescription,
+          folder_id: selectedFolder,
         })
       } else if (mode === 'text') {
         // Save text bookmark with optional title (no auto-generation)
         const bookmarkTitle = textTitle.trim()
 
-        saveBookmark({
+        await saveBookmark({
           title: bookmarkTitle,
           summary: textContent,
           notes: notesArray,
@@ -336,6 +411,7 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: null,
           meta_description: null,
+          folder_id: selectedFolder,
         })
       } else if (mode === 'todo') {
         // Parse todo items from textarea (each line becomes a todo item)
@@ -350,7 +426,7 @@ export function AddBookmarkDialog({
             created_at: now
           }))
 
-        saveBookmark({
+        await saveBookmark({
           title: todoTitle.trim(),
           summary: '',
           notes: notesArray,
@@ -362,7 +438,29 @@ export function AddBookmarkDialog({
           image_url: null,
           meta_description: null,
           todo_items: todoItems,
+          folder_id: selectedFolder,
         })
+      } else if (mode === 'multi-url') {
+        // Save all URLs as separate bookmarks
+        for (const url of multiUrlParsed) {
+          const metadata = multiUrlMetadata.get(url) || { title: url, description: '', image: null }
+          const bookmarkType = isImageUrl(url) ? 'image' : 'link'
+
+          await saveBookmark({
+            title: metadata.title || url,
+            summary: metadata.description || '',
+            notes: [], // No notes for multi-URL mode
+            url: url,
+            type: bookmarkType,
+            is_favorite: false,
+            categories: selectedCategories,
+            tags: [],
+            image_url: metadata.image || null,
+            meta_description: metadata.description || null,
+            show_meta_description: true,
+            folder_id: selectedFolder,
+          })
+        }
       }
 
       handleClose()
@@ -394,6 +492,15 @@ export function AddBookmarkDialog({
           >
             <LinkIcon className="w-4 h-4 mr-2" />
             URL
+          </Button>
+          <Button
+            type="button"
+            variant={mode === 'multi-url' ? 'default' : 'outline'}
+            onClick={() => setMode('multi-url')}
+            className="flex-1"
+          >
+            <List className="w-4 h-4 mr-2" />
+            Multi-URL
           </Button>
           <Button
             type="button"
@@ -474,7 +581,6 @@ export function AddBookmarkDialog({
                           value={title}
                           onChange={(e) => {
                             setTitle(e.target.value)
-                            setTitleEdited(true)
                           }}
                           className="font-semibold pr-10"
                           placeholder="Enter title"
@@ -563,6 +669,27 @@ export function AddBookmarkDialog({
                   </Button>
                 </div>
               </div>
+
+              {/* Folder Selector */}
+              {availableFolders.length > 0 && (
+                <div className="folder-field space-y-2">
+                  <label className="text-sm font-medium">
+                    Folder (optional)
+                  </label>
+                  <select
+                    value={selectedFolder || ''}
+                    onChange={(e) => setSelectedFolder(e.target.value || null)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No folder</option>
+                    {availableFolders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="categories-field space-y-2">
                 <label className="text-sm font-medium">
@@ -725,6 +852,27 @@ export function AddBookmarkDialog({
                 </div>
               </div>
 
+              {/* Folder Selector */}
+              {availableFolders.length > 0 && (
+                <div className="folder-field space-y-2">
+                  <label className="text-sm font-medium">
+                    Folder (optional)
+                  </label>
+                  <select
+                    value={selectedFolder || ''}
+                    onChange={(e) => setSelectedFolder(e.target.value || null)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No folder</option>
+                    {availableFolders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="categories-field space-y-2">
                 <label className="text-sm font-medium">
                   Categories (optional)
@@ -800,7 +948,7 @@ export function AddBookmarkDialog({
                 </div>
               </div>
             </>
-          ) : (
+          ) : mode === 'todo' ? (
             <>
               {/* To-do Mode */}
               <div className="todo-title-field space-y-2">
@@ -886,6 +1034,27 @@ export function AddBookmarkDialog({
                 </div>
               </div>
 
+              {/* Folder Selector */}
+              {availableFolders.length > 0 && (
+                <div className="folder-field space-y-2">
+                  <label className="text-sm font-medium">
+                    Folder (optional)
+                  </label>
+                  <select
+                    value={selectedFolder || ''}
+                    onChange={(e) => setSelectedFolder(e.target.value || null)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No folder</option>
+                    {availableFolders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="categories-field space-y-2">
                 <label className="text-sm font-medium">
                   Categories (optional)
@@ -961,7 +1130,148 @@ export function AddBookmarkDialog({
                 </div>
               </div>
             </>
-          )}
+          ) : mode === 'multi-url' ? (
+            <>
+              <div className="multi-url-field space-y-2">
+                <label htmlFor="multiUrlInput" className="text-sm font-medium">
+                  Paste URLs (one per line, up to 20) *
+                </label>
+                <Textarea
+                  id="multiUrlInput"
+                  placeholder="Paste multiple URLs here...&#10;https://example.com&#10;https://another-example.com&#10;Bullets or dashes will be removed automatically"
+                  value={multiUrlInput}
+                  onChange={(e) => setMultiUrlInput(e.target.value)}
+                  disabled={loading || fetchingMetadata}
+                  rows={10}
+                  className="multi-url-input font-mono text-sm"
+                />
+                <p className="text-xs text-gray-500">Paste up to 20 URLs (bullets and dashes will be cleaned automatically)</p>
+              </div>
+
+              {multiUrlParsed.length > 0 && (
+                <div className="parsed-urls bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm font-semibold text-green-900 mb-2">
+                    ✓ Parsed {multiUrlParsed.length} URL{multiUrlParsed.length > 1 ? 's' : ''}
+                  </p>
+                  <ul className="text-xs text-green-800 space-y-1 max-h-32 overflow-y-auto">
+                    {multiUrlParsed.map((url, idx) => (
+                      <li key={idx} className="truncate">• {url}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {!fetchingMetadata && multiUrlParsed.length === 0 && (
+                <Button
+                  type="button"
+                  onClick={handleMultiUrlFetch}
+                  disabled={!multiUrlInput.trim() || loading}
+                  className="w-full"
+                >
+                  <Loader2 className="w-4 h-4 mr-2" />
+                  Fetch Metadata for URLs
+                </Button>
+              )}
+
+              {fetchingMetadata && (
+                <div className="fetching-progress bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm font-semibold text-blue-900 mb-2">
+                    Fetching metadata... {Math.round(multiUrlFetchProgress)}%
+                  </p>
+                  <div className="w-full bg-blue-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${multiUrlFetchProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Folder Selector */}
+              {availableFolders.length > 0 && (
+                <div className="folder-field space-y-2">
+                  <label className="text-sm font-medium">
+                    Folder (optional)
+                  </label>
+                  <select
+                    value={selectedFolder || ''}
+                    onChange={(e) => setSelectedFolder(e.target.value || null)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">No folder</option>
+                    {availableFolders.map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="categories-field space-y-2">
+                <label className="text-sm font-medium">
+                  Categories (optional)
+                </label>
+
+                {/* Selected Categories */}
+                {selectedCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedCategories.map((cat) => (
+                      <div key={cat} className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                        {cat}
+                        <button
+                          onClick={() => handleRemoveCategory(cat)}
+                          className="hover:text-purple-900"
+                          type="button"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="relative">
+                  <Input
+                    placeholder="Add or search categories..."
+                    value={categoryInput}
+                    onChange={(e) => {
+                      setCategoryInput(e.target.value)
+                      setShowCategoryDropdown(true)
+                    }}
+                    onFocus={() => setShowCategoryDropdown(true)}
+                    disabled={loading}
+                    className="category-input"
+                  />
+
+                  {showCategoryDropdown && (categoryInput.trim() || filteredCategories.length > 0) && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {filteredCategories.length > 0 ? (
+                        filteredCategories.map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => handleSelectCategory(cat)}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+                          >
+                            {cat}
+                          </button>
+                        ))
+                      ) : categoryInput.trim() ? (
+                        <button
+                          type="button"
+                          onClick={handleAddNewCategory}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm text-blue-600"
+                        >
+                          + Create "{categoryInput}"
+                        </button>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
 
         <DialogFooter>
