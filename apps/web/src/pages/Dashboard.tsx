@@ -604,10 +604,11 @@ export function Dashboard() {
   const FolderTreeItem = ({ folderNode, level }: { folderNode: FolderNode; level: number }) => {
     const isExpanded = expandedFolders.has(folderNode.id)
     const hasChildren = folderNode.children.length > 0
-    const indentClass = level > 0 ? `ml-${level * 3}` : ''
+    // Use inline style for dynamic indentation (16px per level)
+    const indentStyle = level > 0 ? { paddingLeft: `${level * 16}px` } : {}
 
     return (
-      <div className={`${indentClass} space-y-0.5`}>
+      <div className="space-y-0.5" style={indentStyle}>
         <div
           className={`flex items-center justify-between py-1 px-1.5 rounded cursor-pointer group ${
             folderNode.id === currentFolderId
@@ -683,7 +684,7 @@ export function Dashboard() {
 
         {/* Recursively render children */}
         {hasChildren && isExpanded && (
-          <div className="ml-3 space-y-0.5">
+          <div className="space-y-0.5">
             {folderNode.children.map((childNode) => (
               <FolderTreeItem
                 key={childNode.id}
