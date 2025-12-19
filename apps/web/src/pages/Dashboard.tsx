@@ -312,13 +312,22 @@ export function Dashboard() {
     fetchBookmarks(true)
   }
 
-  const handleToggleType = (type: BookmarkTypeFilter) => {
+  const handleToggleType = (type: BookmarkTypeFilter, checked?: boolean) => {
     setSelectedTypes(prev => {
       const newSet = new Set(prev)
-      if (newSet.has(type)) {
-        newSet.delete(type)
+      // Use the checked parameter if provided, otherwise toggle
+      if (checked !== undefined) {
+        if (checked) {
+          newSet.add(type)
+        } else {
+          newSet.delete(type)
+        }
       } else {
-        newSet.add(type)
+        if (newSet.has(type)) {
+          newSet.delete(type)
+        } else {
+          newSet.add(type)
+        }
       }
       return newSet
     })
@@ -524,7 +533,7 @@ export function Dashboard() {
               <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('link')}
-                  onCheckedChange={() => handleToggleType('link')}
+                  onCheckedChange={(checked) => handleToggleType('link', checked as boolean)}
                 />
                 <LinkIcon className="w-4 h-4 text-blue-600" />
                 <span className="text-sm text-gray-700">Links</span>
@@ -533,7 +542,7 @@ export function Dashboard() {
               <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('text')}
-                  onCheckedChange={() => handleToggleType('text')}
+                  onCheckedChange={(checked) => handleToggleType('text', checked as boolean)}
                 />
                 <FileText className="w-4 h-4 text-yellow-600" />
                 <span className="text-sm text-gray-700">Text</span>
@@ -542,7 +551,7 @@ export function Dashboard() {
               <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('image')}
-                  onCheckedChange={() => handleToggleType('image')}
+                  onCheckedChange={(checked) => handleToggleType('image', checked as boolean)}
                 />
                 <ImageIcon className="w-4 h-4 text-green-600" />
                 <span className="text-sm text-gray-700">Images</span>
@@ -551,7 +560,7 @@ export function Dashboard() {
               <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('todo')}
-                  onCheckedChange={() => handleToggleType('todo')}
+                  onCheckedChange={(checked) => handleToggleType('todo', checked as boolean)}
                 />
                 <CheckSquare className="w-4 h-4 text-purple-600" />
                 <span className="text-sm text-gray-700">To-dos</span>
