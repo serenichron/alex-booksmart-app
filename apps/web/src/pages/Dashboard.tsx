@@ -1380,40 +1380,46 @@ export function Dashboard() {
 
               return (
                 <>
-                  {/* Folder Sections - Show First */}
-                  {boardFolders && boardFolders.length > 0 && boardFolders.map((folder, idx) => {
-                    const folderBookmarks = folderMap.get(folder.id) || []
-
-                    return (
-                      <div key={folder.id}>
-                        <div className="folder-section">
-                          <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-lg px-6 py-3 mb-6 border-l-4 border-cyan-500 shadow-md">
-                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                              <FolderOpen className="w-5 h-5 text-cyan-600" />
-                              {folder.name}
-                              <span className="text-sm font-normal bg-cyan-100 px-3 py-1 rounded-full text-cyan-700 border border-cyan-300">
-                                {folderBookmarks.length}
-                              </span>
-                            </h2>
-                          </div>
-                          {folderBookmarks.length > 0 ? (
-                            <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
-                              {folderBookmarks.map(renderBookmarkCard)}
-                            </div>
-                          ) : (
-                            <div className="text-center py-8 text-gray-500">
-                              <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                              <p className="text-sm">This folder is empty</p>
-                              <p className="text-xs mt-1">Add bookmarks and assign them to this folder</p>
-                            </div>
-                          )}
+                  {/* Folder Icons Grid - Show First */}
+                  {boardFolders && boardFolders.length > 0 && (
+                    <>
+                      <div className="folders-grid mb-10">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                          {boardFolders.map((folder) => {
+                            const folderBookmarks = folderMap.get(folder.id) || []
+                            return (
+                              <div
+                                key={folder.id}
+                                onClick={() => handleSwitchFolder(folder.id)}
+                                className={`folder-item cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
+                                  folder.id === currentFolderId
+                                    ? 'border-cyan-500 bg-cyan-50'
+                                    : 'border-gray-200 bg-white hover:border-cyan-300'
+                                }`}
+                              >
+                                <div className="flex flex-col items-center text-center gap-2">
+                                  <Folder className={`w-16 h-16 ${
+                                    folder.id === currentFolderId ? 'text-cyan-600' : 'text-gray-400'
+                                  }`} />
+                                  <div className="w-full">
+                                    <p className="text-sm font-medium text-gray-900 truncate" title={folder.name}>
+                                      {folder.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                      {folderBookmarks.length} {folderBookmarks.length === 1 ? 'item' : 'items'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
-                        {(idx < boardFolders.length - 1 || uncategorized.length > 0 || sortedCategories.length > 0) && (
-                          <div className="folder-separator border-t-2 border-gray-200 my-10"></div>
-                        )}
                       </div>
-                    )
-                  })}
+                      {(uncategorized.length > 0 || sortedCategories.length > 0) && (
+                        <div className="folder-separator border-t-2 border-gray-200 my-10"></div>
+                      )}
+                    </>
+                  )}
 
                   {/* Uncategorized Section */}
                   {uncategorized.length > 0 && (
