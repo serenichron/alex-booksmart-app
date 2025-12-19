@@ -5,6 +5,8 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Base path for GitHub Pages deployment
+  base: '/alex-booksmart-app/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
