@@ -282,8 +282,29 @@ export function Dashboard() {
   }
 
   const handleToggleTodo = async (bookmarkId: string, todoId: string) => {
-    await toggleTodoItem(bookmarkId, todoId)
-    await fetchBookmarks(true) // Skip cache to get fresh data
+    // Optimistic update: immediately update UI
+    setBookmarks(prev => prev.map(bookmark => {
+      if (bookmark.id === bookmarkId && bookmark.todo_items) {
+        return {
+          ...bookmark,
+          todo_items: bookmark.todo_items.map(item =>
+            item.id === todoId
+              ? { ...item, completed: !item.completed }
+              : item
+          )
+        }
+      }
+      return bookmark
+    }))
+
+    // Update database in background
+    try {
+      await toggleTodoItem(bookmarkId, todoId)
+    } catch (error) {
+      console.error('Failed to toggle todo:', error)
+      // Revert optimistic update on error
+      await fetchBookmarks(true)
+    }
   }
 
   // Handler for dialog success callbacks - always skip cache for fresh data
