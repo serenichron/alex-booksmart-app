@@ -1017,23 +1017,23 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="stats-card bg-gradient-to-br from-teal-500 to-cyan-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-teal-100">Total Bookmarks</div>
-            <div className="text-3xl font-bold text-white">{stats.total}</div>
+        {/* Quick Stats - Calmer design with emphasis on numbers */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-[#0D7D81] dark:hover:border-cyan-500/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Bookmarks</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">{stats.total}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-rose-500 to-pink-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-rose-100">Categories</div>
-            <div className="text-3xl font-bold text-white">{stats.categories}</div>
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-rose-500 dark:hover:border-rose-400/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Categories</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 dark:from-rose-400 dark:to-pink-400 bg-clip-text text-transparent">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-emerald-500 to-teal-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-emerald-100">Folders</div>
-            <div className="text-3xl font-bold text-white">{folders.length}</div>
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-emerald-500 dark:hover:border-emerald-400/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Folders</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">{folders.length}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-violet-500 to-purple-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-violet-100">This Week</div>
-            <div className="text-3xl font-bold text-white">{stats.thisWeek}</div>
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-violet-500 dark:hover:border-violet-400/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">This Week</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">{stats.thisWeek}</div>
           </div>
         </div>
 
@@ -1043,32 +1043,32 @@ export function Dashboard() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : bookmarks.length === 0 ? (
-          /* Empty State */
-          <div className="empty-state bg-white dark:bg-slate-800/60 rounded-lg border border-gray-200 dark:border-white/20 p-12 text-center shadow-md">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-50 dark:bg-cyan-500/20 rounded-full mb-4">
-              <Sparkles className="w-8 h-8 text-[#0D7D81] dark:text-cyan-400" />
+          /* Empty State - Improved design */
+          <div className="empty-state bg-white dark:bg-slate-800/60 rounded-2xl p-16 text-center shadow-xl max-w-2xl mx-auto">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-cyan-500/20 dark:to-teal-500/20 rounded-2xl mb-6 shadow-inner">
+              <Sparkles className="w-10 h-10 text-[#0D7D81] dark:text-cyan-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
               Start Your Collection
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+            <p className="text-base text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto leading-relaxed">
               Save your first bookmark and organize it with categories and tags
             </p>
-            <Button size="lg" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white border-0">
-              <Plus className="w-5 h-5" />
+            <Button size="lg" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-[#0D7D81] to-cyan-600 dark:from-cyan-500 dark:to-teal-600 hover:from-teal-700 hover:to-cyan-700 dark:hover:from-cyan-600 dark:hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-150 px-8 py-6 text-base">
+              <Plus className="w-5 h-5 mr-2" />
               Add Your First Bookmark
             </Button>
           </div>
         ) : filteredBookmarks.length === 0 ? (
-          /* No results for current filter or search */
-          <div className="no-results bg-white dark:bg-slate-800/60 rounded-lg border border-gray-200 dark:border-white/20 p-12 text-center shadow-md">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-50 dark:bg-cyan-500/20 rounded-full mb-4">
-              {searchQuery ? <Search className="w-8 h-8 text-[#0D7D81] dark:text-cyan-400" /> : <Filter className="w-8 h-8 text-[#0D7D81] dark:text-cyan-400" />}
+          /* No results for current filter or search - Improved design */
+          <div className="no-results bg-white dark:bg-slate-800/60 rounded-2xl p-16 text-center shadow-xl max-w-2xl mx-auto">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-cyan-500/20 dark:to-teal-500/20 rounded-2xl mb-6 shadow-inner">
+              {searchQuery ? <Search className="w-10 h-10 text-[#0D7D81] dark:text-cyan-400" /> : <Filter className="w-10 h-10 text-[#0D7D81] dark:text-cyan-400" />}
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
               No Bookmarks Found
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+            <p className="text-base text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto leading-relaxed">
               {searchQuery
                 ? `No bookmarks match "${searchQuery}". Try a different search term.`
                 : "No bookmarks match the selected filters. Try selecting different bookmark types."
@@ -1078,7 +1078,7 @@ export function Dashboard() {
               <Button
                 variant="outline"
                 onClick={() => setSearchQuery('')}
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-sm"
               >
                 Clear Search
               </Button>
@@ -1107,22 +1107,22 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 break-inside-avoid mb-6 relative group ${
+                  className={`bookmark-card rounded-xl overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-400/30 shadow-sm'
+                      ? 'bg-purple-50 dark:bg-slate-800/60 shadow-md shadow-purple-200/50 dark:shadow-purple-900/20'
                       : isTextBookmark
-                      ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-300 dark:border-amber-400/30 shadow-sm'
+                      ? 'bg-amber-50 dark:bg-slate-800/60 shadow-md shadow-amber-200/50 dark:shadow-amber-900/20'
                       : isImageBookmark
-                      ? 'bg-black border-gray-800'
-                      : 'bg-white dark:bg-slate-800/40 border-gray-200 dark:border-white/20 shadow-sm'
+                      ? 'bg-black shadow-lg'
+                      : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30'
                   }`}
                 >
-                  {/* Action Buttons */}
-                  <div className="absolute top-2 right-2 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Action Buttons - Cleaner design */}
+                  <div className="absolute top-3 right-3 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150">
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-[#0D7D81]/90 dark:bg-cyan-500/80 hover:bg-teal-700/90 dark:hover:bg-cyan-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-teal-800 dark:border-cyan-700"
+                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                         title="Open in new tab"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -1131,7 +1131,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-teal-500/90 dark:bg-teal-500/80 hover:bg-teal-600/90 dark:hover:bg-teal-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-teal-700 dark:border-teal-700"
+                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                         title="Share bookmark"
                       >
                         <Share2 className="w-3.5 h-3.5" />
@@ -1139,14 +1139,14 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600/80 hover:bg-slate-700/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-slate-800"
+                      className="bg-slate-600 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-800 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Edit bookmark"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-red-500/80 hover:bg-red-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-red-700"
+                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Delete bookmark"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1227,20 +1227,20 @@ export function Dashboard() {
 
                   {/* To-do Bookmark - Special Design */}
                   {isTodoBookmark ? (
-                    <div className="todo-bookmark-content p-3">
+                    <div className="todo-bookmark-content p-4">
                       {/* Title and Completion */}
                       <div className="flex items-center justify-between mb-3">
                         {bookmark.title ? (
-                          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex-1 leading-tight">
+                          <h3 className="text-base font-bold text-gray-900 dark:text-white flex-1 leading-snug">
                             {bookmark.title}
                           </h3>
                         ) : (
-                          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-1 leading-tight">
+                          <h3 className="text-base font-bold text-gray-700 dark:text-gray-300 flex-1 leading-snug">
                             To-do List
                           </h3>
                         )}
                         {bookmark.is_favorite && (
-                          <Heart className="w-3.5 h-3.5 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
+                          <Heart className="w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
                         )}
                       </div>
 
@@ -1342,16 +1342,16 @@ export function Dashboard() {
                       )}
 
                       {/* Timestamps for todo */}
-                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-600 dark:text-gray-400 mt-2 pt-1.5 border-t border-gray-200 dark:border-purple-400/30 bg-gray-50 dark:bg-purple-500/10 -mx-3 px-3 -mb-3 pb-2">
+                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 dark:text-gray-500 mt-3 pt-3 border-t border-purple-200 dark:border-slate-700">
                         <div className="bookmark-timestamp flex items-center gap-1">
-                          <Clock className="w-2 h-2" />
+                          <Clock className="w-2.5 h-2.5" />
                           <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
                         </div>
                         {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
                           <>
-                            <span className="text-gray-400">•</span>
+                            <span className="text-gray-400 dark:text-gray-600">•</span>
                             <div className="bookmark-edited flex items-center gap-1">
-                              <Clock className="w-2 h-2" />
+                              <Clock className="w-2.5 h-2.5" />
                               <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
                             </div>
                           </>
@@ -1359,56 +1359,57 @@ export function Dashboard() {
                       </div>
                     </div>
                   ) : !isImageBookmark && (
-                  <div className="bookmark-content p-3">
-                    {bookmark.url && (
-                      <div className="bookmark-url-display mb-1.5">
-                        <a
-                          href={bookmark.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-[#0D7D81] dark:text-cyan-400 hover:text-teal-700 dark:hover:text-cyan-300 hover:underline flex items-center gap-1 truncate leading-tight"
-                        >
-                          <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
-                          <span className="truncate">{bookmark.url}</span>
-                        </a>
-                      </div>
-                    )}
-
-                    {/* Only show title if it exists */}
+                  <div className="bookmark-content p-4">
+                    {/* Only show title if it exists - EMPHASIZED */}
                     {bookmark.title && (
-                      <div className="bookmark-header flex items-start justify-between mb-2">
+                      <div className="bookmark-header flex items-start justify-between mb-3">
                         {bookmark.url ? (
                           <a
                             href={bookmark.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bookmark-title text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-300 transition-colors cursor-pointer leading-tight"
+                            className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-400 transition-colors cursor-pointer leading-snug"
                           >
                             {bookmark.title}
                           </a>
                         ) : (
-                          <h3 className="bookmark-title text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 flex-1 leading-tight">
+                          <h3 className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 leading-snug">
                             {bookmark.title}
                           </h3>
                         )}
                         {bookmark.is_favorite && (
-                          <Heart className="bookmark-favorite-icon w-3.5 h-3.5 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
+                          <Heart className="bookmark-favorite-icon w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
                         )}
                       </div>
                     )}
 
                     {/* For text bookmarks, show summary (text content) when no title or when title is provided */}
                     {isTextBookmark && bookmark.summary && (
-                      <p className="bookmark-text-content text-xs text-gray-800 dark:text-gray-200 mb-2 line-clamp-3 leading-snug">
+                      <p className="bookmark-text-content text-sm text-gray-800 dark:text-gray-300 mb-3 line-clamp-3 leading-relaxed">
                         {bookmark.summary}
                       </p>
                     )}
 
-                    {/* For URL bookmarks, show meta description if enabled */}
+                    {/* For URL bookmarks, show meta description if enabled - MUTED */}
                     {!isTextBookmark && bookmark.meta_description && bookmark.show_meta_description !== false && (
-                      <p className="bookmark-meta-description text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2 italic leading-snug">
+                      <p className="bookmark-meta-description text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">
                         {bookmark.meta_description}
                       </p>
+                    )}
+
+                    {/* URL at bottom - SUBTLE */}
+                    {bookmark.url && (
+                      <div className="bookmark-url-display mb-3 pt-2 border-t border-gray-100 dark:border-slate-700">
+                        <a
+                          href={bookmark.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-gray-400 dark:text-gray-500 hover:text-[#0D7D81] dark:hover:text-cyan-400 hover:underline flex items-center gap-1 truncate leading-tight"
+                        >
+                          <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
+                          <span className="truncate">{bookmark.url}</span>
+                        </a>
+                      </div>
                     )}
 
                     {bookmark.notes.length > 0 && (
@@ -1480,16 +1481,16 @@ export function Dashboard() {
                       </div>
                     )}
 
-                    <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-600 dark:text-gray-400 mt-2 pt-1.5 border-t border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/5 -mx-3 px-3 -mb-3 pb-2">
+                    <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 dark:text-gray-500 mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
                       <div className="bookmark-timestamp flex items-center gap-1">
-                        <Clock className="w-2 h-2" />
+                        <Clock className="w-2.5 h-2.5" />
                         <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
                       </div>
                       {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
                         <>
-                          <span className="text-gray-400">•</span>
+                          <span className="text-gray-400 dark:text-gray-600">•</span>
                           <div className="bookmark-edited flex items-center gap-1">
-                            <Clock className="w-2 h-2" />
+                            <Clock className="w-2.5 h-2.5" />
                             <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
                           </div>
                         </>
@@ -1506,7 +1507,7 @@ export function Dashboard() {
                   {/* Folder Icons Grid - Show First */}
                   {boardFolders && boardFolders.length > 0 && (
                     <>
-                      <div className="folders-grid mb-10">
+                      <div className="folders-grid mb-16">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                           {boardFolders.map((folder) => {
                             const folderBookmarks = folderMap.get(folder.id) || []
@@ -1514,21 +1515,21 @@ export function Dashboard() {
                               <div
                                 key={folder.id}
                                 onClick={() => handleSwitchFolder(folder.id)}
-                                className={`folder-item cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
+                                className={`folder-item cursor-pointer p-5 rounded-xl transition-all duration-150 hover:-translate-y-0.5 ${
                                   folder.id === currentFolderId
-                                    ? 'border-[#0D7D81] bg-teal-50 dark:border-cyan-400 dark:bg-cyan-900/40'
-                                    : 'border-gray-300 dark:border-white/20 bg-white dark:bg-slate-800/40 hover:border-[#0D7D81] dark:hover:border-cyan-400/50'
+                                    ? 'bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-cyan-900/40 dark:to-teal-900/40 shadow-lg shadow-teal-200/50 dark:shadow-cyan-900/30 ring-2 ring-[#0D7D81] dark:ring-cyan-400'
+                                    : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 hover:shadow-xl hover:ring-2 hover:ring-[#0D7D81]/50 dark:hover:ring-cyan-400/50'
                                 }`}
                               >
-                                <div className="flex flex-col items-center text-center gap-2">
-                                  <Folder className={`w-16 h-16 ${
-                                    folder.id === currentFolderId ? 'text-[#0D7D81] dark:text-cyan-400' : 'text-gray-500 dark:text-gray-400'
+                                <div className="flex flex-col items-center text-center gap-3">
+                                  <Folder className={`w-16 h-16 transition-colors ${
+                                    folder.id === currentFolderId ? 'text-[#0D7D81] dark:text-cyan-400' : 'text-gray-400 dark:text-gray-500'
                                   }`} />
                                   <div className="w-full">
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={folder.name}>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate" title={folder.name}>
                                       {folder.name}
                                     </p>
-                                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                       {folderBookmarks.length} {folderBookmarks.length === 1 ? 'item' : 'items'}
                                     </p>
                                   </div>
@@ -1538,20 +1539,17 @@ export function Dashboard() {
                           })}
                         </div>
                       </div>
-                      {(uncategorized.length > 0 || sortedCategories.length > 0) && (
-                        <div className="folder-separator border-t-2 border-white/20 my-10"></div>
-                      )}
                     </>
                   )}
 
                   {/* Uncategorized Section */}
                   {uncategorized.length > 0 && (
                     <>
-                      <div className="category-section">
-                        <div className="bg-white dark:bg-slate-800/60 rounded-lg px-6 py-2 mb-6 border-l-4 border-[#0D7D81] dark:border-cyan-400 shadow-md">
-                          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                      <div className="category-section mb-16">
+                        <div className="bg-gradient-to-r from-gray-50 to-white dark:from-slate-800/60 dark:to-slate-800/40 rounded-xl px-6 py-4 mb-8 border-l-4 border-gray-400 dark:border-slate-600 shadow-sm">
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                             Uncategorized
-                            <span className="text-sm font-normal bg-teal-50 dark:bg-cyan-500/20 px-3 py-1 rounded-full text-teal-800 dark:text-cyan-200 border border-[#0D7D81] dark:border-cyan-400/50">
+                            <span className="text-xs font-semibold bg-gray-100 dark:bg-slate-700/60 px-3 py-1.5 rounded-full text-gray-700 dark:text-gray-300">
                               {uncategorized.length}
                             </span>
                           </h2>
@@ -1560,31 +1558,23 @@ export function Dashboard() {
                           {uncategorized.map(renderBookmarkCard)}
                         </div>
                       </div>
-                      {sortedCategories.length > 0 && (
-                        <div className="category-separator border-t-2 border-gray-200 dark:border-white/20 my-10"></div>
-                      )}
                     </>
                   )}
 
                   {/* Categorized Sections */}
                   {sortedCategories.map((category, idx) => (
-                    <div key={category}>
-                      <div className="category-section">
-                        <div className="bg-white dark:bg-slate-800/60 rounded-lg px-6 py-2 mb-6 border-l-4 border-[#0D7D81] dark:border-cyan-400 shadow-md">
-                          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                            {category}
-                            <span className="text-sm font-normal bg-teal-50 dark:bg-cyan-500/20 px-3 py-1 rounded-full text-teal-800 dark:text-cyan-200 border border-[#0D7D81] dark:border-cyan-400/50">
-                              {categorizedMap.get(category)!.length}
-                            </span>
-                          </h2>
-                        </div>
-                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
-                          {categorizedMap.get(category)!.map(renderBookmarkCard)}
-                        </div>
+                    <div key={category} className="category-section mb-16">
+                      <div className="bg-gradient-to-r from-teal-50/50 to-cyan-50/50 dark:from-slate-800/60 dark:to-slate-800/40 rounded-xl px-6 py-4 mb-8 border-l-4 border-[#0D7D81] dark:border-cyan-500 shadow-sm">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                          {category}
+                          <span className="text-xs font-semibold bg-white dark:bg-cyan-500/20 px-3 py-1.5 rounded-full text-teal-800 dark:text-cyan-200 border border-[#0D7D81]/30 dark:border-cyan-400/50">
+                            {categorizedMap.get(category)!.length}
+                          </span>
+                        </h2>
                       </div>
-                      {idx < sortedCategories.length - 1 && (
-                        <div className="category-separator border-t-2 border-gray-200 dark:border-white/20 my-10"></div>
-                      )}
+                      <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                        {categorizedMap.get(category)!.map(renderBookmarkCard)}
+                      </div>
                     </div>
                   ))}
                 </>
