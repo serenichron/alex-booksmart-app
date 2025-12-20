@@ -1117,7 +1117,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-cyan-500/80 hover:bg-cyan-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm"
+                        className="bg-cyan-500/80 hover:bg-cyan-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border-2 border-cyan-700"
                         title="Open in new tab"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -1126,7 +1126,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-teal-500/80 hover:bg-teal-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm"
+                        className="bg-teal-500/80 hover:bg-teal-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border-2 border-teal-700"
                         title="Share bookmark"
                       >
                         <Share2 className="w-3.5 h-3.5" />
@@ -1134,14 +1134,14 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-white/20 hover:bg-white/30 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-white/30"
+                      className="bg-slate-600/80 hover:bg-slate-700/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border-2 border-slate-800"
                       title="Edit bookmark"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-red-500/80 hover:bg-red-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm"
+                      className="bg-red-500/80 hover:bg-red-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border-2 border-red-700"
                       title="Delete bookmark"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
