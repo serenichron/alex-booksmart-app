@@ -1109,12 +1109,12 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-xl overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-purple-50 dark:bg-slate-800/60 shadow-md shadow-purple-200/50 dark:shadow-purple-900/20'
+                      ? 'bg-emerald-50/40 dark:bg-slate-800/60 shadow-md border border-gray-200/60 dark:border-slate-700/50'
                       : isTextBookmark
-                      ? 'bg-amber-50 dark:bg-slate-800/60 shadow-md shadow-amber-200/50 dark:shadow-amber-900/20'
+                      ? 'bg-stone-50 dark:bg-slate-800/60 shadow-md border border-gray-200/60 dark:border-slate-700/50'
                       : isImageBookmark
                       ? 'bg-black shadow-lg'
-                      : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30'
+                      : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-slate-700/50'
                   }`}
                 >
                   {/* Action Buttons - Cleaner design */}
@@ -1251,9 +1251,9 @@ export function Dashboard() {
                             <span className="font-medium">Progress</span>
                             <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
                           </div>
-                          <div className="w-full bg-purple-500/20 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-emerald-100/50 dark:bg-emerald-900/20 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-purple-400 to-violet-400 h-full transition-all duration-300 rounded-full"
+                              className="bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-emerald-600 dark:to-teal-600 h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -1266,7 +1266,7 @@ export function Dashboard() {
                           {bookmark.todo_items.map((item) => (
                             <label
                               key={item.id}
-                              className="flex items-start gap-2 cursor-pointer group hover:bg-purple-500/20 p-0.5 rounded transition-colors"
+                              className="flex items-start gap-2 cursor-pointer group hover:bg-emerald-100/40 dark:hover:bg-emerald-900/10 p-0.5 rounded transition-colors"
                             >
                               <Checkbox
                                 checked={item.completed}
@@ -1289,7 +1289,7 @@ export function Dashboard() {
 
                       {/* Notes for todo */}
                       {bookmark.notes.length > 0 && (
-                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-purple-400/30">
+                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-emerald-200/40 dark:border-slate-700/60">
                           <label className="text-[10px] font-semibold text-gray-900 dark:text-white mb-1.5 block">Notes</label>
                           <div className="space-y-1.5">
                             {(expandedNotesBookmarks.has(bookmark.id)
@@ -1324,7 +1324,7 @@ export function Dashboard() {
                       {bookmark.categories.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {bookmark.categories.map((cat, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-gray-200 dark:bg-purple-400/20 text-gray-900 dark:text-purple-200 border-gray-300 dark:border-purple-400/50">
+                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-gray-200 dark:bg-slate-700/60 text-gray-900 dark:text-gray-300 border-gray-300 dark:border-slate-600/50">
                               {cat}
                             </Badge>
                           ))}
@@ -1342,7 +1342,7 @@ export function Dashboard() {
                       )}
 
                       {/* Timestamps for todo */}
-                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 dark:text-gray-500 mt-3 pt-3 border-t border-purple-200 dark:border-slate-700">
+                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 dark:text-gray-500 mt-3 pt-3 border-t border-emerald-200/60 dark:border-slate-700">
                         <div className="bookmark-timestamp flex items-center gap-1">
                           <Clock className="w-2.5 h-2.5" />
                           <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
