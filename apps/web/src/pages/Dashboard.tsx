@@ -705,7 +705,7 @@ export function Dashboard() {
       <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
       {/* Header - Full Width */}
-      <header className="dashboard-header bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
+      <header className="dashboard-header bg-slate-900/95 border-b border-white/20 sticky top-0 z-50">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="brand-section flex items-center gap-3">
@@ -1039,7 +1039,7 @@ export function Dashboard() {
           </div>
         ) : bookmarks.length === 0 ? (
           /* Empty State */
-          <div className="empty-state bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-12 text-center">
+          <div className="empty-state bg-slate-800/60 rounded-lg border border-white/20 p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-500/20 rounded-full mb-4">
               <Sparkles className="w-8 h-8 text-cyan-400" />
             </div>
@@ -1056,7 +1056,7 @@ export function Dashboard() {
           </div>
         ) : filteredBookmarks.length === 0 ? (
           /* No results for current filter or search */
-          <div className="no-results bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-12 text-center">
+          <div className="no-results bg-slate-800/60 rounded-lg border border-white/20 p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-500/20 rounded-full mb-4">
               {searchQuery ? <Search className="w-8 h-8 text-cyan-400" /> : <Filter className="w-8 h-8 text-cyan-400" />}
             </div>
@@ -1104,12 +1104,12 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-purple-500/10 backdrop-blur-md border-purple-400/30 shadow-sm'
+                      ? 'bg-purple-900/30 border-purple-400/30 shadow-sm'
                       : isTextBookmark
-                      ? 'bg-amber-500/10 backdrop-blur-md border-amber-400/30 shadow-sm'
+                      ? 'bg-amber-900/30 border-amber-400/30 shadow-sm'
                       : isImageBookmark
                       ? 'bg-black border-gray-800'
-                      : 'bg-white/10 backdrop-blur-md border-white/20 shadow-sm'
+                      : 'bg-slate-800/40 border-white/20 shadow-sm'
                   }`}
                 >
                   {/* Action Buttons */}
@@ -1117,7 +1117,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
+                        className="bg-cyan-500/80 hover:bg-cyan-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm"
                         title="Open in new tab"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -1126,7 +1126,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
+                        className="bg-teal-500/80 hover:bg-teal-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm"
                         title="Share bookmark"
                       >
                         <Share2 className="w-3.5 h-3.5" />
@@ -1134,14 +1134,14 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
+                      className="bg-white/20 hover:bg-white/30 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-white/30"
                       title="Edit bookmark"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-rose-500/90 hover:bg-rose-600 text-white p-1.5 rounded-md shadow-md"
+                      className="bg-red-500/80 hover:bg-red-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm"
                       title="Delete bookmark"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1511,8 +1511,8 @@ export function Dashboard() {
                                 onClick={() => handleSwitchFolder(folder.id)}
                                 className={`folder-item cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
                                   folder.id === currentFolderId
-                                    ? 'border-cyan-400 bg-cyan-500/20 backdrop-blur-md'
-                                    : 'border-white/20 bg-white/10 backdrop-blur-md hover:border-cyan-400/50'
+                                    ? 'border-cyan-400 bg-cyan-900/40'
+                                    : 'border-white/20 bg-slate-800/40 hover:border-cyan-400/50'
                                 }`}
                               >
                                 <div className="flex flex-col items-center text-center gap-2">
@@ -1543,7 +1543,7 @@ export function Dashboard() {
                   {uncategorized.length > 0 && (
                     <>
                       <div className="category-section">
-                        <div className="bg-white/10 backdrop-blur-md rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-400 shadow-sm">
+                        <div className="bg-slate-800/60 rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-400 shadow-sm">
                           <h2 className="text-xl font-bold text-white flex items-center gap-3">
                             Uncategorized
                             <span className="text-sm font-normal bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-200 border border-cyan-400/50">
@@ -1565,7 +1565,7 @@ export function Dashboard() {
                   {sortedCategories.map((category, idx) => (
                     <div key={category}>
                       <div className="category-section">
-                        <div className="bg-white/10 backdrop-blur-md rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-400 shadow-sm">
+                        <div className="bg-slate-800/60 rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-400 shadow-sm">
                           <h2 className="text-xl font-bold text-white flex items-center gap-3">
                             {category}
                             <span className="text-sm font-normal bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-200 border border-cyan-400/50">
