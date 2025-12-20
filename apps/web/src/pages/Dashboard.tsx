@@ -614,8 +614,8 @@ export function Dashboard() {
         <div
           className={`flex items-center justify-between py-1 px-1.5 rounded cursor-pointer group ${
             folderNode.id === currentFolderId
-              ? 'bg-teal-500/20 border border-teal-400/50'
-              : 'hover:bg-white/10'
+              ? 'bg-teal-100 dark:bg-teal-500/20 border border-teal-500 dark:border-teal-400/50'
+              : 'hover:bg-gray-100 dark:hover:bg-white/10'
           }`}
         >
           <div
@@ -628,21 +628,21 @@ export function Dashboard() {
                   e.stopPropagation()
                   handleToggleFolderExpanded(folderNode.id)
                 }}
-                className="p-0.5 hover:bg-white/20 rounded"
+                className="p-0.5 hover:bg-gray-200 dark:hover:bg-white/20 rounded"
               >
                 {isExpanded ? (
-                  <ChevronDown className="w-3 h-3 text-gray-300" />
+                  <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                 ) : (
-                  <ChevronRight className="w-3 h-3 text-gray-300" />
+                  <ChevronRight className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                 )}
               </button>
             )}
             {folderNode.id === currentFolderId ? (
-              <FolderOpen className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
+              <FolderOpen className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 flex-shrink-0" />
             ) : (
-              <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <Folder className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
             )}
-            <span className="text-xs text-gray-200 truncate">{folderNode.name}</span>
+            <span className="text-xs text-gray-700 dark:text-gray-200 truncate">{folderNode.name}</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
             <Button
@@ -652,7 +652,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleCreateFolder(folderNode.id)
               }}
-              className="h-4 w-4 p-0 text-teal-400 hover:text-teal-300 hover:bg-teal-500/20"
+              className="h-4 w-4 p-0 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-500/20"
               title="New subfolder"
             >
               <Plus className="w-2.5 h-2.5" />
@@ -664,7 +664,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleRenameFolder(folderNode)
               }}
-              className="h-4 w-4 p-0 text-gray-300 hover:text-white hover:bg-white/10"
+              className="h-4 w-4 p-0 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
               title="Rename folder"
             >
               <Edit className="w-2.5 h-2.5" />
@@ -676,7 +676,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleDeleteFolder(folderNode.id)
               }}
-              className="h-4 w-4 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+              className="h-4 w-4 p-0 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/20"
               title="Delete folder"
             >
               <Trash2 className="w-2.5 h-2.5" />
@@ -871,7 +871,7 @@ export function Dashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={handleCreateBoard}
-                className="h-6 w-6 p-0 text-cyan-300 hover:text-cyan-200 hover:bg-white/10"
+                className="h-6 w-6 p-0 text-cyan-600 dark:text-cyan-300 hover:text-cyan-700 dark:hover:text-cyan-200 hover:bg-gray-100 dark:hover:bg-white/10"
                 title="Create new board"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -889,8 +889,8 @@ export function Dashboard() {
                     <div
                       className={`flex items-center justify-between p-1.5 rounded group ${
                         board.id === currentBoardId && !currentFolderId
-                          ? 'bg-cyan-500/20 border border-cyan-400/50'
-                          : 'hover:bg-white/10'
+                          ? 'bg-cyan-100 dark:bg-cyan-500/20 border border-cyan-500 dark:border-cyan-400/50'
+                          : 'hover:bg-gray-100 dark:hover:bg-white/10'
                       }`}
                     >
                       <div
@@ -911,17 +911,17 @@ export function Dashboard() {
                               e.stopPropagation()
                               handleToggleBoardExpanded(board.id)
                             }}
-                            className="p-0.5 hover:bg-white/20 rounded"
+                            className="p-0.5 hover:bg-gray-200 dark:hover:bg-white/20 rounded"
                           >
                             {isExpanded ? (
-                              <ChevronDown className="w-3 h-3 text-gray-300" />
+                              <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                             ) : (
-                              <ChevronRight className="w-3 h-3 text-gray-300" />
+                              <ChevronRight className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                             )}
                           </button>
                         )}
-                        <Layers className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                        <span className="text-sm text-gray-200 truncate">{board.name}</span>
+                        <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{board.name}</span>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                         <Button
@@ -935,7 +935,7 @@ export function Dashboard() {
                             setExpandedBoards(new Set([board.id]))
                             handleCreateFolder()
                           }}
-                          className="h-5 w-5 p-0 text-teal-400 hover:text-teal-300 hover:bg-teal-500/20"
+                          className="h-5 w-5 p-0 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-500/20"
                           title="New folder"
                         >
                           <Plus className="w-3 h-3" />
@@ -947,7 +947,7 @@ export function Dashboard() {
                             e.stopPropagation()
                             handleRenameBoard(board)
                           }}
-                          className="h-5 w-5 p-0 text-gray-300 hover:text-white hover:bg-white/10"
+                          className="h-5 w-5 p-0 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
                           title="Rename board"
                         >
                           <Edit className="w-3 h-3" />
@@ -960,7 +960,7 @@ export function Dashboard() {
                               e.stopPropagation()
                               handleDeleteBoard(board.id)
                             }}
-                            className="h-5 w-5 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                            className="h-5 w-5 p-0 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/20"
                             title="Delete board"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -994,22 +994,22 @@ export function Dashboard() {
         {/* Breadcrumbs */}
         <div className="breadcrumbs mb-6">
           <div className="flex items-center gap-2 text-sm">
-            <Layers className="w-4 h-4 text-cyan-400" />
+            <Layers className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
             <button
               onClick={() => handleSwitchFolder(null)}
               className={`font-semibold transition-colors ${
                 currentFolderId === null
-                  ? 'text-white'
-                  : 'text-gray-400 hover:text-gray-200'
+                  ? 'text-gray-900 dark:text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {boards.find(b => b.id === currentBoardId)?.name || 'Board'}
             </button>
             {currentFolderId && (
               <>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-                <Folder className="w-4 h-4 text-cyan-400" />
-                <span className="font-semibold text-white">
+                <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <Folder className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                <span className="font-semibold text-gray-900 dark:text-white">
                   {folders.find(f => f.id === currentFolderId)?.name || 'Folder'}
                 </span>
               </>
@@ -1044,14 +1044,14 @@ export function Dashboard() {
           </div>
         ) : bookmarks.length === 0 ? (
           /* Empty State */
-          <div className="empty-state bg-slate-800/60 rounded-lg border border-white/20 p-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-500/20 rounded-full mb-4">
-              <Sparkles className="w-8 h-8 text-cyan-400" />
+          <div className="empty-state bg-white dark:bg-slate-800/60 rounded-lg border border-gray-200 dark:border-white/20 p-12 text-center shadow-md">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-100 dark:bg-cyan-500/20 rounded-full mb-4">
+              <Sparkles className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Start Your Collection
             </h2>
-            <p className="text-gray-300 mb-6 max-w-md mx-auto">
+            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
               Save your first bookmark and organize it with categories and tags
             </p>
             <Button size="lg" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white border-0">
@@ -1061,14 +1061,14 @@ export function Dashboard() {
           </div>
         ) : filteredBookmarks.length === 0 ? (
           /* No results for current filter or search */
-          <div className="no-results bg-slate-800/60 rounded-lg border border-white/20 p-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-500/20 rounded-full mb-4">
-              {searchQuery ? <Search className="w-8 h-8 text-cyan-400" /> : <Filter className="w-8 h-8 text-cyan-400" />}
+          <div className="no-results bg-white dark:bg-slate-800/60 rounded-lg border border-gray-200 dark:border-white/20 p-12 text-center shadow-md">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-100 dark:bg-cyan-500/20 rounded-full mb-4">
+              {searchQuery ? <Search className="w-8 h-8 text-cyan-600 dark:text-cyan-400" /> : <Filter className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />}
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               No Bookmarks Found
             </h2>
-            <p className="text-gray-300 mb-6 max-w-md mx-auto">
+            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
               {searchQuery
                 ? `No bookmarks match "${searchQuery}". Try a different search term.`
                 : "No bookmarks match the selected filters. Try selecting different bookmark types."
@@ -1109,12 +1109,12 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-purple-900/30 border-purple-400/30 shadow-sm'
+                      ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-400/30 shadow-sm'
                       : isTextBookmark
-                      ? 'bg-amber-900/30 border-amber-400/30 shadow-sm'
+                      ? 'bg-amber-50 dark:bg-amber-900/30 border-amber-300 dark:border-amber-400/30 shadow-sm'
                       : isImageBookmark
                       ? 'bg-black border-gray-800'
-                      : 'bg-slate-800/40 border-white/20 shadow-sm'
+                      : 'bg-white dark:bg-slate-800/40 border-gray-200 dark:border-white/20 shadow-sm'
                   }`}
                 >
                   {/* Action Buttons */}
@@ -1516,19 +1516,19 @@ export function Dashboard() {
                                 onClick={() => handleSwitchFolder(folder.id)}
                                 className={`folder-item cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
                                   folder.id === currentFolderId
-                                    ? 'border-cyan-400 bg-cyan-900/40'
-                                    : 'border-white/20 bg-slate-800/40 hover:border-cyan-400/50'
+                                    ? 'border-cyan-500 bg-cyan-100 dark:bg-cyan-900/40 dark:border-cyan-400'
+                                    : 'border-gray-300 dark:border-white/20 bg-white dark:bg-slate-800/40 hover:border-cyan-400 dark:hover:border-cyan-400/50'
                                 }`}
                               >
                                 <div className="flex flex-col items-center text-center gap-2">
                                   <Folder className={`w-16 h-16 ${
-                                    folder.id === currentFolderId ? 'text-cyan-400' : 'text-gray-400'
+                                    folder.id === currentFolderId ? 'text-cyan-600 dark:text-cyan-400' : 'text-gray-500 dark:text-gray-400'
                                   }`} />
                                   <div className="w-full">
-                                    <p className="text-sm font-medium text-white truncate" title={folder.name}>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={folder.name}>
                                       {folder.name}
                                     </p>
-                                    <p className="text-xs text-gray-300 mt-0.5">
+                                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
                                       {folderBookmarks.length} {folderBookmarks.length === 1 ? 'item' : 'items'}
                                     </p>
                                   </div>
@@ -1548,10 +1548,10 @@ export function Dashboard() {
                   {uncategorized.length > 0 && (
                     <>
                       <div className="category-section">
-                        <div className="bg-slate-800/60 rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-400 shadow-sm">
-                          <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                        <div className="bg-white dark:bg-slate-800/60 rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-500 dark:border-cyan-400 shadow-md">
+                          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                             Uncategorized
-                            <span className="text-sm font-normal bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-200 border border-cyan-400/50">
+                            <span className="text-sm font-normal bg-cyan-100 dark:bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-700 dark:text-cyan-200 border border-cyan-400 dark:border-cyan-400/50">
                               {uncategorized.length}
                             </span>
                           </h2>
@@ -1570,10 +1570,10 @@ export function Dashboard() {
                   {sortedCategories.map((category, idx) => (
                     <div key={category}>
                       <div className="category-section">
-                        <div className="bg-slate-800/60 rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-400 shadow-sm">
-                          <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                        <div className="bg-white dark:bg-slate-800/60 rounded-lg px-6 py-2 mb-6 border-l-4 border-cyan-500 dark:border-cyan-400 shadow-md">
+                          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                             {category}
-                            <span className="text-sm font-normal bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-200 border border-cyan-400/50">
+                            <span className="text-sm font-normal bg-cyan-100 dark:bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-700 dark:text-cyan-200 border border-cyan-400 dark:border-cyan-400/50">
                               {categorizedMap.get(category)!.length}
                             </span>
                           </h2>
@@ -1583,7 +1583,7 @@ export function Dashboard() {
                         </div>
                       </div>
                       {idx < sortedCategories.length - 1 && (
-                        <div className="category-separator border-t-2 border-white/20 my-10"></div>
+                        <div className="category-separator border-t-2 border-gray-200 dark:border-white/20 my-10"></div>
                       )}
                     </div>
                   ))}
