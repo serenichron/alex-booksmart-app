@@ -9,9 +9,10 @@ import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
   getStats,
@@ -42,6 +43,7 @@ type SearchMode = 'board' | 'global'
 
 export function Dashboard() {
   const { signOut } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingBookmark, setEditingBookmark] = useState<BookmarkType | null>(null)
@@ -699,20 +701,20 @@ export function Dashboard() {
   }
 
   return (
-    <div className="dashboard-container min-h-screen bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900 relative">
+    <div className="dashboard-container min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:from-slate-900 dark:via-cyan-900 dark:to-slate-900 relative">
       {/* Animated gradient shapes */}
-      <div className="bg-blob absolute top-0 left-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+      <div className="bg-blob absolute top-0 left-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 dark:opacity-20 animate-blob"></div>
+      <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 dark:opacity-20 animate-blob animation-delay-2000"></div>
 
       {/* Header - Full Width */}
-      <header className="dashboard-header bg-slate-900/95 border-b border-white/20 sticky top-0 z-50">
+      <header className="dashboard-header bg-white/80 dark:bg-slate-900/95 border-b border-gray-200 dark:border-white/20 sticky top-0 z-50 backdrop-blur-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="brand-section flex items-center gap-3">
               <div className="brand-icon flex items-center justify-center w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl shadow-lg">
                 <Bookmark className="w-5 h-5 text-white" />
               </div>
-              <span className="brand-name text-xl font-bold text-white">BookSmart</span>
+              <span className="brand-name text-xl font-bold text-gray-800 dark:text-white">BookSmart</span>
             </div>
 
             <div className="header-actions flex items-center gap-4">
@@ -723,7 +725,7 @@ export function Dashboard() {
                     placeholder={searchMode === 'board' ? "Search in current board..." : "Search all boards..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64 bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-cyan-400"
+                    className="w-64 bg-white dark:bg-white/10 border-gray-300 dark:border-white/30 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-cyan-500 dark:focus:border-cyan-400"
                     autoFocus
                   />
                   <div className="search-mode-toggle flex items-center border border-white/30 rounded-md overflow-hidden bg-white/10">
@@ -784,6 +786,9 @@ export function Dashboard() {
               <Button size="sm" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white border-0">
                 <Plus className="w-4 h-4" />
                 Add Bookmark
+              </Button>
+              <Button size="sm" variant="outline" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="border-white/30 text-white hover:bg-white/10">
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
               <Button size="sm" variant="outline" onClick={() => signOut()} title="Log out" className="border-white/30 text-white hover:bg-white/10">
                 <LogOut className="w-4 h-4" />
@@ -1117,7 +1122,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-cyan-500/80 hover:bg-cyan-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border-2 border-cyan-700"
+                        className="bg-cyan-500/80 hover:bg-cyan-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-cyan-700"
                         title="Open in new tab"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -1126,7 +1131,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-teal-500/80 hover:bg-teal-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border-2 border-teal-700"
+                        className="bg-teal-500/80 hover:bg-teal-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-teal-700"
                         title="Share bookmark"
                       >
                         <Share2 className="w-3.5 h-3.5" />
@@ -1134,14 +1139,14 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600/80 hover:bg-slate-700/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border-2 border-slate-800"
+                      className="bg-slate-600/80 hover:bg-slate-700/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-slate-800"
                       title="Edit bookmark"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-red-500/80 hover:bg-red-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border-2 border-red-700"
+                      className="bg-red-500/80 hover:bg-red-600/90 text-white p-1.5 rounded-md shadow-lg backdrop-blur-sm border border-red-700"
                       title="Delete bookmark"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
