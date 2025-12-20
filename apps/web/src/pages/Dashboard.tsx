@@ -794,7 +794,7 @@ export function Dashboard() {
       </header>
 
       {/* Sidebar - Fixed Position */}
-      <aside className="dashboard-sidebar fixed left-0 top-16 w-64 bg-white/10 backdrop-blur-md border-r border-white/20 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40">
+      <aside className="dashboard-sidebar fixed left-0 top-16 w-64 bg-slate-900/95 border-r border-white/20 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40">
         <div className="space-y-4">
           {/* Bookmark Type Filter */}
           <div className="filter-section">
