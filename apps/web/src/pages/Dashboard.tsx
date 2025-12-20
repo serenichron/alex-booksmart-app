@@ -728,24 +728,24 @@ export function Dashboard() {
                     className="w-64 bg-white dark:bg-white/10 border-gray-300 dark:border-white/30 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-cyan-500 dark:focus:border-cyan-400"
                     autoFocus
                   />
-                  <div className="search-mode-toggle flex items-center border border-white/30 rounded-md overflow-hidden bg-white/10">
+                  <div className="search-mode-toggle flex items-center border border-gray-300 dark:border-white/30 rounded-md overflow-hidden bg-gray-100 dark:bg-white/10">
                     <button
                       onClick={() => setSearchMode('board')}
                       className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                         searchMode === 'board'
                           ? 'bg-cyan-500 text-white'
-                          : 'bg-transparent text-gray-300 hover:bg-white/10'
+                          : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
                       }`}
                     >
                       This Board
                     </button>
-                    <div className="w-px h-5 bg-white/30" />
+                    <div className="w-px h-5 bg-gray-300 dark:bg-white/30" />
                     <button
                       onClick={() => setSearchMode('global')}
                       className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                         searchMode === 'global'
                           ? 'bg-cyan-500 text-white'
-                          : 'bg-transparent text-gray-300 hover:bg-white/10'
+                          : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
                       }`}
                     >
                       All Boards
@@ -759,27 +759,27 @@ export function Dashboard() {
                       setShowSearchInput(false)
                       setSearchMode('board')
                     }}
-                    className="text-white hover:text-cyan-300 hover:bg-white/10"
+                    className="text-gray-700 dark:text-white hover:text-cyan-600 dark:hover:text-cyan-300 hover:bg-gray-100 dark:hover:bg-white/10"
                   >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               ) : (
-                <Button variant="ghost" size="sm" onClick={() => setShowSearchInput(true)} className="text-white hover:text-cyan-300 hover:bg-white/10">
+                <Button variant="ghost" size="sm" onClick={() => setShowSearchInput(true)} className="text-gray-700 dark:text-white hover:text-cyan-600 dark:hover:text-cyan-300 hover:bg-gray-100 dark:hover:bg-white/10">
                   <Search className="w-4 h-4" />
                   Search
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={handleExport} title="Export all data" className="border-white/30 text-white hover:bg-white/10">
+              <Button size="sm" variant="outline" onClick={handleExport} title="Export all data" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 <Upload className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={handleImport} title="Import data" className="border-white/30 text-white hover:bg-white/10">
+              <Button size="sm" variant="outline" onClick={handleImport} title="Import data" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 <Download className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="border-red-400/50 text-red-300 hover:text-red-200 hover:bg-red-500/20">
+              <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="border-red-400/50 text-red-500 dark:text-red-300 hover:text-red-600 dark:hover:text-red-200 hover:bg-red-100 dark:hover:bg-red-500/20">
                 <AlertTriangle className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => handleCreateFolder()} className="border-teal-400/50 text-teal-300 hover:text-teal-200 hover:bg-teal-500/20">
+              <Button size="sm" variant="outline" onClick={() => handleCreateFolder()} className="border-teal-500/50 dark:border-teal-400/50 text-teal-600 dark:text-teal-300 hover:text-teal-700 dark:hover:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-500/20">
                 <Folder className="w-4 h-4" />
                 New Folder
               </Button>
@@ -787,10 +787,10 @@ export function Dashboard() {
                 <Plus className="w-4 h-4" />
                 Add Bookmark
               </Button>
-              <Button size="sm" variant="outline" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="border-white/30 text-white hover:bg-white/10">
+              <Button size="sm" variant="outline" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
-              <Button size="sm" variant="outline" onClick={() => signOut()} title="Log out" className="border-white/30 text-white hover:bg-white/10">
+              <Button size="sm" variant="outline" onClick={() => signOut()} title="Log out" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -799,47 +799,47 @@ export function Dashboard() {
       </header>
 
       {/* Sidebar - Fixed Position */}
-      <aside className="dashboard-sidebar fixed left-0 top-16 w-64 bg-slate-900/95 border-r border-white/20 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40">
+      <aside className="dashboard-sidebar fixed left-0 top-16 w-64 bg-white/80 dark:bg-slate-900/95 border-r border-gray-200 dark:border-white/20 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40 backdrop-blur-sm">
         <div className="space-y-4">
           {/* Bookmark Type Filter */}
           <div className="filter-section">
-            <h3 className="text-sm font-semibold text-white mb-2">Bookmark Types</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Bookmark Types</h3>
 
             <div className="space-y-1 mb-3">
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-white/10 p-1 rounded">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('link')}
                   onCheckedChange={(checked) => handleToggleType('link', checked as boolean)}
                 />
-                <LinkIcon className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm text-gray-300">Links</span>
+                <LinkIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">Links</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-white/10 p-1 rounded">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('text')}
                   onCheckedChange={(checked) => handleToggleType('text', checked as boolean)}
                 />
-                <FileText className="w-4 h-4 text-amber-400" />
-                <span className="text-sm text-gray-300">Text</span>
+                <FileText className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">Text</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-white/10 p-1 rounded">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('image')}
                   onCheckedChange={(checked) => handleToggleType('image', checked as boolean)}
                 />
-                <ImageIcon className="w-4 h-4 text-teal-400" />
-                <span className="text-sm text-gray-300">Images</span>
+                <ImageIcon className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">Images</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-white/10 p-1 rounded">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('todo')}
                   onCheckedChange={(checked) => handleToggleType('todo', checked as boolean)}
                 />
-                <CheckSquare className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-gray-300">To-dos</span>
+                <CheckSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">To-dos</span>
               </label>
             </div>
 
@@ -848,7 +848,7 @@ export function Dashboard() {
                 variant="outline"
                 size="sm"
                 onClick={handleSelectAllTypes}
-                className="flex-1 text-xs border-white/30 text-white hover:bg-white/10"
+                className="flex-1 text-xs border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 Select All
               </Button>
@@ -856,7 +856,7 @@ export function Dashboard() {
                 variant="outline"
                 size="sm"
                 onClick={handleUnselectAllTypes}
-                className="flex-1 text-xs border-white/30 text-white hover:bg-white/10"
+                className="flex-1 text-xs border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 Unselect All
               </Button>
@@ -864,9 +864,9 @@ export function Dashboard() {
           </div>
 
           {/* Board Selector */}
-          <div className="board-section pt-3 border-t border-white/20">
+          <div className="board-section pt-3 border-t border-gray-200 dark:border-white/20">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-white">Boards</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Boards</h3>
               <Button
                 variant="ghost"
                 size="sm"
