@@ -470,38 +470,79 @@ BookSmart is a fully functional bookmark manager built with React, TypeScript, V
 ---
 
 ### 18. Dark/Light Theme System ✅
-**Status:** Fully Implemented
+**Status:** Fully Implemented with Premium Design
 
 **Features:**
 - System-wide theme toggle (dark/light mode)
 - Theme preference persisted in localStorage
 - Seamless theme switching without page reload
-- Optimized color schemes for both themes
+- Production-ready design with professional polish
 
-**Light Theme:**
-- Primary color: #0D7D81 (custom teal)
-- Background gradient: cyan-50 → teal-50 → sky-50
-- Optimized text colors for readability (gray-900, gray-800, gray-700)
-- Teal accent colors throughout UI
-- High contrast for accessibility
+**Dark Theme - Depth & Hierarchy:**
+- **Background:** slate-900 → cyan-900 → slate-900 gradient
+- **Surface Levels:**
+  - Stats cards: slate-800/40 with subtle shadows
+  - Bookmark cards: slate-800/60 with shadow-md
+  - Hover: shadow-xl with lift effect (-translate-y-0.5)
+- **Visual Strategy:**
+  - Reduced borders by ~50% (replaced with shadows)
+  - Calmer stat cards (gradient text on numbers only)
+  - Muted secondary text (gray-500)
+  - Faster transitions (150ms for snappy feel)
+- **Section Rhythm:**
+  - Generous spacing between sections (mb-16)
+  - Stronger headers with gradient backgrounds
+  - No separator lines (space creates rhythm)
+  - Clear visual hierarchy through depth
 
-**Dark Theme:**
-- Primary colors: cyan-400, cyan-500
-- Background gradient: slate-900 → cyan-900 → slate-900
-- Glassmorphic design with backdrop-blur effects
-- Cyan/teal accent colors
-- Comfortable low-light viewing
+**Light Theme - Contrast & Clarity:**
+- **Primary color:** #0D7D81 (custom teal)
+- **Background:** cyan-50 → teal-50 → sky-50 gradient
+- **Surface Strategy:**
+  - Stats cards: white with subtle borders
+  - Bookmark cards: white with shadow-md
+  - Section headers: gradient backgrounds (teal-50/50 to cyan-50/50)
+  - Shadows preferred over borders
+- **Typography:**
+  - High contrast for readability (gray-900 titles)
+  - Muted metadata (gray-500)
+  - Clear hierarchy (bold titles, subtle URLs)
+- **Polish:**
+  - Colored shadows on active states
+  - Ring system for focus (ring-2)
+  - Premium feel through elevation
 
-**Unified Design:**
-- Same Add Bookmark button gradient in both themes
-- Same logo/brand icon gradient
-- Consistent 1px action button borders
-- Categories, tags, and badges adapted for both themes
-- All bookmark cards, notes, and UI elements theme-aware
+**Shared Design System:**
+- **Card Hierarchy:**
+  - Titles: text-base font-bold (emphasized)
+  - URLs: text-[10px] muted, bottom placement
+  - Meta descriptions: text-xs, relaxed leading
+  - Timestamps: text-[9px] gray-500, subtle
+- **Interaction Design:**
+  - All transitions: duration-150 (was 200ms)
+  - Hover lift: -translate-y-0.5
+  - Action buttons: solid colors, no borders
+  - Focus states: ring-2 with theme color
+- **Spacing System:**
+  - Card padding: p-4 (was p-3)
+  - Section margins: mb-16 (was mb-10)
+  - Header padding: py-4 (was py-2)
+  - Internal spacing: mb-3 (was mb-2)
+- **Visual Polish:**
+  - Rounded-xl on major surfaces (was rounded-lg)
+  - Shadow system: sm → md → lg → xl
+  - Gradient text for stat numbers
+  - Improved empty states with larger icons
+
+**Design Philosophy:**
+- **Dark theme:** Comfortable for long sessions, clear depth
+- **Light theme:** High contrast, premium feel with shadows
+- **Both:** Less visual noise, stronger hierarchy, better rhythm
+- **Result:** Professional workspace, not internal tool
 
 **Files:**
 - `apps/web/src/contexts/ThemeContext.tsx` - Theme state management
-- `apps/web/src/pages/Dashboard.tsx` - Theme-aware components
+- `apps/web/src/pages/Dashboard.tsx` - Theme-aware components (Dec 20, 2025 redesign)
 - `apps/web/src/components/ui/checkbox.tsx` - Theme styling
 
 ---
@@ -700,12 +741,22 @@ BookSmart is a fully functional bookmark manager built with React, TypeScript, V
    - Responsive grid layout
    - Item counts per folder
 
-6. **Dark/Light Theme System** (Dec 20)
+6. **Dark/Light Theme System** (Dec 20, 2025)
    - Complete theme toggle implementation
    - Custom #0D7D81 teal color scheme for light mode
    - Optimized text readability across both themes
    - Unified design elements (buttons, badges, cards)
    - Theme preference persisted in localStorage
+
+7. **Premium UI Redesign** (Dec 20, 2025)
+   - Implemented depth system: background → sections → cards → hover
+   - Reduced borders by ~50%, replaced with shadow system
+   - Calmer stat cards with gradient text emphasis
+   - Improved section rhythm with generous spacing (mb-16)
+   - Enhanced card hierarchy (bold titles, muted metadata)
+   - Faster transitions (150ms) with lift effects
+   - Better empty states and folder grid styling
+   - Professional workspace feel vs internal tool aesthetic
 
 ---
 
