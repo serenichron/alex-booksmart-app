@@ -3,6 +3,7 @@ import { Dashboard } from '@/pages/Dashboard'
 import { Landing } from '@/pages/Landing'
 import { Auth } from '@/components/Auth'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 import { Loader2 } from 'lucide-react'
 
 type View = 'landing' | 'signup' | 'signin'
@@ -73,9 +74,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 
