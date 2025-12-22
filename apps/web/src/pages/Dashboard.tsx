@@ -681,8 +681,8 @@ export function Dashboard() {
   return (
     <div className="dashboard-container min-h-screen bg-gradient-to-br from-cyan-50 via-teal-50 to-sky-50 dark:from-slate-900 dark:via-cyan-900 dark:to-slate-900 relative">
       {/* Animated gradient shapes */}
-      <div className="bg-blob absolute top-0 left-1/4 w-96 h-96 bg-teal-300 dark:bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-20 animate-blob"></div>
-      <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-300 dark:bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-20 animate-blob animation-delay-2000"></div>
+      <div className="bg-blob absolute top-0 left-1/4 w-96 h-96 bg-teal-300 dark:bg-cyan-500 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 dark:opacity-30 animate-blob"></div>
+      <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-300 dark:bg-teal-500 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 dark:opacity-30 animate-blob animation-delay-2000"></div>
 
       {/* Header - Full Width */}
       <header className="dashboard-header bg-white/80 dark:bg-slate-900/95 border-b border-gray-200 dark:border-white/20 sticky top-0 z-50 backdrop-blur-sm">
