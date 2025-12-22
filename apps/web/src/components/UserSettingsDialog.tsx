@@ -229,7 +229,7 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-[#0D7D81] to-teal-600 dark:from-cyan-400 dark:to-teal-400 bg-clip-text text-transparent">
             User Settings

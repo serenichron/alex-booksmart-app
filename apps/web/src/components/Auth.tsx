@@ -13,6 +13,8 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
   const [isSignUp, setIsSignUp] = useState(mode === 'signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -27,7 +29,7 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password)
+        const { error } = await signUp(email, password, firstName, lastName)
         if (error) {
           setError(error.message)
         } else {
@@ -111,6 +113,41 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignUp && (
+              <>
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-200 mb-1">
+                    First Name <span className="text-red-400">*</span>
+                  </label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    disabled={loading}
+                    className="w-full bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-white/50"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-200 mb-1">
+                    Last Name <span className="text-gray-400 text-xs">(optional)</span>
+                  </label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    disabled={loading}
+                    className="w-full bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-white/50"
+                  />
+                </div>
+              </>
+            )}
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-1">
                 Email
@@ -198,6 +235,8 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
                 setMessage(null)
                 setEmail('')
                 setPassword('')
+                setFirstName('')
+                setLastName('')
               }}
               className={`text-sm font-medium transition-colors ${
                 isSignUp
