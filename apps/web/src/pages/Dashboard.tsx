@@ -9,9 +9,10 @@ import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
+import { UserSettingsDialog } from '@/components/UserSettingsDialog'
+import { UserAvatar } from '@/components/UserAvatar'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { format } from 'date-fns'
-import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
@@ -27,9 +28,6 @@ import {
   getCurrentFolderId,
   setCurrentFolderId,
   deleteFolder,
-  exportAllData,
-  importAllData,
-  clearAllData,
   prefetchBoard,
   type Bookmark as BookmarkType,
   type Note,
@@ -43,7 +41,6 @@ type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo'
 type SearchMode = 'board' | 'global'
 
 export function Dashboard() {
-  const { signOut } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
@@ -74,6 +71,7 @@ export function Dashboard() {
   const [editingBoard, setEditingBoard] = useState<Board | null>(null)
   const [showImageViewer, setShowImageViewer] = useState(false)
   const [viewingImageBookmark, setViewingImageBookmark] = useState<BookmarkType | null>(null)
+  const [showUserSettings, setShowUserSettings] = useState(false)
 
   // Folder management state
   const [folders, setFolders] = useState<FolderType[]>([])
@@ -237,58 +235,6 @@ export function Dashboard() {
   const handleViewImage = (bookmark: BookmarkType) => {
     setViewingImageBookmark(bookmark)
     setShowImageViewer(true)
-  }
-
-  const handleExport = async () => {
-    try {
-      const data = await exportAllData()
-      const json = JSON.stringify(data, null, 2)
-      const blob = new Blob([json], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `booksmart-backup-${new Date().toISOString().split('T')[0]}.json`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-      alert('Data exported successfully!')
-    } catch (error) {
-      console.error('Export error:', error)
-      alert('Failed to export data')
-    }
-  }
-
-  const handleImport = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = 'application/json'
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (!file) return
-
-      try {
-        const text = await file.text()
-        const data = JSON.parse(text)
-        await importAllData(data)
-        await fetchBookmarks(true) // Skip cache to get fresh data
-        alert('Data imported successfully!')
-      } catch (error) {
-        console.error('Import error:', error)
-        alert('Failed to import data. Please check the file format.')
-      }
-    }
-    input.click()
-  }
-
-  const handleClearAccount = async () => {
-    if (confirm('⚠️ WARNING: This will delete ALL your bookmarks, boards, categories, and tags. This action cannot be undone!\n\nAre you sure you want to continue?')) {
-      if (confirm('Are you ABSOLUTELY sure? This is your last chance to back out.')) {
-        await clearAllData()
-        await fetchBookmarks(true) // Skip cache to get fresh data
-        alert('All data has been cleared.')
-      }
-    }
   }
 
   // Group bookmarks by folder and category
@@ -802,15 +748,6 @@ export function Dashboard() {
                   Search
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={handleExport} title="Export all data" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
-                <Upload className="w-4 h-4" />
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleImport} title="Import data" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
-                <Download className="w-4 h-4" />
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="border-red-400/50 text-red-500 dark:text-red-300 hover:text-red-600 dark:hover:text-red-200 hover:bg-red-100 dark:hover:bg-red-500/20">
-                <AlertTriangle className="w-4 h-4" />
-              </Button>
               <Button size="sm" variant="outline" onClick={() => handleCreateFolder()} className="border-teal-500/50 dark:border-teal-400/50 text-[#0D7D81] dark:text-teal-300 hover:text-teal-700 dark:hover:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-500/20">
                 <Folder className="w-4 h-4" />
                 New Folder
@@ -822,9 +759,7 @@ export function Dashboard() {
               <Button size="sm" variant="outline" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
-              <Button size="sm" variant="outline" onClick={() => signOut()} title="Log out" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
-                <LogOut className="w-4 h-4" />
-              </Button>
+              <UserAvatar onSettingsClick={() => setShowUserSettings(true)} />
             </div>
           </div>
         </div>
@@ -1668,6 +1603,12 @@ export function Dashboard() {
         bookmark={viewingImageBookmark}
         onEdit={handleEdit}
         onShare={handleShare}
+      />
+
+      {/* User Settings Dialog */}
+      <UserSettingsDialog
+        open={showUserSettings}
+        onOpenChange={setShowUserSettings}
       />
 
       <style>{`
