@@ -1107,7 +1107,7 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
+                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-[10px] relative group ${
                     isTodoBookmark
                       ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(55,47,77)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
@@ -1534,7 +1534,7 @@ export function Dashboard() {
                             </span>
                           </h2>
                         </div>
-                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-3">
                           {uncategorized.map(renderBookmarkCard)}
                         </div>
                       </div>
@@ -1552,7 +1552,7 @@ export function Dashboard() {
                           </span>
                         </h2>
                       </div>
-                      <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                      <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-3">
                         {categorizedMap.get(category)!.map(renderBookmarkCard)}
                       </div>
                     </div>
