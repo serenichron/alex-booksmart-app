@@ -39,6 +39,51 @@ interface BookmarkWithDetails extends BookmarkType {}
 type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo'
 type SearchMode = 'board' | 'global'
 
+// Helper function to detect Google document types and render appropriate icons
+function getGoogleDocIcon(url: string) {
+  try {
+    if (url.includes('docs.google.com/document')) {
+      return (
+        <img
+          src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_document_x16.png"
+          alt=""
+          className="w-4 h-4 mt-1 flex-shrink-0"
+        />
+      )
+    }
+    if (url.includes('docs.google.com/spreadsheets')) {
+      return (
+        <img
+          src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_spreadsheet_x16.png"
+          alt=""
+          className="w-4 h-4 mt-1 flex-shrink-0"
+        />
+      )
+    }
+    if (url.includes('docs.google.com/presentation')) {
+      return (
+        <img
+          src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_presentation_x16.png"
+          alt=""
+          className="w-4 h-4 mt-1 flex-shrink-0"
+        />
+      )
+    }
+    if (url.includes('docs.google.com/forms')) {
+      return (
+        <img
+          src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_form_x16.png"
+          alt=""
+          className="w-4 h-4 mt-1 flex-shrink-0"
+        />
+      )
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
 export function Dashboard() {
   const { theme, toggleTheme } = useTheme()
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -1327,14 +1372,18 @@ export function Dashboard() {
                         <div className="flex items-start gap-2 flex-1 min-w-0">
                           {/* Favicon for URL bookmarks */}
                           {bookmark.url && !isTextBookmark && !isTodoBookmark && (
-                            <img
-                              src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(new URL(bookmark.url).hostname)}&sz=32`}
-                              alt=""
-                              className="w-4 h-4 mt-0.5 flex-shrink-0"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none'
-                              }}
-                            />
+                            <>
+                              {getGoogleDocIcon(bookmark.url) || (
+                                <img
+                                  src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(new URL(bookmark.url).hostname)}&sz=32`}
+                                  alt=""
+                                  className="w-4 h-4 mt-1 flex-shrink-0"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                  }}
+                                />
+                              )}
+                            </>
                           )}
                           {bookmark.url ? (
                             <a
