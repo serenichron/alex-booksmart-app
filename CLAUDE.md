@@ -83,7 +83,7 @@ VITE_APP_URL=http://localhost:5173
 
 ## Implementation Status
 
-**Working**: Authentication (email/password + Google OAuth), bookmark saving (URL/text), URL metadata fetching, dashboard UI with boards/folders/categories, performance optimizations
+**Working**: Authentication (email/password + Google OAuth), bookmark saving (URL/text), URL metadata fetching, dashboard UI with boards/folders/categories, starred/favorites system with optimistic updates, performance optimizations
 
 **Partial**: AI integration (code exists in `lib/ai.ts` but not called from UI)
 
