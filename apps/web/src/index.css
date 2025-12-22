@@ -86,5 +86,11 @@
   * {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Minimum height for text and todo bookmark cards */
+  .bookmark-card-text,
+  .bookmark-card-todo {
+    min-height: 200px;
+  }
 }
 
