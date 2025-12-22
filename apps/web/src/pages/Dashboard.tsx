@@ -11,7 +11,7 @@ import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
 import { UserSettingsDialog } from '@/components/UserSettingsDialog'
 import { UserAvatar } from '@/components/UserAvatar'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun, Sheet, Presentation } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
@@ -43,16 +43,40 @@ type SearchMode = 'board' | 'global'
 function getGoogleDocIcon(url: string) {
   try {
     if (url.includes('docs.google.com/document')) {
-      return <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+      return (
+        <img
+          src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_document_x16.png"
+          alt=""
+          className="w-4 h-4 mt-1 flex-shrink-0"
+        />
+      )
     }
     if (url.includes('docs.google.com/spreadsheets')) {
-      return <Sheet className="w-4 h-4 text-green-600 dark:text-green-400" />
+      return (
+        <img
+          src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_spreadsheet_x16.png"
+          alt=""
+          className="w-4 h-4 mt-1 flex-shrink-0"
+        />
+      )
     }
     if (url.includes('docs.google.com/presentation')) {
-      return <Presentation className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+      return (
+        <img
+          src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_presentation_x16.png"
+          alt=""
+          className="w-4 h-4 mt-1 flex-shrink-0"
+        />
+      )
     }
     if (url.includes('docs.google.com/forms')) {
-      return <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+      return (
+        <img
+          src="https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_form_x16.png"
+          alt=""
+          className="w-4 h-4 mt-1 flex-shrink-0"
+        />
+      )
     }
   } catch {
     return null
@@ -1353,7 +1377,7 @@ export function Dashboard() {
                                 <img
                                   src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(new URL(bookmark.url).hostname)}&sz=32`}
                                   alt=""
-                                  className="w-4 h-4 mt-0.5 flex-shrink-0"
+                                  className="w-4 h-4 mt-1 flex-shrink-0"
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none'
                                   }}
