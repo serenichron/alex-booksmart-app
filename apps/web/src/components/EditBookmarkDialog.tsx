@@ -764,6 +764,27 @@ export function EditBookmarkDialog({
           </div>
         </div>
 
+        {/* Timestamp Information */}
+        {bookmark && (
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1">
+                <span className="font-medium">Created:</span>
+                <span>{format(new Date(bookmark.created_at), 'MMM d, yyyy HH:mm')}</span>
+              </div>
+              {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
+                <>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium">Last edited:</span>
+                    <span>{format(new Date(bookmark.updated_at), 'MMM d, yyyy HH:mm')}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
         <DialogFooter className="mt-6">
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             Cancel

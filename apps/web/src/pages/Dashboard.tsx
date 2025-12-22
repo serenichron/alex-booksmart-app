@@ -1109,12 +1109,12 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-xl overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(80,51,84)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
+                      ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(55,47,77)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
                       ? 'bg-[rgb(255,255,230)] dark:bg-[rgb(37,67,44)] shadow-md border border-[rgb(241,240,175)] dark:border-[rgb(48,76,55)]'
                       : isImageBookmark
                       ? 'bg-black shadow-lg'
-                      : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-slate-700/50'
+                      : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-[rgb(66,83,108)]/50'
                   }`}
                 >
                   {/* Action Buttons - Cleaner design */}
@@ -1227,7 +1227,7 @@ export function Dashboard() {
 
                   {/* To-do Bookmark - Special Design */}
                   {isTodoBookmark ? (
-                    <div className="todo-bookmark-content p-4">
+                    <div className="todo-bookmark-content px-4 pt-4 pb-0">
                       {/* Title and Completion */}
                       <div className="flex items-center justify-between mb-3">
                         {bookmark.title ? (
@@ -1251,9 +1251,9 @@ export function Dashboard() {
                             <span className="font-medium">Progress</span>
                             <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
                           </div>
-                          <div className="w-full bg-emerald-100/50 dark:bg-emerald-900/20 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-emerald-100/50 dark:bg-[rgb(135,98,148)]/20 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-emerald-600 dark:to-teal-600 h-full transition-all duration-300 rounded-full"
+                              className="bg-gradient-to-r from-emerald-500 to-teal-500 dark:bg-[rgb(55,47,77)] h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -1340,23 +1340,6 @@ export function Dashboard() {
                           </Badge>
                         </div>
                       )}
-
-                      {/* Timestamps for todo */}
-                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 dark:text-gray-500 mt-3 pt-3 border-t border-emerald-200/60 dark:border-slate-700">
-                        <div className="bookmark-timestamp flex items-center gap-1">
-                          <Clock className="w-2.5 h-2.5" />
-                          <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
-                        </div>
-                        {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                          <>
-                            <span className="text-gray-400 dark:text-gray-600">•</span>
-                            <div className="bookmark-edited flex items-center gap-1">
-                              <Clock className="w-2.5 h-2.5" />
-                              <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                            </div>
-                          </>
-                        )}
-                      </div>
                     </div>
                   ) : !isImageBookmark && (
                   <div className="bookmark-content p-4">
@@ -1480,22 +1463,6 @@ export function Dashboard() {
                         </Badge>
                       </div>
                     )}
-
-                    <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 dark:text-gray-500 mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
-                      <div className="bookmark-timestamp flex items-center gap-1">
-                        <Clock className="w-2.5 h-2.5" />
-                        <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
-                      </div>
-                      {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                        <>
-                          <span className="text-gray-400 dark:text-gray-600">•</span>
-                          <div className="bookmark-edited flex items-center gap-1">
-                            <Clock className="w-2.5 h-2.5" />
-                            <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                          </div>
-                        </>
-                      )}
-                    </div>
                   </div>
                   )}
                 </div>
