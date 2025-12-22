@@ -318,7 +318,7 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
         })
 
         await saveBookmark({
-          title: item.metadata.title || item.title,
+          title: item.title || item.metadata.title,  // Prefer original browser bookmark title
           summary: item.metadata.description || '',
           url: item.url,
           type: 'link',
