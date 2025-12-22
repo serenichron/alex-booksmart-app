@@ -11,9 +11,9 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-200">
       <div
-        className="fixed inset-0 bg-black/50"
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
         onClick={() => onOpenChange(false)}
       />
       <div className="relative z-50">{children}</div>
@@ -29,7 +29,7 @@ export function DialogContent({
   return (
     <div
       className={cn(
-        "relative bg-white rounded-lg shadow-lg max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto",
+        "relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl dark:shadow-slate-900/50 border border-gray-200 dark:border-slate-700 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200",
         className
       )}
       {...props}
@@ -58,7 +58,7 @@ export function DialogTitle({
   return (
     <h2
       className={cn(
-        "text-lg font-semibold leading-none tracking-tight",
+        "text-xl font-bold leading-none tracking-tight text-gray-900 dark:text-white",
         className
       )}
       {...props}
@@ -72,7 +72,7 @@ export function DialogDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-sm text-gray-600 dark:text-gray-400", className)}
       {...props}
     />
   )
