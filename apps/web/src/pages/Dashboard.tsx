@@ -1164,7 +1164,7 @@ export function Dashboard() {
                   {/* Starred Badge - Always visible on starred items, hides on hover */}
                   {bookmark.is_favorite && (
                     <div className="absolute top-3 right-3 z-10 opacity-100 group-hover:opacity-0 transition-all duration-150">
-                      <Star className="w-5 h-5 fill-amber-500/40 stroke-amber-600/60 stroke-1" />
+                      <Star className="w-4 h-4 fill-amber-500/30 stroke-amber-600/40 stroke-1" />
                     </div>
                   )}
 
