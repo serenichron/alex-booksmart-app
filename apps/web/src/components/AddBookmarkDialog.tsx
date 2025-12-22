@@ -56,6 +56,7 @@ export function AddBookmarkDialog({
   // Auto-fetched metadata
   const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+  const [favicon, setFavicon] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
   const [showMetaDescription, setShowMetaDescription] = useState(true)
 
@@ -111,6 +112,7 @@ export function AddBookmarkDialog({
     setTodoItemsInput('')
     setTitle('')
     setImageUrl('')
+    setFavicon('')
     setMetaDescription('')
     setShowMetaDescription(true)
     setSelectedCategories([])
@@ -174,6 +176,7 @@ export function AddBookmarkDialog({
       setTitle(metadata.title)
       setMetaDescription(metadata.description)
       if (metadata.image) setImageUrl(metadata.image)
+      if (metadata.favicon) setFavicon(metadata.favicon)
       lastFetchedUrlRef.current = urlToFetch
     } catch (err) {
       console.error('Failed to fetch metadata:', err)
@@ -189,6 +192,7 @@ export function AddBookmarkDialog({
     if (lastFetchedUrlRef.current && !newUrl.startsWith(lastFetchedUrlRef.current.substring(0, 20))) {
       setTitle('')
       setImageUrl('')
+      setFavicon('')
       setMetaDescription('')
       lastFetchedUrlRef.current = ''
     }
@@ -393,6 +397,7 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: imageUrl || null,
           meta_description: metaDescription || null,
+          favicon: favicon || null,
           show_meta_description: showMetaDescription,
           folder_id: selectedFolder,
         })
@@ -411,6 +416,7 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: null,
           meta_description: null,
+          favicon: null,
           folder_id: selectedFolder,
         })
       } else if (mode === 'todo') {
@@ -437,13 +443,14 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: null,
           meta_description: null,
+          favicon: null,
           todo_items: todoItems,
           folder_id: selectedFolder,
         })
       } else if (mode === 'multi-url') {
         // Save all URLs as separate bookmarks
         for (const url of multiUrlParsed) {
-          const metadata = multiUrlMetadata.get(url) || { title: url, description: '', image: null }
+          const metadata = multiUrlMetadata.get(url) || { title: url, description: '', image: null, favicon: null }
           const bookmarkType = isImageUrl(url) ? 'image' : 'link'
 
           await saveBookmark({
@@ -457,6 +464,7 @@ export function AddBookmarkDialog({
             tags: [],
             image_url: metadata.image || null,
             meta_description: metadata.description || null,
+            favicon: metadata.favicon || null,
             show_meta_description: true,
             folder_id: selectedFolder,
           })
@@ -553,8 +561,8 @@ export function AddBookmarkDialog({
               </div>
 
               {(title || imageUrl || metaDescription) && (
-                <div className="metadata-preview bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200 space-y-3">
-                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Preview</p>
+                <div className="metadata-preview bg-white dark:bg-slate-800/40 p-4 rounded-lg border border-gray-200/60 dark:border-slate-700/50 space-y-3">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Preview</p>
 
                   {imageUrl && (
                     <div className="bookmark-preview-image">
@@ -679,7 +687,7 @@ export function AddBookmarkDialog({
                   <select
                     value={selectedFolder || ''}
                     onChange={(e) => setSelectedFolder(e.target.value || null)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0D7D81] dark:focus:ring-cyan-500"
                   >
                     <option value="">No folder</option>
                     {availableFolders.map((folder) => (
@@ -861,7 +869,7 @@ export function AddBookmarkDialog({
                   <select
                     value={selectedFolder || ''}
                     onChange={(e) => setSelectedFolder(e.target.value || null)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0D7D81] dark:focus:ring-cyan-500"
                   >
                     <option value="">No folder</option>
                     {availableFolders.map((folder) => (
@@ -1043,7 +1051,7 @@ export function AddBookmarkDialog({
                   <select
                     value={selectedFolder || ''}
                     onChange={(e) => setSelectedFolder(e.target.value || null)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0D7D81] dark:focus:ring-cyan-500"
                   >
                     <option value="">No folder</option>
                     {availableFolders.map((folder) => (
@@ -1196,7 +1204,7 @@ export function AddBookmarkDialog({
                   <select
                     value={selectedFolder || ''}
                     onChange={(e) => setSelectedFolder(e.target.value || null)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0D7D81] dark:focus:ring-cyan-500"
                   >
                     <option value="">No folder</option>
                     {availableFolders.map((folder) => (

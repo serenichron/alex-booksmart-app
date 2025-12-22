@@ -4,6 +4,7 @@ export interface URLMetadata {
   title: string
   description: string
   image: string | null
+  favicon: string | null
 }
 
 export async function fetchURLMetadata(url: string): Promise<URLMetadata> {
@@ -60,13 +61,44 @@ export async function fetchURLMetadata(url: string): Promise<URLMetadata> {
       }
     })
 
+    // Extract favicon
+    let favicon: string | null = null
+    const faviconLink = doc.querySelector('link[rel="icon"]') ||
+                       doc.querySelector('link[rel="shortcut icon"]') ||
+                       doc.querySelector('link[rel="apple-touch-icon"]')
+
+    if (faviconLink) {
+      const faviconHref = faviconLink.getAttribute('href')
+      if (faviconHref) {
+        // Convert relative URLs to absolute
+        try {
+          const urlObj = new URL(url)
+          favicon = new URL(faviconHref, urlObj.origin).href
+        } catch {
+          favicon = faviconHref
+        }
+      }
+    }
+
+    // Fallback to /favicon.ico
+    if (!favicon) {
+      try {
+        const urlObj = new URL(url)
+        favicon = `${urlObj.origin}/favicon.ico`
+      } catch {
+        favicon = null
+      }
+    }
+
     console.log('📊 Raw metadata extracted:', JSON.stringify(meta, null, 2))
+    console.log('🎨 Favicon found:', favicon)
 
     // Build final result (prefer OpenGraph, fallback to basic meta)
     const result: URLMetadata = {
       title: meta.openGraph['og:title'] || meta.title || url,
       description: meta.openGraph['og:description'] || meta.description || '',
       image: meta.openGraph['og:image'] || meta.twitter['twitter:image'] || null,
+      favicon: favicon,
     }
 
     console.log('✅ Final metadata result:', result)
@@ -83,6 +115,7 @@ export async function fetchURLMetadata(url: string): Promise<URLMetadata> {
         title: urlObj.hostname,
         description: '',
         image: null,
+        favicon: `${urlObj.origin}/favicon.ico`,
       }
       console.log('🔄 Using fallback metadata:', fallback)
       return fallback
@@ -91,6 +124,7 @@ export async function fetchURLMetadata(url: string): Promise<URLMetadata> {
         title: url,
         description: '',
         image: null,
+        favicon: null,
       }
       console.log('🔄 Using minimal fallback:', fallback)
       return fallback

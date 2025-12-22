@@ -9,9 +9,10 @@ import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
   getStats,
@@ -42,6 +43,7 @@ type SearchMode = 'board' | 'global'
 
 export function Dashboard() {
   const { signOut } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingBookmark, setEditingBookmark] = useState<BookmarkType | null>(null)
@@ -612,8 +614,8 @@ export function Dashboard() {
         <div
           className={`flex items-center justify-between py-1 px-1.5 rounded cursor-pointer group ${
             folderNode.id === currentFolderId
-              ? 'bg-teal-50 border border-teal-200'
-              : 'hover:bg-gray-50'
+              ? 'bg-teal-50 dark:bg-teal-500/20 border border-[#0D7D81] dark:border-teal-400/50'
+              : 'hover:bg-gray-100 dark:hover:bg-white/10'
           }`}
         >
           <div
@@ -626,21 +628,21 @@ export function Dashboard() {
                   e.stopPropagation()
                   handleToggleFolderExpanded(folderNode.id)
                 }}
-                className="p-0.5 hover:bg-gray-200 rounded"
+                className="p-0.5 hover:bg-gray-200 dark:hover:bg-white/20 rounded"
               >
                 {isExpanded ? (
-                  <ChevronDown className="w-3 h-3 text-gray-600" />
+                  <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                 ) : (
-                  <ChevronRight className="w-3 h-3 text-gray-600" />
+                  <ChevronRight className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                 )}
               </button>
             )}
             {folderNode.id === currentFolderId ? (
-              <FolderOpen className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
+              <FolderOpen className="w-3.5 h-3.5 text-[#0D7D81] dark:text-teal-400 flex-shrink-0" />
             ) : (
-              <Folder className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+              <Folder className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
             )}
-            <span className="text-xs text-gray-600 truncate">{folderNode.name}</span>
+            <span className="text-xs text-gray-700 dark:text-gray-200 truncate">{folderNode.name}</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
             <Button
@@ -650,7 +652,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleCreateFolder(folderNode.id)
               }}
-              className="h-4 w-4 p-0 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+              className="h-4 w-4 p-0 text-[#0D7D81] dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-500/20"
               title="New subfolder"
             >
               <Plus className="w-2.5 h-2.5" />
@@ -662,7 +664,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleRenameFolder(folderNode)
               }}
-              className="h-4 w-4 p-0"
+              className="h-4 w-4 p-0 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
               title="Rename folder"
             >
               <Edit className="w-2.5 h-2.5" />
@@ -674,7 +676,7 @@ export function Dashboard() {
                 e.stopPropagation()
                 handleDeleteFolder(folderNode.id)
               }}
-              className="h-4 w-4 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="h-4 w-4 p-0 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/20"
               title="Delete folder"
             >
               <Trash2 className="w-2.5 h-2.5" />
@@ -699,47 +701,51 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f1f6f5' }}>
+    <div className="dashboard-container min-h-screen bg-gradient-to-br from-cyan-50 via-teal-50 to-sky-50 dark:from-slate-900 dark:via-cyan-900 dark:to-slate-900 relative">
+      {/* Animated gradient shapes */}
+      <div className="bg-blob absolute top-0 left-1/4 w-96 h-96 bg-teal-300 dark:bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-20 animate-blob"></div>
+      <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-300 dark:bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-20 animate-blob animation-delay-2000"></div>
+
       {/* Header - Full Width */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
+      <header className="dashboard-header bg-white/80 dark:bg-slate-900/95 border-b border-gray-200 dark:border-white/20 sticky top-0 z-50 backdrop-blur-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-xl">
-                <Bookmark className="w-5 h-5 text-primary-foreground" />
+            <div className="brand-section flex items-center gap-3">
+              <div className="brand-icon flex items-center justify-center w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl shadow-lg">
+                <Bookmark className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">BookSmart</span>
+              <span className="brand-name text-xl font-bold text-gray-800 dark:text-white">BookSmart</span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="header-actions flex items-center gap-4">
               {showSearchInput ? (
-                <div className="flex items-center gap-2">
+                <div className="search-controls flex items-center gap-2">
                   <Input
                     type="text"
                     placeholder={searchMode === 'board' ? "Search in current board..." : "Search all boards..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64"
+                    className="w-64 bg-white dark:bg-white/10 border-gray-300 dark:border-white/30 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-[#0D7D81] dark:focus:border-cyan-400"
                     autoFocus
                   />
-                  <div className="flex items-center border border-gray-300 rounded-md overflow-hidden bg-white">
+                  <div className="search-mode-toggle flex items-center border border-gray-300 dark:border-white/30 rounded-md overflow-hidden bg-gray-100 dark:bg-white/10">
                     <button
                       onClick={() => setSearchMode('board')}
                       className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                         searchMode === 'board'
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                          ? 'bg-[#0D7D81] dark:bg-cyan-500 text-white'
+                          : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
                       }`}
                     >
                       This Board
                     </button>
-                    <div className="w-px h-5 bg-gray-300" />
+                    <div className="w-px h-5 bg-gray-300 dark:bg-white/30" />
                     <button
                       onClick={() => setSearchMode('global')}
                       className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                         searchMode === 'global'
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                          ? 'bg-[#0D7D81] dark:bg-cyan-500 text-white'
+                          : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
                       }`}
                     >
                       All Boards
@@ -753,34 +759,38 @@ export function Dashboard() {
                       setShowSearchInput(false)
                       setSearchMode('board')
                     }}
+                    className="text-gray-700 dark:text-white hover:text-teal-700 dark:hover:text-cyan-300 hover:bg-gray-100 dark:hover:bg-white/10"
                   >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               ) : (
-                <Button variant="ghost" size="sm" onClick={() => setShowSearchInput(true)}>
+                <Button variant="ghost" size="sm" onClick={() => setShowSearchInput(true)} className="text-gray-700 dark:text-white hover:text-teal-700 dark:hover:text-cyan-300 hover:bg-gray-100 dark:hover:bg-white/10">
                   <Search className="w-4 h-4" />
                   Search
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={handleExport} title="Export all data">
+              <Button size="sm" variant="outline" onClick={handleExport} title="Export all data" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 <Upload className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={handleImport} title="Import data">
+              <Button size="sm" variant="outline" onClick={handleImport} title="Import data" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 <Download className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+              <Button size="sm" variant="outline" onClick={handleClearAccount} title="Clear all data" className="border-red-400/50 text-red-500 dark:text-red-300 hover:text-red-600 dark:hover:text-red-200 hover:bg-red-100 dark:hover:bg-red-500/20">
                 <AlertTriangle className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => handleCreateFolder()} className="text-teal-600 hover:text-teal-700 hover:bg-teal-50">
+              <Button size="sm" variant="outline" onClick={() => handleCreateFolder()} className="border-teal-500/50 dark:border-teal-400/50 text-[#0D7D81] dark:text-teal-300 hover:text-teal-700 dark:hover:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-500/20">
                 <Folder className="w-4 h-4" />
                 New Folder
               </Button>
-              <Button size="sm" onClick={() => setShowAddDialog(true)}>
+              <Button size="sm" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white border-0">
                 <Plus className="w-4 h-4" />
                 Add Bookmark
               </Button>
-              <Button size="sm" variant="outline" onClick={() => signOut()} title="Log out">
+              <Button size="sm" variant="outline" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => signOut()} title="Log out" className="border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -789,47 +799,47 @@ export function Dashboard() {
       </header>
 
       {/* Sidebar - Fixed Position */}
-      <aside className="fixed left-0 top-16 w-64 bg-white border-r border-gray-200 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40">
+      <aside className="dashboard-sidebar fixed left-0 top-16 w-64 bg-white/80 dark:bg-slate-900/95 border-r border-gray-200 dark:border-white/20 h-[calc(100vh-4rem)] p-4 overflow-y-auto z-40 backdrop-blur-sm">
         <div className="space-y-4">
           {/* Bookmark Type Filter */}
           <div className="filter-section">
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">Bookmark Types</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Bookmark Types</h3>
 
             <div className="space-y-1 mb-3">
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('link')}
                   onCheckedChange={(checked) => handleToggleType('link', checked as boolean)}
                 />
-                <LinkIcon className="w-4 h-4 text-blue-600" />
-                <span className="text-sm text-gray-700">Links</span>
+                <LinkIcon className="w-4 h-4 text-[#0D7D81] dark:text-cyan-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">Links</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('text')}
                   onCheckedChange={(checked) => handleToggleType('text', checked as boolean)}
                 />
-                <FileText className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm text-gray-700">Text</span>
+                <FileText className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">Text</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('image')}
                   onCheckedChange={(checked) => handleToggleType('image', checked as boolean)}
                 />
-                <ImageIcon className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-700">Images</span>
+                <ImageIcon className="w-4 h-4 text-[#0D7D81] dark:text-teal-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">Images</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
                 <Checkbox
                   checked={selectedTypes.has('todo')}
                   onCheckedChange={(checked) => handleToggleType('todo', checked as boolean)}
                 />
-                <CheckSquare className="w-4 h-4 text-purple-600" />
-                <span className="text-sm text-gray-700">To-dos</span>
+                <CheckSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">To-dos</span>
               </label>
             </div>
 
@@ -838,7 +848,7 @@ export function Dashboard() {
                 variant="outline"
                 size="sm"
                 onClick={handleSelectAllTypes}
-                className="flex-1 text-xs"
+                className="flex-1 text-xs border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 Select All
               </Button>
@@ -846,7 +856,7 @@ export function Dashboard() {
                 variant="outline"
                 size="sm"
                 onClick={handleUnselectAllTypes}
-                className="flex-1 text-xs"
+                className="flex-1 text-xs border-gray-300 dark:border-white/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 Unselect All
               </Button>
@@ -854,14 +864,14 @@ export function Dashboard() {
           </div>
 
           {/* Board Selector */}
-          <div className="board-section pt-3 border-t border-gray-200">
+          <div className="board-section pt-3 border-t border-gray-200 dark:border-white/20">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-900">Boards</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Boards</h3>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleCreateBoard}
-                className="h-6 w-6 p-0"
+                className="h-6 w-6 p-0 text-[#0D7D81] dark:text-cyan-300 hover:text-teal-700 dark:hover:text-cyan-200 hover:bg-gray-100 dark:hover:bg-white/10"
                 title="Create new board"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -879,8 +889,8 @@ export function Dashboard() {
                     <div
                       className={`flex items-center justify-between p-1.5 rounded group ${
                         board.id === currentBoardId && !currentFolderId
-                          ? 'bg-blue-50 border border-blue-200'
-                          : 'hover:bg-gray-50'
+                          ? 'bg-teal-50 dark:bg-cyan-500/20 border border-[#0D7D81] dark:border-cyan-400/50'
+                          : 'hover:bg-gray-100 dark:hover:bg-white/10'
                       }`}
                     >
                       <div
@@ -901,17 +911,17 @@ export function Dashboard() {
                               e.stopPropagation()
                               handleToggleBoardExpanded(board.id)
                             }}
-                            className="p-0.5 hover:bg-gray-200 rounded"
+                            className="p-0.5 hover:bg-gray-200 dark:hover:bg-white/20 rounded"
                           >
                             {isExpanded ? (
-                              <ChevronDown className="w-3 h-3 text-gray-600" />
+                              <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                             ) : (
-                              <ChevronRight className="w-3 h-3 text-gray-600" />
+                              <ChevronRight className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                             )}
                           </button>
                         )}
-                        <Layers className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-                        <span className="text-sm text-gray-700 truncate">{board.name}</span>
+                        <Layers className="w-3.5 h-3.5 text-[#0D7D81] dark:text-cyan-400 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{board.name}</span>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                         <Button
@@ -925,7 +935,7 @@ export function Dashboard() {
                             setExpandedBoards(new Set([board.id]))
                             handleCreateFolder()
                           }}
-                          className="h-5 w-5 p-0 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                          className="h-5 w-5 p-0 text-[#0D7D81] dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-500/20"
                           title="New folder"
                         >
                           <Plus className="w-3 h-3" />
@@ -937,7 +947,7 @@ export function Dashboard() {
                             e.stopPropagation()
                             handleRenameBoard(board)
                           }}
-                          className="h-5 w-5 p-0"
+                          className="h-5 w-5 p-0 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
                           title="Rename board"
                         >
                           <Edit className="w-3 h-3" />
@@ -950,7 +960,7 @@ export function Dashboard() {
                               e.stopPropagation()
                               handleDeleteBoard(board.id)
                             }}
-                            className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="h-5 w-5 p-0 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/20"
                             title="Delete board"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -980,26 +990,26 @@ export function Dashboard() {
       </aside>
 
       {/* Main Content - With left margin for sidebar */}
-      <main className="ml-64 px-4 sm:px-6 lg:px-8 py-8">
+      <main className="dashboard-main ml-64 px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Breadcrumbs */}
         <div className="breadcrumbs mb-6">
           <div className="flex items-center gap-2 text-sm">
-            <Layers className="w-4 h-4 text-gray-400" />
+            <Layers className="w-4 h-4 text-[#0D7D81] dark:text-cyan-400" />
             <button
               onClick={() => handleSwitchFolder(null)}
               className={`font-semibold transition-colors ${
                 currentFolderId === null
-                  ? 'text-gray-900'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-gray-900 dark:text-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {boards.find(b => b.id === currentBoardId)?.name || 'Board'}
             </button>
             {currentFolderId && (
               <>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-                <Folder className="w-4 h-4 text-gray-400" />
-                <span className="font-semibold text-gray-900">
+                <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <Folder className="w-4 h-4 text-[#0D7D81] dark:text-cyan-400" />
+                <span className="font-semibold text-gray-900 dark:text-white">
                   {folders.find(f => f.id === currentFolderId)?.name || 'Folder'}
                 </span>
               </>
@@ -1007,23 +1017,23 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="stats-card bg-gradient-to-br from-teal-500 to-cyan-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-teal-100">Total Bookmarks</div>
-            <div className="text-3xl font-bold text-white">{stats.total}</div>
+        {/* Quick Stats - Calmer design with emphasis on numbers */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-[#0D7D81] dark:hover:border-cyan-500/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Bookmarks</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">{stats.total}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-rose-500 to-pink-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-rose-100">Categories</div>
-            <div className="text-3xl font-bold text-white">{stats.categories}</div>
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-rose-500 dark:hover:border-rose-400/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Categories</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 dark:from-rose-400 dark:to-pink-400 bg-clip-text text-transparent">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-emerald-500 to-teal-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-emerald-100">Folders</div>
-            <div className="text-3xl font-bold text-white">{folders.length}</div>
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-emerald-500 dark:hover:border-emerald-400/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Folders</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">{folders.length}</div>
           </div>
-          <div className="stats-card bg-gradient-to-br from-violet-500 to-purple-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-between">
-            <div className="text-sm text-violet-100">This Week</div>
-            <div className="text-3xl font-bold text-white">{stats.thisWeek}</div>
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-violet-500 dark:hover:border-violet-400/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">This Week</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">{stats.thisWeek}</div>
           </div>
         </div>
 
@@ -1033,32 +1043,32 @@ export function Dashboard() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : bookmarks.length === 0 ? (
-          /* Empty State */
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-              <Sparkles className="w-8 h-8 text-primary" />
+          /* Empty State - Improved design */
+          <div className="empty-state bg-white dark:bg-slate-800/60 rounded-2xl p-16 text-center shadow-xl max-w-2xl mx-auto">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-cyan-500/20 dark:to-teal-500/20 rounded-2xl mb-6 shadow-inner">
+              <Sparkles className="w-10 h-10 text-[#0D7D81] dark:text-cyan-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
               Start Your Collection
             </h2>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            <p className="text-base text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto leading-relaxed">
               Save your first bookmark and organize it with categories and tags
             </p>
-            <Button size="lg" onClick={() => setShowAddDialog(true)}>
-              <Plus className="w-5 h-5" />
+            <Button size="lg" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-[#0D7D81] to-cyan-600 dark:from-cyan-500 dark:to-teal-600 hover:from-teal-700 hover:to-cyan-700 dark:hover:from-cyan-600 dark:hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-150 px-8 py-6 text-base">
+              <Plus className="w-5 h-5 mr-2" />
               Add Your First Bookmark
             </Button>
           </div>
         ) : filteredBookmarks.length === 0 ? (
-          /* No results for current filter or search */
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-              {searchQuery ? <Search className="w-8 h-8 text-gray-400" /> : <Filter className="w-8 h-8 text-gray-400" />}
+          /* No results for current filter or search - Improved design */
+          <div className="no-results bg-white dark:bg-slate-800/60 rounded-2xl p-16 text-center shadow-xl max-w-2xl mx-auto">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-cyan-500/20 dark:to-teal-500/20 rounded-2xl mb-6 shadow-inner">
+              {searchQuery ? <Search className="w-10 h-10 text-[#0D7D81] dark:text-cyan-400" /> : <Filter className="w-10 h-10 text-[#0D7D81] dark:text-cyan-400" />}
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
               No Bookmarks Found
             </h2>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            <p className="text-base text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto leading-relaxed">
               {searchQuery
                 ? `No bookmarks match "${searchQuery}". Try a different search term.`
                 : "No bookmarks match the selected filters. Try selecting different bookmark types."
@@ -1068,6 +1078,7 @@ export function Dashboard() {
               <Button
                 variant="outline"
                 onClick={() => setSearchQuery('')}
+                className="border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-sm"
               >
                 Clear Search
               </Button>
@@ -1096,22 +1107,22 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow duration-200 break-inside-avoid mb-6 relative group ${
+                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200 shadow-sm'
+                      ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(55,47,77)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
-                      ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-sm'
+                      ? 'bg-[rgb(255,255,230)] dark:bg-[rgb(60,104,70)] shadow-md border border-[rgb(241,240,175)] dark:border-[rgb(83,122,93)]'
                       : isImageBookmark
-                      ? 'bg-black border-gray-800'
-                      : 'bg-white border-gray-200/60 shadow-sm'
+                      ? 'bg-black shadow-lg'
+                      : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-[rgb(66,83,108)]/50'
                   }`}
                 >
-                  {/* Action Buttons */}
-                  <div className="absolute top-2 right-2 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Action Buttons - Cleaner design */}
+                  <div className="absolute top-3 right-3 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150">
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
+                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                         title="Open in new tab"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -1120,7 +1131,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
+                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                         title="Share bookmark"
                       >
                         <Share2 className="w-3.5 h-3.5" />
@@ -1128,14 +1139,14 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600/90 hover:bg-slate-700 text-white p-1.5 rounded-md shadow-md"
+                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Edit bookmark"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-rose-500/90 hover:bg-rose-600 text-white p-1.5 rounded-md shadow-md"
+                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Delete bookmark"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1169,7 +1180,7 @@ export function Dashboard() {
 
                       {/* Title overlay at top - only show if title exists */}
                       {bookmark.title && (
-                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent pt-3 pb-3 px-3">
+                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent pt-[0.8rem] pb-3 px-3">
                           <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-left">
                             {bookmark.title}
                           </h3>
@@ -1200,7 +1211,7 @@ export function Dashboard() {
                       href={bookmark.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bookmark-image-container block border-b border-[#eaeaea]"
+                      className="bookmark-image-container block border-b border-[#d3d3d3] dark:border-white/40"
                     >
                       <img
                         src={bookmark.image_url}
@@ -1216,33 +1227,33 @@ export function Dashboard() {
 
                   {/* To-do Bookmark - Special Design */}
                   {isTodoBookmark ? (
-                    <div className="todo-bookmark-content p-3">
+                    <div className="todo-bookmark-content px-4 pt-[0.8rem] pb-0">
                       {/* Title and Completion */}
                       <div className="flex items-center justify-between mb-3">
                         {bookmark.title ? (
-                          <h3 className="text-sm font-semibold text-gray-900 flex-1 leading-tight">
+                          <h3 className="text-base font-bold text-gray-900 dark:text-white flex-1 leading-snug">
                             {bookmark.title}
                           </h3>
                         ) : (
-                          <h3 className="text-sm font-semibold text-gray-500 flex-1 leading-tight">
+                          <h3 className="text-base font-bold text-gray-700 dark:text-gray-300 flex-1 leading-snug">
                             To-do List
                           </h3>
                         )}
                         {bookmark.is_favorite && (
-                          <Heart className="w-3.5 h-3.5 text-red-500 fill-current flex-shrink-0 ml-2" />
+                          <Heart className="w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
                         )}
                       </div>
 
                       {/* Completion Percentage */}
                       {todoCompletion && (
                         <div className="mb-3">
-                          <div className="flex items-center justify-between text-[10px] text-gray-600 mb-1">
+                          <div className="flex items-center justify-between text-[10px] text-gray-700 dark:text-gray-300 mb-1">
                             <span className="font-medium">Progress</span>
                             <span>{todoCompletion.completed}/{todoCompletion.total} ({todoCompletion.percentage}%)</span>
                           </div>
-                          <div className="w-full bg-purple-100 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-emerald-100/50 dark:bg-[rgb(135,98,148)]/20 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-purple-500 to-violet-500 h-full transition-all duration-300 rounded-full"
+                              className="bg-[#0B8594] h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -1255,7 +1266,7 @@ export function Dashboard() {
                           {bookmark.todo_items.map((item) => (
                             <label
                               key={item.id}
-                              className="flex items-start gap-2 cursor-pointer group hover:bg-purple-100 p-0.5 rounded transition-colors"
+                              className="flex items-start gap-2 cursor-pointer group hover:bg-emerald-100/40 dark:hover:bg-emerald-900/10 p-0.5 rounded transition-colors"
                             >
                               <Checkbox
                                 checked={item.completed}
@@ -1265,8 +1276,8 @@ export function Dashboard() {
                               <span
                                 className={`text-xs flex-1 leading-relaxed ${
                                   item.completed
-                                    ? 'text-gray-400 line-through'
-                                    : 'text-gray-700'
+                                    ? 'text-gray-500 dark:text-gray-500 line-through'
+                                    : 'text-gray-700 dark:text-gray-200'
                                 }`}
                               >
                                 {item.text}
@@ -1278,8 +1289,8 @@ export function Dashboard() {
 
                       {/* Notes for todo */}
                       {bookmark.notes.length > 0 && (
-                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-purple-300">
-                          <label className="text-[10px] font-semibold text-gray-700 mb-1.5 block">Notes</label>
+                        <div className="bookmark-notes-container mb-2 pt-2 border-t border-emerald-200/40 dark:border-slate-700/60">
+                          <label className="text-[10px] font-semibold text-gray-900 dark:text-white mb-1.5 block">Notes</label>
                           <div className="space-y-1.5">
                             {(expandedNotesBookmarks.has(bookmark.id)
                               ? bookmark.notes
@@ -1287,10 +1298,10 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-gradient-to-r from-teal-50 to-cyan-50 border-l-3 border-teal-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
-                                <p className="text-[11px] text-gray-700 line-clamp-3 leading-relaxed pr-1">
+                                <p className="text-[11px] text-gray-800 dark:text-gray-200 line-clamp-3 leading-relaxed pr-1">
                                   {note.content}
                                 </p>
                               </div>
@@ -1299,7 +1310,7 @@ export function Dashboard() {
                           {bookmark.notes.length > 3 && (
                             <button
                               onClick={() => handleToggleOlderNotes(bookmark.id)}
-                              className="text-[10px] text-blue-600 hover:text-blue-800 mt-1.5 font-medium"
+                              className="text-[10px] text-[#0D7D81] dark:text-cyan-400 hover:text-teal-700 dark:hover:text-cyan-300 mt-1.5 font-medium"
                             >
                               {expandedNotesBookmarks.has(bookmark.id)
                                 ? '− Show less'
@@ -1313,7 +1324,7 @@ export function Dashboard() {
                       {bookmark.categories.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {bookmark.categories.map((cat, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-purple-200 text-purple-900 border-purple-400">
+                            <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-gray-200 dark:bg-slate-700/60 text-gray-900 dark:text-gray-300 border-gray-300 dark:border-slate-600/50">
                               {cat}
                             </Badge>
                           ))}
@@ -1323,39 +1334,73 @@ export function Dashboard() {
                       {/* Board badge in global search */}
                       {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
                         <div className="mb-2">
-                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-blue-50 text-blue-700 border-blue-300">
+                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-teal-50 dark:bg-cyan-500/20 text-[#0D7D81] dark:text-cyan-200 border-[#0D7D81]/30 dark:border-cyan-400/50">
                             <Layers className="w-2.5 h-2.5 mr-1" />
                             {(bookmark as any).boardName}
                           </Badge>
                         </div>
                       )}
-
-                      {/* Timestamps for todo */}
-                      <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
-                        <div className="bookmark-timestamp flex items-center gap-1">
-                          <Clock className="w-2 h-2" />
-                          <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
-                        </div>
-                        {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                          <>
-                            <span className="text-gray-400">•</span>
-                            <div className="bookmark-edited flex items-center gap-1">
-                              <Clock className="w-2 h-2" />
-                              <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                            </div>
-                          </>
-                        )}
-                      </div>
                     </div>
                   ) : !isImageBookmark && (
-                  <div className="bookmark-content p-3">
+                  <div className="bookmark-content px-4 pt-[0.8rem] pb-0">
+                    {/* Only show title if it exists - EMPHASIZED */}
+                    {bookmark.title && (
+                      <div className="bookmark-header flex items-start justify-between mb-3">
+                        <div className="flex items-start gap-2 flex-1 min-w-0">
+                          {/* Favicon for URL bookmarks */}
+                          {bookmark.favicon && bookmark.url && !isTextBookmark && !isTodoBookmark && (
+                            <img
+                              src={bookmark.favicon}
+                              alt=""
+                              className="w-4 h-4 mt-0.5 flex-shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                              }}
+                            />
+                          )}
+                          {bookmark.url ? (
+                            <a
+                              href={bookmark.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-400 transition-colors cursor-pointer leading-snug min-w-0"
+                            >
+                              {bookmark.title}
+                            </a>
+                          ) : (
+                            <h3 className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 leading-snug min-w-0">
+                              {bookmark.title}
+                            </h3>
+                          )}
+                        </div>
+                        {bookmark.is_favorite && (
+                          <Heart className="bookmark-favorite-icon w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
+                        )}
+                      </div>
+                    )}
+
+                    {/* For text bookmarks, show summary (text content) when no title or when title is provided */}
+                    {isTextBookmark && bookmark.summary && (
+                      <p className="bookmark-text-content text-sm text-gray-800 dark:text-gray-300 mb-3 line-clamp-3 leading-relaxed">
+                        {bookmark.summary}
+                      </p>
+                    )}
+
+                    {/* For URL bookmarks, show meta description if enabled - MUTED */}
+                    {!isTextBookmark && bookmark.meta_description && bookmark.show_meta_description !== false && (
+                      <p className="bookmark-meta-description text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">
+                        {bookmark.meta_description}
+                      </p>
+                    )}
+
+                    {/* URL at bottom - SUBTLE */}
                     {bookmark.url && (
-                      <div className="bookmark-url-display mb-1.5">
+                      <div className="bookmark-url-display mb-3 pt-2 border-t border-gray-100 dark:border-slate-700">
                         <a
                           href={bookmark.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[11px] text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 truncate leading-tight"
+                          className="text-[10px] text-gray-400 dark:text-gray-500 hover:text-[#0D7D81] dark:hover:text-cyan-400 hover:underline flex items-center gap-1 truncate leading-tight"
                         >
                           <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
                           <span className="truncate">{bookmark.url}</span>
@@ -1363,46 +1408,9 @@ export function Dashboard() {
                       </div>
                     )}
 
-                    {/* Only show title if it exists */}
-                    {bookmark.title && (
-                      <div className="bookmark-header flex items-start justify-between mb-2">
-                        {bookmark.url ? (
-                          <a
-                            href={bookmark.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 hover:text-blue-600 transition-colors cursor-pointer leading-tight"
-                          >
-                            {bookmark.title}
-                          </a>
-                        ) : (
-                          <h3 className="bookmark-title text-sm font-semibold text-gray-900 line-clamp-2 flex-1 leading-tight">
-                            {bookmark.title}
-                          </h3>
-                        )}
-                        {bookmark.is_favorite && (
-                          <Heart className="bookmark-favorite-icon w-3.5 h-3.5 text-red-500 fill-current flex-shrink-0 ml-2" />
-                        )}
-                      </div>
-                    )}
-
-                    {/* For text bookmarks, show summary (text content) when no title or when title is provided */}
-                    {isTextBookmark && bookmark.summary && (
-                      <p className="bookmark-text-content text-xs text-gray-700 mb-2 line-clamp-3 leading-snug">
-                        {bookmark.summary}
-                      </p>
-                    )}
-
-                    {/* For URL bookmarks, show meta description if enabled */}
-                    {!isTextBookmark && bookmark.meta_description && bookmark.show_meta_description !== false && (
-                      <p className="bookmark-meta-description text-xs text-gray-500 mb-2 line-clamp-2 italic leading-snug">
-                        {bookmark.meta_description}
-                      </p>
-                    )}
-
                     {bookmark.notes.length > 0 && (
                       <div className="bookmark-notes-container mb-2">
-                        <label className="text-[10px] font-semibold text-gray-700 mb-1.5 block">Notes</label>
+                        <label className="text-[10px] font-semibold text-gray-900 dark:text-white mb-1.5 block">Notes</label>
                         <div className="space-y-1.5">
                           {(expandedNotesBookmarks.has(bookmark.id)
                             ? bookmark.notes
@@ -1410,11 +1418,11 @@ export function Dashboard() {
                           ).map((note) => (
                             <div
                               key={note.id}
-                              className="bookmark-note bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-500 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                              className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                               onClick={() => handleNoteClick(note, bookmark.id)}
                               title="Click to view full note"
                             >
-                              <p className="bookmark-note-text text-xs text-blue-800 line-clamp-2 leading-snug">
+                              <p className="bookmark-note-text text-xs text-gray-800 dark:text-gray-200 line-clamp-2 leading-snug">
                                 {note.content}
                               </p>
                             </div>
@@ -1422,7 +1430,7 @@ export function Dashboard() {
                           {bookmark.notes.length > 3 && (
                             <button
                               onClick={() => handleToggleOlderNotes(bookmark.id)}
-                              className="text-[10px] text-blue-600 hover:text-blue-800 font-medium"
+                              className="text-[10px] text-[#0D7D81] dark:text-cyan-400 hover:text-teal-700 dark:hover:text-cyan-300 font-medium"
                             >
                               {expandedNotesBookmarks.has(bookmark.id)
                                 ? '- Show fewer notes'
@@ -1437,7 +1445,7 @@ export function Dashboard() {
                     {bookmark.categories.length > 0 && (
                       <div className="bookmark-categories flex flex-wrap gap-1 mb-2">
                         {bookmark.categories.map((cat, idx) => (
-                          <Badge key={idx} variant="secondary" className="bookmark-category text-[10px] py-0 h-5">
+                          <Badge key={idx} variant="secondary" className="bookmark-category text-[10px] py-0 h-5 bg-gray-200 dark:bg-white/20 text-gray-900 dark:text-white border-gray-300 dark:border-white/30">
                             {cat}
                           </Badge>
                         ))}
@@ -1447,12 +1455,12 @@ export function Dashboard() {
                     {bookmark.tags.length > 0 && (
                       <div className="bookmark-tags flex flex-wrap gap-1 mb-2">
                         {bookmark.tags.slice(0, 3).map((tag, idx) => (
-                          <Badge key={idx} variant="outline" className="bookmark-tag text-[10px] py-0 h-5">
+                          <Badge key={idx} variant="outline" className="bookmark-tag text-[10px] py-0 h-5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-white/30">
                             {tag}
                           </Badge>
                         ))}
                         {bookmark.tags.length > 3 && (
-                          <Badge variant="outline" className="bookmark-tags-more text-[10px] py-0 h-5">
+                          <Badge variant="outline" className="bookmark-tags-more text-[10px] py-0 h-5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-white/30">
                             +{bookmark.tags.length - 3}
                           </Badge>
                         )}
@@ -1462,28 +1470,12 @@ export function Dashboard() {
                     {/* Board badge in global search */}
                     {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
                       <div className="mb-2">
-                        <Badge variant="outline" className="text-[10px] py-0 h-5 bg-blue-50 text-blue-700 border-blue-300">
+                        <Badge variant="outline" className="text-[10px] py-0 h-5 bg-teal-50 dark:bg-cyan-500/20 text-[#0D7D81] dark:text-cyan-200 border-[#0D7D81]/30 dark:border-cyan-400/50">
                           <Layers className="w-2.5 h-2.5 mr-1" />
                           {(bookmark as any).boardName}
                         </Badge>
                       </div>
                     )}
-
-                    <div className="bookmark-footer flex items-center gap-2 text-[9px] text-gray-500 mt-2 pt-1.5 border-t border-gray-100 bg-gray-50/50 -mx-3 px-3 -mb-3 pb-2">
-                      <div className="bookmark-timestamp flex items-center gap-1">
-                        <Clock className="w-2 h-2" />
-                        <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
-                      </div>
-                      {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                        <>
-                          <span className="text-gray-400">•</span>
-                          <div className="bookmark-edited flex items-center gap-1">
-                            <Clock className="w-2 h-2" />
-                            <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                          </div>
-                        </>
-                      )}
-                    </div>
                   </div>
                   )}
                 </div>
@@ -1495,7 +1487,7 @@ export function Dashboard() {
                   {/* Folder Icons Grid - Show First */}
                   {boardFolders && boardFolders.length > 0 && (
                     <>
-                      <div className="folders-grid mb-10">
+                      <div className="folders-grid mb-16">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                           {boardFolders.map((folder) => {
                             const folderBookmarks = folderMap.get(folder.id) || []
@@ -1503,21 +1495,21 @@ export function Dashboard() {
                               <div
                                 key={folder.id}
                                 onClick={() => handleSwitchFolder(folder.id)}
-                                className={`folder-item cursor-pointer p-4 rounded-lg border-2 transition-all hover:shadow-lg ${
+                                className={`folder-item cursor-pointer p-5 rounded-xl transition-all duration-150 hover:-translate-y-0.5 ${
                                   folder.id === currentFolderId
-                                    ? 'border-cyan-500 bg-cyan-50'
-                                    : 'border-gray-200 bg-white hover:border-cyan-300'
+                                    ? 'bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-cyan-900/40 dark:to-teal-900/40 shadow-lg shadow-teal-200/50 dark:shadow-cyan-900/30 ring-2 ring-[#0D7D81] dark:ring-cyan-400'
+                                    : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 hover:shadow-xl hover:ring-2 hover:ring-[#0D7D81]/50 dark:hover:ring-cyan-400/50'
                                 }`}
                               >
-                                <div className="flex flex-col items-center text-center gap-2">
-                                  <Folder className={`w-16 h-16 ${
-                                    folder.id === currentFolderId ? 'text-cyan-600' : 'text-gray-400'
+                                <div className="flex flex-col items-center text-center gap-3">
+                                  <Folder className={`w-16 h-16 transition-colors ${
+                                    folder.id === currentFolderId ? 'text-[#0D7D81] dark:text-cyan-400' : 'text-gray-400 dark:text-gray-500'
                                   }`} />
                                   <div className="w-full">
-                                    <p className="text-sm font-medium text-gray-900 truncate" title={folder.name}>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate" title={folder.name}>
                                       {folder.name}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-0.5">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                       {folderBookmarks.length} {folderBookmarks.length === 1 ? 'item' : 'items'}
                                     </p>
                                   </div>
@@ -1527,21 +1519,18 @@ export function Dashboard() {
                           })}
                         </div>
                       </div>
-                      {(uncategorized.length > 0 || sortedCategories.length > 0) && (
-                        <div className="folder-separator border-t-2 border-gray-200 my-10"></div>
-                      )}
                     </>
                   )}
 
                   {/* Uncategorized Section */}
                   {uncategorized.length > 0 && (
                     <>
-                      <div className="category-section">
-                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-teal-500 shadow-sm">
-                          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                      <div className="category-section mb-16">
+                        <div className="mb-8 pt-3 border-t-2 border-gray-300 dark:border-slate-600">
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                             Uncategorized
-                            <span className="text-sm font-normal bg-teal-50 px-3 py-1 rounded-full text-teal-700 border border-teal-200">
-                              {uncategorized.length}
+                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                              ({uncategorized.length})
                             </span>
                           </h2>
                         </div>
@@ -1549,31 +1538,23 @@ export function Dashboard() {
                           {uncategorized.map(renderBookmarkCard)}
                         </div>
                       </div>
-                      {sortedCategories.length > 0 && (
-                        <div className="category-separator border-t-2 border-gray-200 my-10"></div>
-                      )}
                     </>
                   )}
 
                   {/* Categorized Sections */}
-                  {sortedCategories.map((category, idx) => (
-                    <div key={category}>
-                      <div className="category-section">
-                        <div className="bg-white rounded-lg px-6 py-2 mb-6 border-l-4 border-teal-500 shadow-sm">
-                          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                            {category}
-                            <span className="text-sm font-normal bg-teal-50 px-3 py-1 rounded-full text-teal-700 border border-teal-200">
-                              {categorizedMap.get(category)!.length}
-                            </span>
-                          </h2>
-                        </div>
-                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
-                          {categorizedMap.get(category)!.map(renderBookmarkCard)}
-                        </div>
+                  {sortedCategories.map((category) => (
+                    <div key={category} className="category-section mb-16">
+                      <div className="mb-8 pt-3 border-t-2 border-gray-300 dark:border-slate-600">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                          {category}
+                          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            ({categorizedMap.get(category)!.length})
+                          </span>
+                        </h2>
                       </div>
-                      {idx < sortedCategories.length - 1 && (
-                        <div className="category-separator border-t-2 border-gray-200 my-10"></div>
-                      )}
+                      <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                        {categorizedMap.get(category)!.map(renderBookmarkCard)}
+                      </div>
                     </div>
                   ))}
                 </>
@@ -1636,6 +1617,21 @@ export function Dashboard() {
         onEdit={handleEdit}
         onShare={handleShare}
       />
+
+      <style>{`
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+          animation: blob 8s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+      `}</style>
     </div>
   )
 }
