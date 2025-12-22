@@ -895,7 +895,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Favorites Filter */}
+          {/* Starred Filter */}
           <div className="filter-section pt-3 border-t border-gray-200 dark:border-white/20">
             <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
               <Checkbox
@@ -903,7 +903,7 @@ export function Dashboard() {
                 onCheckedChange={(checked) => setShowFavoritesOnly(checked as boolean)}
               />
               <Star className="w-4 h-4 text-amber-500 fill-current" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Favorites Only</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Starred Only</span>
             </label>
           </div>
 
@@ -1075,9 +1075,9 @@ export function Dashboard() {
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Folders</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">{folders.length}</div>
           </div>
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-violet-500 dark:hover:border-violet-400/50">
-            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">This Week</div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">{stats.thisWeek}</div>
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-amber-500 dark:hover:border-amber-400/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Starred</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 dark:from-amber-400 dark:to-yellow-400 bg-clip-text text-transparent">{bookmarks.filter(b => b.is_favorite).length}</div>
           </div>
         </div>
 
@@ -1161,10 +1161,10 @@ export function Dashboard() {
                       : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-[rgb(66,83,108)]/50'
                   }`}
                 >
-                  {/* Favorite Star Badge - Always visible on favorited items, hides on hover */}
+                  {/* Starred Badge - Always visible on starred items, hides on hover */}
                   {bookmark.is_favorite && (
-                    <div className="absolute top-3 right-3 bg-amber-500 text-white p-1 rounded-full shadow-lg z-10 opacity-100 group-hover:opacity-0 transition-all duration-150 flex items-center justify-center">
-                      <Star className="w-3.5 h-3.5 fill-current" />
+                    <div className="absolute top-3 right-3 z-10 opacity-100 group-hover:opacity-0 transition-all duration-150">
+                      <Star className="w-5 h-5 fill-amber-500/40 stroke-amber-600/60 stroke-1" />
                     </div>
                   )}
 
@@ -1191,7 +1191,7 @@ export function Dashboard() {
                     <button
                       onClick={() => handleToggleFavorite(bookmark.id)}
                       className={`${bookmark.is_favorite ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150`}
-                      title={bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+                      title={bookmark.is_favorite ? 'Remove from starred' : 'Add to starred'}
                     >
                       <Star className={`w-3 h-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
                     </button>
