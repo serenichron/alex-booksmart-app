@@ -85,7 +85,7 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
           {onBack && (
             <button
               onClick={onBack}
-              className="flex items-center gap-2 text-gray-300 hover:text-white mb-6 transition-colors"
+              className="flex items-center gap-2 text-gray-300 hover:text-white mb-6"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">Back</span>
@@ -198,7 +198,7 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
 
             <Button
               type="submit"
-              className={`w-full text-white ${primaryColor} transition-all duration-300`}
+              className={`w-full text-white ${primaryColor}`}
               disabled={loading}
               size="lg"
             >
@@ -238,7 +238,7 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
                 setFirstName('')
                 setLastName('')
               }}
-              className={`text-sm font-medium transition-colors ${
+              className={`text-sm font-medium ${
                 isSignUp
                   ? 'text-cyan-300 hover:text-cyan-200'
                   : 'text-teal-300 hover:text-teal-200'

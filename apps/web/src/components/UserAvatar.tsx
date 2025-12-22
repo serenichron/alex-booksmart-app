@@ -80,7 +80,7 @@ export function UserAvatar({ onSettingsClick }: UserAvatarProps) {
       {/* Avatar Button */}
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0D7D81] to-teal-600 dark:from-cyan-500 dark:to-teal-500 text-white font-semibold flex items-center justify-center hover:shadow-lg transition-all duration-150 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#0D7D81] dark:focus:ring-cyan-400 focus:ring-offset-2"
+        className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0D7D81] to-teal-600 dark:from-cyan-500 dark:to-teal-500 text-white font-semibold flex items-center justify-center hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#0D7D81] dark:focus:ring-cyan-400 focus:ring-offset-2"
         aria-label="User menu"
       >
         <span className="text-lg">{getInitial()}</span>
@@ -112,7 +112,7 @@ export function UserAvatar({ onSettingsClick }: UserAvatarProps) {
           <div className="py-1">
             <button
               onClick={handleSettingsClick}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700"
             >
               <Settings className="w-4 h-4 text-[#0D7D81] dark:text-cyan-400" />
               <span>User Settings</span>
@@ -120,7 +120,7 @@ export function UserAvatar({ onSettingsClick }: UserAvatarProps) {
 
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               <LogOut className="w-4 h-4" />
               <span>Log Out</span>

@@ -54,16 +54,16 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
             <Button
               size="lg"
               onClick={onGetStarted}
-              className="cta-button bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-2xl transition-all group"
+              className="cta-button bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-2xl group"
             >
               Join the Beta
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-none" />
             </Button>
           </div>
 
           {/* The Plan (3 Simple Steps) + Coming Soon */}
           <div className="features-grid grid md:grid-cols-4 gap-4 mt-8">
-            <div className="feature-card feature-save bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-cyan-400/50 transition-all">
+            <div className="feature-card feature-save bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-cyan-400/50">
               <div className="feature-icon w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
                 <Bookmark className="w-6 h-6 text-cyan-400" />
               </div>
@@ -73,7 +73,7 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
               </p>
             </div>
 
-            <div className="feature-card feature-organize bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-teal-400/50 transition-all">
+            <div className="feature-card feature-organize bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-teal-400/50">
               <div className="feature-icon w-12 h-12 bg-teal-500/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
                 <Folder className="w-6 h-6 text-teal-400" />
               </div>
@@ -83,7 +83,7 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
               </p>
             </div>
 
-            <div className="feature-card feature-find bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-cyan-400/50 transition-all">
+            <div className="feature-card feature-find bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-cyan-400/50">
               <div className="feature-icon w-12 h-12 bg-cyan-400/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
                 <CheckCircle className="w-6 h-6 text-cyan-300" />
               </div>
@@ -94,7 +94,7 @@ export function Landing({ onGetStarted, onSignIn }: LandingProps) {
             </div>
 
             {/* Coming Soon */}
-            <div className="feature-card feature-coming-soon bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-teal-400/50 transition-all">
+            <div className="feature-card feature-coming-soon bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-teal-400/50">
               <div className="feature-icon w-12 h-12 bg-teal-400/20 rounded-xl flex items-center justify-center mb-3 mx-auto">
                 <Sparkles className="w-6 h-6 text-teal-300" />
               </div>

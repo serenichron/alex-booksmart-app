@@ -11,8 +11,7 @@ import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
 import { UserSettingsDialog } from '@/components/UserSettingsDialog'
 import { UserAvatar } from '@/components/UserAvatar'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
-import { format } from 'date-fns'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
@@ -681,11 +680,11 @@ export function Dashboard() {
   return (
     <div className="dashboard-container min-h-screen bg-gradient-to-br from-cyan-50 via-teal-50 to-sky-50 dark:from-slate-900 dark:via-cyan-900 dark:to-slate-900 relative">
       {/* Animated gradient shapes */}
-      <div className="bg-blob absolute top-0 left-1/4 w-96 h-96 bg-teal-300 dark:bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-20 animate-blob"></div>
-      <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-300 dark:bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-20 animate-blob animation-delay-2000"></div>
+      <div className="bg-blob absolute top-0 left-1/4 w-96 h-96 bg-teal-300 dark:bg-cyan-500 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 dark:opacity-30 animate-blob"></div>
+      <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-300 dark:bg-teal-500 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 dark:opacity-30 animate-blob animation-delay-2000"></div>
 
       {/* Header - Full Width */}
-      <header className="dashboard-header bg-white/80 dark:bg-slate-900/95 border-b border-gray-200 dark:border-white/20 sticky top-0 z-50 backdrop-blur-sm">
+      <header className="dashboard-header bg-white/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-white/20 sticky top-0 z-50 backdrop-blur-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="brand-section flex items-center gap-3">
@@ -709,7 +708,7 @@ export function Dashboard() {
                   <div className="search-mode-toggle flex items-center border border-gray-300 dark:border-white/30 rounded-md overflow-hidden bg-gray-100 dark:bg-white/10">
                     <button
                       onClick={() => setSearchMode('board')}
-                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      className={`px-3 py-1.5 text-xs font-medium ${
                         searchMode === 'board'
                           ? 'bg-[#0D7D81] dark:bg-cyan-500 text-white'
                           : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -720,7 +719,7 @@ export function Dashboard() {
                     <div className="w-px h-5 bg-gray-300 dark:bg-white/30" />
                     <button
                       onClick={() => setSearchMode('global')}
-                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      className={`px-3 py-1.5 text-xs font-medium ${
                         searchMode === 'global'
                           ? 'bg-[#0D7D81] dark:bg-cyan-500 text-white'
                           : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -976,7 +975,7 @@ export function Dashboard() {
             <Layers className="w-4 h-4 text-[#0D7D81] dark:text-cyan-400" />
             <button
               onClick={() => handleSwitchFolder(null)}
-              className={`font-semibold transition-colors ${
+              className={`font-semibold ${
                 currentFolderId === null
                   ? 'text-gray-900 dark:text-white'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -998,19 +997,19 @@ export function Dashboard() {
 
         {/* Quick Stats - Calmer design with emphasis on numbers */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-[#0D7D81] dark:hover:border-cyan-500/50">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md border border-gray-200 dark:border-slate-700/50 hover:border-[#0D7D81] dark:hover:border-cyan-500/50">
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Bookmarks</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">{stats.total}</div>
           </div>
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-rose-500 dark:hover:border-rose-400/50">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md border border-gray-200 dark:border-slate-700/50 hover:border-rose-500 dark:hover:border-rose-400/50">
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Categories</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 dark:from-rose-400 dark:to-pink-400 bg-clip-text text-transparent">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-emerald-500 dark:hover:border-emerald-400/50">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md border border-gray-200 dark:border-slate-700/50 hover:border-emerald-500 dark:hover:border-emerald-400/50">
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Folders</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">{folders.length}</div>
           </div>
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-amber-500 dark:hover:border-amber-400/50">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md border border-gray-200 dark:border-slate-700/50 hover:border-amber-500 dark:hover:border-amber-400/50">
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Starred</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 dark:from-amber-400 dark:to-yellow-400 bg-clip-text text-transparent">{bookmarks.filter(b => b.is_favorite).length}</div>
           </div>
@@ -1033,7 +1032,7 @@ export function Dashboard() {
             <p className="text-base text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto leading-relaxed">
               Save your first bookmark and organize it with categories and tags
             </p>
-            <Button size="lg" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-[#0D7D81] to-cyan-600 dark:from-cyan-500 dark:to-teal-600 hover:from-teal-700 hover:to-cyan-700 dark:hover:from-cyan-600 dark:hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-150 px-8 py-6 text-base">
+            <Button size="lg" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-[#0D7D81] to-cyan-600 dark:from-cyan-500 dark:to-teal-600 hover:from-teal-700 hover:to-cyan-700 dark:hover:from-cyan-600 dark:hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl px-8 py-6 text-base">
               <Plus className="w-5 h-5 mr-2" />
               Add Your First Bookmark
             </Button>
@@ -1086,7 +1085,15 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-[10px] relative group ${
+                  className={`bookmark-card ${
+                    isTodoBookmark
+                      ? 'bookmark-card-todo'
+                      : isTextBookmark
+                      ? 'bookmark-card-text'
+                      : isImageBookmark
+                      ? 'bookmark-card-image'
+                      : 'bookmark-card-link'
+                  } rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 break-inside-avoid mb-[10px] relative group ${
                     isTodoBookmark
                       ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(55,47,77)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
@@ -1098,17 +1105,17 @@ export function Dashboard() {
                 >
                   {/* Starred Badge - Always visible on starred items, hides on hover */}
                   {bookmark.is_favorite && (
-                    <div className="absolute top-3 right-3 z-10 opacity-100 group-hover:opacity-0 transition-all duration-150">
+                    <div className="absolute top-3 right-3 z-10 opacity-100 group-hover:opacity-0">
                       <Star className="w-4 h-4 fill-amber-500/30 stroke-amber-600/40 stroke-1" />
                     </div>
                   )}
 
                   {/* Action Buttons - Cleaner design */}
-                  <div className="absolute top-3 right-3 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150">
+                  <div className="absolute top-3 right-3 z-10 flex gap-0.5 opacity-0 group-hover:opacity-100">
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg"
                         title="Open in new tab"
                       >
                         <ExternalLink className="w-3 h-3" />
@@ -1117,7 +1124,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg"
                         title="Share bookmark"
                       >
                         <Share2 className="w-3 h-3" />
@@ -1125,21 +1132,21 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleToggleFavorite(bookmark.id)}
-                      className={`${bookmark.is_favorite ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150`}
+                      className={`${bookmark.is_favorite ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg`}
                       title={bookmark.is_favorite ? 'Remove from starred' : 'Add to starred'}
                     >
                       <Star className={`w-3 h-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
                     </button>
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg"
                       title="Edit bookmark"
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                      className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg"
                       title="Delete bookmark"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -1179,25 +1186,6 @@ export function Dashboard() {
                           </h3>
                         </div>
                       )}
-
-                      {/* Timestamps overlay at bottom - always show */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                        <div className="flex items-center gap-2 text-[9px] text-white/90">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-2 h-2" />
-                            <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
-                          </div>
-                          {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                            <>
-                              <span className="text-white/60">•</span>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-2 h-2" />
-                                <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   ) : bookmark.image_url && !isImageBookmark && (
                     <a
@@ -1209,7 +1197,7 @@ export function Dashboard() {
                       <img
                         src={bookmark.image_url}
                         alt={bookmark.title}
-                        className="bookmark-image w-full h-36 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                        className="bookmark-image w-full h-36 object-cover hover:opacity-90 cursor-pointer"
                         loading="lazy"
                         onError={(e) => {
                           e.currentTarget.parentElement!.parentElement!.style.display = 'none'
@@ -1243,7 +1231,7 @@ export function Dashboard() {
                           </div>
                           <div className="w-full bg-emerald-100/50 dark:bg-[rgb(135,98,148)]/20 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-[#0B8594] h-full transition-all duration-300 rounded-full"
+                              className="bg-[#0B8594] h-full rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -1256,7 +1244,7 @@ export function Dashboard() {
                           {bookmark.todo_items.map((item) => (
                             <label
                               key={item.id}
-                              className="flex items-start gap-2 cursor-pointer group hover:bg-emerald-100/40 dark:hover:bg-emerald-900/10 p-0.5 rounded transition-colors"
+                              className="flex items-start gap-2 cursor-pointer group hover:bg-emerald-100/40 dark:hover:bg-emerald-900/10 p-0.5 rounded"
                             >
                               <Checkbox
                                 checked={item.completed}
@@ -1288,7 +1276,7 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
                                 <p className="text-[11px] text-gray-800 dark:text-gray-200 line-clamp-3 leading-relaxed pr-1">
@@ -1338,9 +1326,9 @@ export function Dashboard() {
                       <div className="bookmark-header flex items-start justify-between mb-3">
                         <div className="flex items-start gap-2 flex-1 min-w-0">
                           {/* Favicon for URL bookmarks */}
-                          {bookmark.favicon && bookmark.url && !isTextBookmark && !isTodoBookmark && (
+                          {bookmark.url && !isTextBookmark && !isTodoBookmark && (
                             <img
-                              src={bookmark.favicon}
+                              src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(new URL(bookmark.url).hostname)}&sz=32`}
                               alt=""
                               className="w-4 h-4 mt-0.5 flex-shrink-0"
                               onError={(e) => {
@@ -1353,7 +1341,7 @@ export function Dashboard() {
                               href={bookmark.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-400 transition-colors cursor-pointer leading-snug min-w-0"
+                              className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-400 cursor-pointer leading-snug min-w-0"
                             >
                               {bookmark.title}
                             </a>
@@ -1405,7 +1393,7 @@ export function Dashboard() {
                           ).map((note) => (
                             <div
                               key={note.id}
-                              className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                              className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm"
                               onClick={() => handleNoteClick(note, bookmark.id)}
                               title="Click to view full note"
                             >
@@ -1482,14 +1470,14 @@ export function Dashboard() {
                               <div
                                 key={folder.id}
                                 onClick={() => handleSwitchFolder(folder.id)}
-                                className={`folder-item cursor-pointer p-5 rounded-xl transition-all duration-150 hover:-translate-y-0.5 ${
+                                className={`folder-item cursor-pointer p-5 rounded-xl hover:-translate-y-0.5 ${
                                   folder.id === currentFolderId
                                     ? 'bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-cyan-900/40 dark:to-teal-900/40 shadow-lg shadow-teal-200/50 dark:shadow-cyan-900/30 ring-2 ring-[#0D7D81] dark:ring-cyan-400'
                                     : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 hover:shadow-xl hover:ring-2 hover:ring-[#0D7D81]/50 dark:hover:ring-cyan-400/50'
                                 }`}
                               >
                                 <div className="flex flex-col items-center text-center gap-3">
-                                  <Folder className={`w-16 h-16 transition-colors ${
+                                  <Folder className={`w-16 h-16 ${
                                     folder.id === currentFolderId ? 'text-[#0D7D81] dark:text-cyan-400' : 'text-gray-400 dark:text-gray-500'
                                   }`} />
                                   <div className="w-full">
