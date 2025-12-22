@@ -1298,7 +1298,7 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-[rgb(9,163,171)]/10 dark:bg-[rgb(9,163,171)]/10 border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
                                 <p className="text-[11px] text-gray-800 dark:text-gray-200 line-clamp-3 leading-relaxed pr-1">
@@ -1418,7 +1418,7 @@ export function Dashboard() {
                           ).map((note) => (
                             <div
                               key={note.id}
-                              className="bookmark-note bg-[rgb(9,163,171)]/10 dark:bg-[rgb(9,163,171)]/10 border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                              className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                               onClick={() => handleNoteClick(note, bookmark.id)}
                               title="Click to view full note"
                             >
