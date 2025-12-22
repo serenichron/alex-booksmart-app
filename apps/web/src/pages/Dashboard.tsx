@@ -1187,25 +1187,6 @@ export function Dashboard() {
                           </h3>
                         </div>
                       )}
-
-                      {/* Timestamps overlay at bottom - always show */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                        <div className="flex items-center gap-2 text-[9px] text-white/90">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-2 h-2" />
-                            <span className="font-medium">Created:</span> {format(new Date(bookmark.created_at), 'MMM d, yy HH:mm')}
-                          </div>
-                          {bookmark.updated_at && bookmark.updated_at !== bookmark.created_at && (
-                            <>
-                              <span className="text-white/60">•</span>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-2 h-2" />
-                                <span className="font-medium">Edited:</span> {format(new Date(bookmark.updated_at), 'MMM d, yy HH:mm')}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   ) : bookmark.image_url && !isImageBookmark && (
                     <a
@@ -1346,9 +1327,9 @@ export function Dashboard() {
                       <div className="bookmark-header flex items-start justify-between mb-3">
                         <div className="flex items-start gap-2 flex-1 min-w-0">
                           {/* Favicon for URL bookmarks */}
-                          {bookmark.favicon && bookmark.url && !isTextBookmark && !isTodoBookmark && (
+                          {bookmark.url && !isTextBookmark && !isTodoBookmark && (
                             <img
-                              src={`https://corsproxy.io/?${encodeURIComponent(bookmark.favicon)}`}
+                              src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(new URL(bookmark.url).hostname)}&sz=32`}
                               alt=""
                               className="w-4 h-4 mt-0.5 flex-shrink-0"
                               onError={(e) => {

@@ -70,9 +70,7 @@
   button,
   a {
     will-change: transform, box-shadow, opacity;
-    transform: translateZ(0);
     backface-visibility: hidden;
-    -webkit-font-smoothing: subpixel-antialiased;
   }
 
   /* Optimize images for smooth rendering */
