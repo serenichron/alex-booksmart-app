@@ -9,7 +9,7 @@ import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Star, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -889,7 +889,7 @@ export function Dashboard() {
                 checked={showFavoritesOnly}
                 onCheckedChange={(checked) => setShowFavoritesOnly(checked as boolean)}
               />
-              <Heart className="w-4 h-4 text-red-500 fill-current" />
+              <Star className="w-4 h-4 text-amber-500 fill-current" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Favorites Only</span>
             </label>
           </div>
@@ -1148,6 +1148,13 @@ export function Dashboard() {
                       : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-[rgb(66,83,108)]/50'
                   }`}
                 >
+                  {/* Favorite Star Badge - Always visible on favorited items */}
+                  {bookmark.is_favorite && (
+                    <div className="absolute top-3 left-3 bg-amber-500 text-white p-1.5 rounded-full shadow-lg z-10">
+                      <Star className="w-3 h-3 fill-current" />
+                    </div>
+                  )}
+
                   {/* Action Buttons - Cleaner design */}
                   <div className="absolute top-3 right-3 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150">
                     {bookmark.url && (
@@ -1170,10 +1177,10 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleToggleFavorite(bookmark.id)}
-                      className={`${bookmark.is_favorite ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150`}
+                      className={`${bookmark.is_favorite ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150`}
                       title={bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
                     >
-                      <Heart className={`w-3 h-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
+                      <Star className={`w-3 h-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
                     </button>
                     <button
                       onClick={() => handleEdit(bookmark)}
@@ -1267,18 +1274,15 @@ export function Dashboard() {
                   {isTodoBookmark ? (
                     <div className="todo-bookmark-content px-4 pt-[0.8rem] pb-0">
                       {/* Title and Completion */}
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="mb-3">
                         {bookmark.title ? (
-                          <h3 className="text-base font-bold text-gray-900 dark:text-white flex-1 leading-snug">
+                          <h3 className="text-base font-bold text-gray-900 dark:text-white leading-snug">
                             {bookmark.title}
                           </h3>
                         ) : (
-                          <h3 className="text-base font-bold text-gray-700 dark:text-gray-300 flex-1 leading-snug">
+                          <h3 className="text-base font-bold text-gray-700 dark:text-gray-300 leading-snug">
                             To-do List
                           </h3>
-                        )}
-                        {bookmark.is_favorite && (
-                          <Heart className="w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
                         )}
                       </div>
 
@@ -1411,9 +1415,6 @@ export function Dashboard() {
                             </h3>
                           )}
                         </div>
-                        {bookmark.is_favorite && (
-                          <Heart className="bookmark-favorite-icon w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
-                        )}
                       </div>
                     )}
 
