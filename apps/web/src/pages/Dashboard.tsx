@@ -1086,7 +1086,15 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 break-inside-avoid mb-[10px] relative group ${
+                  className={`bookmark-card ${
+                    isTodoBookmark
+                      ? 'bookmark-card-todo'
+                      : isTextBookmark
+                      ? 'bookmark-card-text'
+                      : isImageBookmark
+                      ? 'bookmark-card-image'
+                      : 'bookmark-card-link'
+                  } rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 break-inside-avoid mb-[10px] relative group ${
                     isTodoBookmark
                       ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(55,47,77)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
@@ -1104,7 +1112,7 @@ export function Dashboard() {
                   )}
 
                   {/* Action Buttons - Cleaner design */}
-                  <div className="absolute top-3 right-3 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100">
+                  <div className="absolute top-3 right-3 z-10 flex gap-0.5 opacity-0 group-hover:opacity-100">
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
