@@ -553,8 +553,8 @@ export function AddBookmarkDialog({
               </div>
 
               {(title || imageUrl || metaDescription) && (
-                <div className="metadata-preview bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200 space-y-3">
-                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Preview</p>
+                <div className="metadata-preview bg-white dark:bg-slate-800/40 p-4 rounded-lg border border-gray-200/60 dark:border-slate-700/50 space-y-3">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Preview</p>
 
                   {imageUrl && (
                     <div className="bookmark-preview-image">
