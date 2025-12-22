@@ -18,6 +18,7 @@ import {
   getStats,
   deleteBookmark,
   toggleTodoItem,
+  toggleFavorite,
   getBoards,
   getCurrentBoardId,
   setCurrentBoardId,
@@ -60,6 +61,7 @@ export function Dashboard() {
     thisWeek: 0,
   })
   const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image', 'todo']))
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
   const [searchMode, setSearchMode] = useState<SearchMode>('board')
@@ -405,6 +407,11 @@ export function Dashboard() {
     setShowEditDialog(true)
   }
 
+  const handleToggleFavorite = async (bookmarkId: string) => {
+    await toggleFavorite(bookmarkId)
+    await fetchBookmarks(true) // Skip cache to get fresh data
+  }
+
   const handleShare = async (bookmark: BookmarkType) => {
     if (!bookmark.url) {
       alert('This bookmark does not have a URL to share')
@@ -583,13 +590,25 @@ export function Dashboard() {
       return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
     })
 
+    // Then filter by favorites if enabled
+    if (showFavoritesOnly) {
+      filtered = filtered.filter(bookmark => bookmark.is_favorite)
+    }
+
     // Then apply search
     if (searchQuery.trim()) {
       filtered = searchBookmarks(filtered, searchQuery)
     }
 
+    // Sort to prioritize favorites (favorites first)
+    filtered.sort((a, b) => {
+      if (a.is_favorite && !b.is_favorite) return -1
+      if (!a.is_favorite && b.is_favorite) return 1
+      return 0
+    })
+
     return filtered
-  }, [bookmarks, selectedTypes, searchQuery, currentFolderId])
+  }, [bookmarks, selectedTypes, showFavoritesOnly, searchQuery, currentFolderId])
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -863,6 +882,18 @@ export function Dashboard() {
             </div>
           </div>
 
+          {/* Favorites Filter */}
+          <div className="filter-section pt-3 border-t border-gray-200 dark:border-white/20">
+            <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
+              <Checkbox
+                checked={showFavoritesOnly}
+                onCheckedChange={(checked) => setShowFavoritesOnly(checked as boolean)}
+              />
+              <Heart className="w-4 h-4 text-red-500 fill-current" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Favorites Only</span>
+            </label>
+          </div>
+
           {/* Board Selector */}
           <div className="board-section pt-3 border-t border-gray-200 dark:border-white/20">
             <div className="flex items-center justify-between mb-2">
@@ -1122,34 +1153,41 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                         title="Open in new tab"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <ExternalLink className="w-3 h-3" />
                       </button>
                     )}
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                         title="Share bookmark"
                       >
-                        <Share2 className="w-3.5 h-3.5" />
+                        <Share2 className="w-3 h-3" />
                       </button>
                     )}
                     <button
+                      onClick={() => handleToggleFavorite(bookmark.id)}
+                      className={`${bookmark.is_favorite ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150`}
+                      title={bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      <Heart className={`w-3 h-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
+                    </button>
+                    <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Edit bookmark"
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <Pencil className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                      className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Delete bookmark"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
 
