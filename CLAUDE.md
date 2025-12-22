@@ -39,7 +39,7 @@ apps/web/src/
 │   ├── BoardManagementDialog.tsx
 │   ├── FolderManagementDialog.tsx
 │   └── Auth.tsx
-├── contexts/         # React Context (AuthContext)
+├── contexts/         # React Context (AuthContext, ThemeContext)
 ├── hooks/           # Custom hooks (useAuth)
 ├── lib/             # Core utilities
 │   ├── supabase.ts  # Supabase client + TypeScript types
@@ -98,4 +98,5 @@ See `FEATURES_COVERAGE.md` for detailed status.
 - **Data operations**: `lib/storage.ts` (localStorage CRUD with caching)
 - **AI integration**: `lib/ai.ts` (Claude API, ready to wire)
 - **Auth flow**: `hooks/useAuth.tsx`, `contexts/AuthContext.tsx`
+- **Theme system**: `contexts/ThemeContext.tsx` (default: light mode)
 - **Supabase types**: `lib/supabase.ts` (Database interface definitions)

@@ -474,6 +474,7 @@ BookSmart is a fully functional bookmark manager built with React, TypeScript, V
 
 **Features:**
 - System-wide theme toggle (dark/light mode)
+- **Default theme:** Light mode for all users (new and existing)
 - Theme preference persisted in localStorage
 - Seamless theme switching without page reload
 - Production-ready design with professional polish
@@ -483,6 +484,9 @@ BookSmart is a fully functional bookmark manager built with React, TypeScript, V
 - **Surface Levels:**
   - Stats cards: slate-800/40 with subtle shadows
   - Bookmark cards: slate-800/60 with shadow-md
+  - Text bookmarks: rgb(60,104,70) with rgb(83,122,93) border
+  - To-do bookmarks: rgb(55,47,77) with subtle borders
+  - Notes: rgba(9,163,171,0.1) background (teal tint)
   - Hover: shadow-xl with lift effect (-translate-y-0.5)
 - **Visual Strategy:**
   - Reduced borders by ~50% (replaced with shadows)
@@ -491,8 +495,7 @@ BookSmart is a fully functional bookmark manager built with React, TypeScript, V
   - Faster transitions (150ms for snappy feel)
 - **Section Rhythm:**
   - Generous spacing between sections (mb-16)
-  - Stronger headers with gradient backgrounds
-  - No separator lines (space creates rhythm)
+  - Category headers with visible border-top (gray-300/slate-600)
   - Clear visual hierarchy through depth
 
 **Light Theme - Contrast & Clarity:**
@@ -501,7 +504,10 @@ BookSmart is a fully functional bookmark manager built with React, TypeScript, V
 - **Surface Strategy:**
   - Stats cards: white with subtle borders
   - Bookmark cards: white with shadow-md
-  - Section headers: gradient backgrounds (teal-50/50 to cyan-50/50)
+  - Text bookmarks: rgb(255,255,230) with rgb(241,240,175) border
+  - To-do bookmarks: rgb(235,223,247) with lavender border
+  - Notes: rgba(9,163,171,0.1) background (teal tint)
+  - Category headers: border-top design (gray-300)
   - Shadows preferred over borders
 - **Typography:**
   - High contrast for readability (gray-900 titles)
@@ -524,15 +530,16 @@ BookSmart is a fully functional bookmark manager built with React, TypeScript, V
   - Action buttons: solid colors, no borders
   - Focus states: ring-2 with theme color
 - **Spacing System:**
-  - Card padding: p-4 (was p-3)
+  - Card padding-top: 0.8rem (optimized for compact feel)
   - Section margins: mb-16 (was mb-10)
   - Header padding: py-4 (was py-2)
   - Internal spacing: mb-3 (was mb-2)
 - **Visual Polish:**
-  - Rounded-xl on major surfaces (was rounded-lg)
+  - Border radius: 0.3rem on all cards and modals (refined, subtle corners)
   - Shadow system: sm → md → lg → xl
   - Gradient text for stat numbers
   - Improved empty states with larger icons
+  - Favicon display on URL bookmarks
 
 **Design Philosophy:**
 - **Dark theme:** Comfortable for long sessions, clear depth
