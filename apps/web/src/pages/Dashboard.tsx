@@ -1253,7 +1253,7 @@ export function Dashboard() {
                           </div>
                           <div className="w-full bg-emerald-100/50 dark:bg-[rgb(135,98,148)]/20 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-gradient-to-r from-emerald-500 to-teal-500 dark:bg-[rgb(55,47,77)] h-full transition-all duration-300 rounded-full"
+                              className="bg-[#0B8594] h-full transition-all duration-300 rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -1342,7 +1342,7 @@ export function Dashboard() {
                       )}
                     </div>
                   ) : !isImageBookmark && (
-                  <div className="bookmark-content p-4">
+                  <div className="bookmark-content px-4 pt-4 pb-0">
                     {/* Only show title if it exists - EMPHASIZED */}
                     {bookmark.title && (
                       <div className="bookmark-header flex items-start justify-between mb-3">
