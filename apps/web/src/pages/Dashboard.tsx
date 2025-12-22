@@ -1107,11 +1107,11 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-xl overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
+                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
                       ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(55,47,77)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
-                      ? 'bg-[rgb(255,255,230)] dark:bg-[rgb(37,67,44)] shadow-md border border-[rgb(241,240,175)] dark:border-[rgb(48,76,55)]'
+                      ? 'bg-[rgb(255,255,230)] dark:bg-[rgb(60,104,70)] shadow-md border border-[rgb(241,240,175)] dark:border-[rgb(83,122,93)]'
                       : isImageBookmark
                       ? 'bg-black shadow-lg'
                       : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-[rgb(66,83,108)]/50'
@@ -1180,7 +1180,7 @@ export function Dashboard() {
 
                       {/* Title overlay at top - only show if title exists */}
                       {bookmark.title && (
-                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent pt-3 pb-3 px-3">
+                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent pt-[0.8rem] pb-3 px-3">
                           <h3 className="text-white font-semibold text-base line-clamp-2 drop-shadow-lg text-left">
                             {bookmark.title}
                           </h3>
@@ -1227,7 +1227,7 @@ export function Dashboard() {
 
                   {/* To-do Bookmark - Special Design */}
                   {isTodoBookmark ? (
-                    <div className="todo-bookmark-content px-4 pt-4 pb-0">
+                    <div className="todo-bookmark-content px-4 pt-[0.8rem] pb-0">
                       {/* Title and Completion */}
                       <div className="flex items-center justify-between mb-3">
                         {bookmark.title ? (
@@ -1298,7 +1298,7 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-teal-100 dark:bg-cyan-500/10 border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-[rgb(9,163,171)]/10 dark:bg-[rgb(9,163,171)]/10 border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
                                 <p className="text-[11px] text-gray-800 dark:text-gray-200 line-clamp-3 leading-relaxed pr-1">
@@ -1342,7 +1342,7 @@ export function Dashboard() {
                       )}
                     </div>
                   ) : !isImageBookmark && (
-                  <div className="bookmark-content px-4 pt-4 pb-0">
+                  <div className="bookmark-content px-4 pt-[0.8rem] pb-0">
                     {/* Only show title if it exists - EMPHASIZED */}
                     {bookmark.title && (
                       <div className="bookmark-header flex items-start justify-between mb-3">
@@ -1418,7 +1418,7 @@ export function Dashboard() {
                           ).map((note) => (
                             <div
                               key={note.id}
-                              className="bookmark-note bg-teal-100 dark:bg-cyan-500/10 border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                              className="bookmark-note bg-[rgb(9,163,171)]/10 dark:bg-[rgb(9,163,171)]/10 border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
                               onClick={() => handleNoteClick(note, bookmark.id)}
                               title="Click to view full note"
                             >
@@ -1526,7 +1526,7 @@ export function Dashboard() {
                   {uncategorized.length > 0 && (
                     <>
                       <div className="category-section mb-16">
-                        <div className="mb-8 pb-3 border-b-2 border-gray-200 dark:border-slate-700">
+                        <div className="mb-8 pt-3 border-t-2 border-gray-300 dark:border-slate-600">
                           <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                             Uncategorized
                             <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
@@ -1544,7 +1544,7 @@ export function Dashboard() {
                   {/* Categorized Sections */}
                   {sortedCategories.map((category, idx) => (
                     <div key={category} className="category-section mb-16">
-                      <div className="mb-8 pb-3 border-b-2 border-gray-200 dark:border-slate-700">
+                      <div className="mb-8 pt-3 border-t-2 border-gray-300 dark:border-slate-600">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                           {category}
                           <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
