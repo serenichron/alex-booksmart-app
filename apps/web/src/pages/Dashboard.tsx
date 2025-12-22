@@ -1346,20 +1346,33 @@ export function Dashboard() {
                     {/* Only show title if it exists - EMPHASIZED */}
                     {bookmark.title && (
                       <div className="bookmark-header flex items-start justify-between mb-3">
-                        {bookmark.url ? (
-                          <a
-                            href={bookmark.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-400 transition-colors cursor-pointer leading-snug"
-                          >
-                            {bookmark.title}
-                          </a>
-                        ) : (
-                          <h3 className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 leading-snug">
-                            {bookmark.title}
-                          </h3>
-                        )}
+                        <div className="flex items-start gap-2 flex-1 min-w-0">
+                          {/* Favicon for URL bookmarks */}
+                          {bookmark.favicon && bookmark.url && !isTextBookmark && !isTodoBookmark && (
+                            <img
+                              src={bookmark.favicon}
+                              alt=""
+                              className="w-4 h-4 mt-0.5 flex-shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                              }}
+                            />
+                          )}
+                          {bookmark.url ? (
+                            <a
+                              href={bookmark.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-400 transition-colors cursor-pointer leading-snug min-w-0"
+                            >
+                              {bookmark.title}
+                            </a>
+                          ) : (
+                            <h3 className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 leading-snug min-w-0">
+                              {bookmark.title}
+                            </h3>
+                          )}
+                        </div>
                         {bookmark.is_favorite && (
                           <Heart className="bookmark-favorite-icon w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
                         )}

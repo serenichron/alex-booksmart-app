@@ -27,6 +27,7 @@ export interface Bookmark {
   tags: string[]
   image_url: string | null
   meta_description: string | null
+  favicon: string | null
   show_meta_description?: boolean
   board_id?: string
   folder_id?: string | null
