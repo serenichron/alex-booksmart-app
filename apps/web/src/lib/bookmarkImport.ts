@@ -24,8 +24,20 @@ export function parseBookmarkHTML(html: string): ParsedBookmark[] {
   const doc = parser.parseFromString(html, 'text/html')
   const bookmarks: ParsedBookmark[] = []
 
+  // Common top-level folder names that should be skipped
+  const skipFolders = new Set([
+    'Bookmarks bar',
+    'Bookmarks Bar',
+    'Other bookmarks',
+    'Other Bookmarks',
+    'Bookmarks Menu',
+    'Mobile Bookmarks',
+    'Personal Toolbar',
+    'Unsorted Bookmarks'
+  ])
+
   // Recursive function to traverse bookmark tree
-  function traverseBookmarks(element: Element, folderPath: string[] = []) {
+  function traverseBookmarks(element: Element, folderPath: string[] = [], isTopLevel = false) {
     const children = Array.from(element.children)
 
     for (const child of children) {
@@ -40,8 +52,14 @@ export function parseBookmarkHTML(html: string): ParsedBookmark[] {
           const dl = child.querySelector('DL')
 
           if (dl) {
-            // Recursively process bookmarks in this folder
-            traverseBookmarks(dl, [...folderPath, folderName])
+            // Skip top-level browser folders, but process their contents
+            if (isTopLevel && skipFolders.has(folderName)) {
+              // Process contents without adding this folder to the path
+              traverseBookmarks(dl, folderPath, false)
+            } else {
+              // Recursively process bookmarks in this folder
+              traverseBookmarks(dl, [...folderPath, folderName], false)
+            }
           }
         } else if (a) {
           // This is a bookmark
@@ -60,7 +78,7 @@ export function parseBookmarkHTML(html: string): ParsedBookmark[] {
         }
       } else if (child.tagName === 'DL') {
         // Direct DL element (shouldn't normally happen but handle it)
-        traverseBookmarks(child, folderPath)
+        traverseBookmarks(child, folderPath, isTopLevel)
       }
     }
   }
@@ -68,8 +86,10 @@ export function parseBookmarkHTML(html: string): ParsedBookmark[] {
   // Start traversal from the document body
   const rootDL = doc.querySelector('DL')
   if (rootDL) {
-    traverseBookmarks(rootDL)
+    traverseBookmarks(rootDL, [], true)
   }
+
+  console.log(`Parsed ${bookmarks.length} bookmarks with folder structure:`, bookmarks.slice(0, 5))
 
   return bookmarks
 }

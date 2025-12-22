@@ -277,7 +277,9 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
 
           if (!folderMap.has(currentPathKey)) {
             const folderName = currentPath[i]
+            console.log(`Creating folder: ${folderName} (path: ${currentPathKey}, parent: ${parentFolderId})`)
             const folder = await createFolder(board.id, folderName, parentFolderId)
+            console.log(`Created folder ${folder.name} with ID ${folder.id}`)
             folderMap.set(currentPathKey, folder.id)
             parentFolderId = folder.id
           } else {
@@ -302,9 +304,18 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
         current: 'Saving bookmarks...'
       })
 
+      console.log(`Saving ${result.bookmarks.length} bookmarks to board ${board.id}`)
+
       for (let i = 0; i < result.bookmarks.length; i++) {
         const item = result.bookmarks[i]
         const folderId = await getOrCreateFolder(item.folder)
+
+        console.log(`Saving bookmark ${i + 1}/${result.bookmarks.length}:`, {
+          title: item.title,
+          folder: item.folder,
+          folderId,
+          url: item.url
+        })
 
         await saveBookmark({
           title: item.metadata.title || item.title,
@@ -329,6 +340,8 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
           current: item.title
         })
       }
+
+      console.log('All bookmarks saved successfully!')
 
       setIsImporting(false)
       setImportProgress(null)
