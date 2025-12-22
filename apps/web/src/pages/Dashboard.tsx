@@ -408,8 +408,21 @@ export function Dashboard() {
   }
 
   const handleToggleFavorite = async (bookmarkId: string) => {
-    await toggleFavorite(bookmarkId)
-    await fetchBookmarks(true) // Skip cache to get fresh data
+    // Optimistic update - update UI immediately
+    setBookmarks(prevBookmarks =>
+      prevBookmarks.map(b =>
+        b.id === bookmarkId ? { ...b, is_favorite: !b.is_favorite } : b
+      )
+    )
+
+    // Then sync with backend
+    try {
+      await toggleFavorite(bookmarkId)
+    } catch (error) {
+      // If it fails, revert the optimistic update
+      console.error('Failed to toggle favorite:', error)
+      await fetchBookmarks(true)
+    }
   }
 
   const handleShare = async (bookmark: BookmarkType) => {
@@ -1148,10 +1161,10 @@ export function Dashboard() {
                       : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-[rgb(66,83,108)]/50'
                   }`}
                 >
-                  {/* Favorite Star Badge - Always visible on favorited items */}
+                  {/* Favorite Star Badge - Always visible on favorited items, hides on hover */}
                   {bookmark.is_favorite && (
-                    <div className="absolute top-3 left-3 bg-amber-500 text-white p-1.5 rounded-full shadow-lg z-10">
-                      <Star className="w-3 h-3 fill-current" />
+                    <div className="absolute top-3 right-3 bg-amber-500 text-white p-1 rounded-full shadow-lg z-10 opacity-100 group-hover:opacity-0 transition-all duration-150 flex items-center justify-center">
+                      <Star className="w-3.5 h-3.5 fill-current" />
                     </div>
                   )}
 
