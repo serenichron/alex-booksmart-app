@@ -341,7 +341,21 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
         })
       }
 
-      console.log('All bookmarks saved successfully!')
+      console.log(`✅ All ${result.bookmarks.length} bookmarks saved successfully!`)
+      console.log(`📊 Import Summary:`)
+      console.log(`   - Total parsed: ${parsedBookmarks.length}`)
+      console.log(`   - Successfully imported: ${result.bookmarks.length}`)
+      console.log(`   - Failed: ${result.errors.length}`)
+      console.log(`   - Board ID: ${board.id}`)
+      console.log(`   - Folders created: ${folderMap.size}`)
+
+      // Log folder structure
+      if (folderMap.size > 0) {
+        console.log('📁 Folder structure:')
+        Array.from(folderMap.entries()).forEach(([path, id]) => {
+          console.log(`   ${path} → ${id}`)
+        })
+      }
 
       setIsImporting(false)
       setImportProgress(null)
@@ -352,10 +366,11 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
 
       setMessage({
         type: 'success',
-        text: `Imported ${result.bookmarks.length} bookmarks${errorMessage}! Refreshing...`
+        text: `Imported ${result.bookmarks.length} bookmarks${errorMessage}! Please refresh the page.`
       })
 
-      setTimeout(() => window.location.reload(), 2000)
+      // Don't auto-reload - let user manually refresh to check console
+      console.log('✅ Import complete! Please manually refresh the page or check the Browser Bookmarks board.')
     } catch (error: any) {
       console.error('Browser bookmark import error:', error)
       setIsImporting(false)

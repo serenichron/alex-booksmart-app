@@ -144,11 +144,13 @@ export async function importBrowserBookmarks(
             metadata
           })
         } catch (error) {
-          console.error(`Failed to fetch metadata for ${bookmark.url}:`, error)
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+          console.warn(`⚠️ Skipping ${bookmark.url}: ${errorMessage}`)
           errors.push({
             url: bookmark.url,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: errorMessage
           })
+          // Skip this bookmark - don't add it to results
         }
       })
     )
@@ -164,6 +166,11 @@ export async function importBrowserBookmarks(
     processed: total,
     current: 'Complete'
   })
+
+  console.log(`✅ Successfully fetched metadata for ${results.length}/${total} bookmarks`)
+  if (errors.length > 0) {
+    console.log(`⚠️ Failed to fetch ${errors.length} bookmarks:`, errors.slice(0, 10))
+  }
 
   return { bookmarks: results, errors }
 }
