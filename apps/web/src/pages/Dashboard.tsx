@@ -1526,11 +1526,11 @@ export function Dashboard() {
                   {uncategorized.length > 0 && (
                     <>
                       <div className="category-section mb-16">
-                        <div className="bg-gradient-to-r from-gray-50 to-white dark:from-slate-800/60 dark:to-slate-800/40 rounded-xl px-6 py-4 mb-8 border-l-4 border-gray-400 dark:border-slate-600 shadow-sm">
+                        <div className="mb-8 pb-3 border-b-2 border-gray-200 dark:border-slate-700">
                           <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                             Uncategorized
-                            <span className="text-xs font-semibold bg-gray-100 dark:bg-slate-700/60 px-3 py-1.5 rounded-full text-gray-700 dark:text-gray-300">
-                              {uncategorized.length}
+                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                              ({uncategorized.length})
                             </span>
                           </h2>
                         </div>
@@ -1544,11 +1544,11 @@ export function Dashboard() {
                   {/* Categorized Sections */}
                   {sortedCategories.map((category, idx) => (
                     <div key={category} className="category-section mb-16">
-                      <div className="bg-gradient-to-r from-teal-50/50 to-cyan-50/50 dark:from-slate-800/60 dark:to-slate-800/40 rounded-xl px-6 py-4 mb-8 border-l-4 border-[#0D7D81] dark:border-cyan-500 shadow-sm">
+                      <div className="mb-8 pb-3 border-b-2 border-gray-200 dark:border-slate-700">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                           {category}
-                          <span className="text-xs font-semibold bg-white dark:bg-cyan-500/20 px-3 py-1.5 rounded-full text-teal-800 dark:text-cyan-200 border border-[#0D7D81]/30 dark:border-cyan-400/50">
-                            {categorizedMap.get(category)!.length}
+                          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            ({categorizedMap.get(category)!.length})
                           </span>
                         </h2>
                       </div>
