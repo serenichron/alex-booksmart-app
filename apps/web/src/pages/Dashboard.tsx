@@ -9,7 +9,7 @@ import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -18,6 +18,7 @@ import {
   getStats,
   deleteBookmark,
   toggleTodoItem,
+  toggleFavorite,
   getBoards,
   getCurrentBoardId,
   setCurrentBoardId,
@@ -60,6 +61,7 @@ export function Dashboard() {
     thisWeek: 0,
   })
   const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image', 'todo']))
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
   const [searchMode, setSearchMode] = useState<SearchMode>('board')
@@ -405,6 +407,24 @@ export function Dashboard() {
     setShowEditDialog(true)
   }
 
+  const handleToggleFavorite = async (bookmarkId: string) => {
+    // Optimistic update - update UI immediately
+    setBookmarks(prevBookmarks =>
+      prevBookmarks.map(b =>
+        b.id === bookmarkId ? { ...b, is_favorite: !b.is_favorite } : b
+      )
+    )
+
+    // Then sync with backend
+    try {
+      await toggleFavorite(bookmarkId)
+    } catch (error) {
+      // If it fails, revert the optimistic update
+      console.error('Failed to toggle favorite:', error)
+      await fetchBookmarks(true)
+    }
+  }
+
   const handleShare = async (bookmark: BookmarkType) => {
     if (!bookmark.url) {
       alert('This bookmark does not have a URL to share')
@@ -583,13 +603,25 @@ export function Dashboard() {
       return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
     })
 
+    // Then filter by favorites if enabled
+    if (showFavoritesOnly) {
+      filtered = filtered.filter(bookmark => bookmark.is_favorite)
+    }
+
     // Then apply search
     if (searchQuery.trim()) {
       filtered = searchBookmarks(filtered, searchQuery)
     }
 
+    // Sort to prioritize favorites (favorites first)
+    filtered.sort((a, b) => {
+      if (a.is_favorite && !b.is_favorite) return -1
+      if (!a.is_favorite && b.is_favorite) return 1
+      return 0
+    })
+
     return filtered
-  }, [bookmarks, selectedTypes, searchQuery, currentFolderId])
+  }, [bookmarks, selectedTypes, showFavoritesOnly, searchQuery, currentFolderId])
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -863,6 +895,18 @@ export function Dashboard() {
             </div>
           </div>
 
+          {/* Starred Filter */}
+          <div className="filter-section pt-3 border-t border-gray-200 dark:border-white/20">
+            <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1 rounded">
+              <Checkbox
+                checked={showFavoritesOnly}
+                onCheckedChange={(checked) => setShowFavoritesOnly(checked as boolean)}
+              />
+              <Star className="w-4 h-4 text-amber-500 fill-current" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Starred Only</span>
+            </label>
+          </div>
+
           {/* Board Selector */}
           <div className="board-section pt-3 border-t border-gray-200 dark:border-white/20">
             <div className="flex items-center justify-between mb-2">
@@ -1031,9 +1075,9 @@ export function Dashboard() {
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Folders</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">{folders.length}</div>
           </div>
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-violet-500 dark:hover:border-violet-400/50">
-            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">This Week</div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">{stats.thisWeek}</div>
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-150 border border-gray-200 dark:border-slate-700/50 hover:border-amber-500 dark:hover:border-amber-400/50">
+            <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Starred</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 dark:from-amber-400 dark:to-yellow-400 bg-clip-text text-transparent">{bookmarks.filter(b => b.is_favorite).length}</div>
           </div>
         </div>
 
@@ -1107,7 +1151,7 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
+                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-[10px] relative group ${
                     isTodoBookmark
                       ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(55,47,77)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
@@ -1117,39 +1161,53 @@ export function Dashboard() {
                       : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-[rgb(66,83,108)]/50'
                   }`}
                 >
+                  {/* Starred Badge - Always visible on starred items, hides on hover */}
+                  {bookmark.is_favorite && (
+                    <div className="absolute top-3 right-3 z-10 opacity-100 group-hover:opacity-0 transition-all duration-150">
+                      <Star className="w-4 h-4 fill-amber-500/30 stroke-amber-600/40 stroke-1" />
+                    </div>
+                  )}
+
                   {/* Action Buttons - Cleaner design */}
                   <div className="absolute top-3 right-3 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150">
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                         title="Open in new tab"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <ExternalLink className="w-3 h-3" />
                       </button>
                     )}
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                         title="Share bookmark"
                       >
-                        <Share2 className="w-3.5 h-3.5" />
+                        <Share2 className="w-3 h-3" />
                       </button>
                     )}
                     <button
+                      onClick={() => handleToggleFavorite(bookmark.id)}
+                      className={`${bookmark.is_favorite ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150`}
+                      title={bookmark.is_favorite ? 'Remove from starred' : 'Add to starred'}
+                    >
+                      <Star className={`w-3 h-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
+                    </button>
+                    <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Edit bookmark"
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <Pencil className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                      className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Delete bookmark"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
 
@@ -1229,18 +1287,15 @@ export function Dashboard() {
                   {isTodoBookmark ? (
                     <div className="todo-bookmark-content px-4 pt-[0.8rem] pb-0">
                       {/* Title and Completion */}
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="mb-3">
                         {bookmark.title ? (
-                          <h3 className="text-base font-bold text-gray-900 dark:text-white flex-1 leading-snug">
+                          <h3 className="text-base font-bold text-gray-900 dark:text-white leading-snug">
                             {bookmark.title}
                           </h3>
                         ) : (
-                          <h3 className="text-base font-bold text-gray-700 dark:text-gray-300 flex-1 leading-snug">
+                          <h3 className="text-base font-bold text-gray-700 dark:text-gray-300 leading-snug">
                             To-do List
                           </h3>
-                        )}
-                        {bookmark.is_favorite && (
-                          <Heart className="w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
                         )}
                       </div>
 
@@ -1373,9 +1428,6 @@ export function Dashboard() {
                             </h3>
                           )}
                         </div>
-                        {bookmark.is_favorite && (
-                          <Heart className="bookmark-favorite-icon w-4 h-4 text-red-500 dark:text-red-400 fill-current flex-shrink-0 ml-2" />
-                        )}
                       </div>
                     )}
 
@@ -1534,7 +1586,7 @@ export function Dashboard() {
                             </span>
                           </h2>
                         </div>
-                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                        <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-3">
                           {uncategorized.map(renderBookmarkCard)}
                         </div>
                       </div>
@@ -1552,7 +1604,7 @@ export function Dashboard() {
                           </span>
                         </h2>
                       </div>
-                      <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+                      <div className="bookmarks-masonry columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-3">
                         {categorizedMap.get(category)!.map(renderBookmarkCard)}
                       </div>
                     </div>

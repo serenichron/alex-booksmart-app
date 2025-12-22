@@ -498,6 +498,32 @@ export async function updateBookmark(id: string, updates: Partial<Bookmark>): Pr
   }
 }
 
+export async function toggleFavorite(bookmarkId: string): Promise<void> {
+  const currentBoardId = getCurrentBoardId()
+
+  // First get the current favorite status
+  const { data: bookmark, error: fetchError } = await supabase
+    .from('bookmarks')
+    .select('is_favorite')
+    .eq('id', bookmarkId)
+    .single()
+
+  if (fetchError) throw fetchError
+
+  // Toggle the favorite state
+  const { error } = await supabase
+    .from('bookmarks')
+    .update({ is_favorite: !bookmark.is_favorite })
+    .eq('id', bookmarkId)
+
+  if (error) throw error
+
+  // Invalidate cache to ensure UI updates
+  if (currentBoardId) {
+    invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
+  }
+}
+
 // Note management
 export async function addNoteToBookmark(bookmarkId: string, content: string): Promise<Note> {
   const { data, error } = await supabase

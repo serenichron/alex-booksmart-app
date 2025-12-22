@@ -227,6 +227,30 @@ This document compares the **planned features** (from PROJECT_PLAN.md and ARCHIT
 
 ---
 
+#### 7. Starred/Favorites System ✅ FULLY IMPLEMENTED
+**Documentation:** Not originally documented, user-requested feature
+**Implementation:**
+- ✅ Toggle starred status on bookmarks (`apps/web/src/lib/storage.ts` - `toggleFavorite()`)
+- ✅ Star icon badge on all card types (`apps/web/src/pages/Dashboard.tsx:1164-1169`)
+- ✅ Starred filter in sidebar (`apps/web/src/pages/Dashboard.tsx`)
+- ✅ Starred count in dashboard stats
+- ✅ Priority sorting (starred items appear first)
+- ✅ Optimistic UI updates for instant feedback
+- ✅ Smart visibility (badge hides on hover when action buttons appear)
+- ✅ Refined design (transparent star, subtle appearance)
+
+**UX Features:**
+- Star icon: w-4 h-4, fill-amber-500/30, stroke-amber-600/40
+- Positioned top-right on all cards
+- Hides when hovering to reveal action buttons
+- Instant visual feedback with optimistic updates
+- "Starred Only" filter checkbox
+- Starred count replaces "This Week" in stats
+
+**Status:** Production-ready with excellent UX
+
+---
+
 ## ❌ NOT YET IMPLEMENTED
 
 ### Phase 1 - Missing Features
@@ -358,14 +382,14 @@ This document compares the **planned features** (from PROJECT_PLAN.md and ARCHIT
 
 | Phase | Planned Features | Implemented | Partial | Not Started | % Complete |
 |-------|-----------------|-------------|---------|-------------|------------|
-| **Phase 1: Foundation** | 7 major features | 5 | 2 | 0 | **71%** |
+| **Phase 1: Foundation** | 8 major features | 6 | 2 | 0 | **75%** |
 | **Phase 2: Smart Features** | 4 major features | 0 | 0 | 4 | **0%** |
 | **Phase 3: Extension** | 1 major feature | 0 | 0 | 1 | **0%** |
 | **Phase 4: Discovery** | 1 major feature | 0 | 0 | 1 | **0%** |
 | **Phase 5: Modes** | 1 major feature | 0 | 0 | 1 | **0%** |
 | **Phase 6: Collaboration** | 1 major feature | 0 | 0 | 1 | **0%** |
 | **Phase 7: Mobile** | 1 major feature | 0 | 0 | 1 | **0%** |
-| **OVERALL** | **16 major features** | **5** | **2** | **9** | **31%** |
+| **OVERALL** | **17 major features** | **6** | **2** | **9** | **35%** |
 
 ---
 
@@ -378,6 +402,7 @@ This document compares the **planned features** (from PROJECT_PLAN.md and ARCHIT
 | **Metadata Fetching** | ✅ Complete | Auto-fetch title, description, images |
 | **Dashboard UI** | ✅ Complete | Modern, responsive, feature-rich |
 | **Performance Optimization** | ✅ Complete | Pagination, caching, infinite scroll, lazy loading, prefetching |
+| **Starred/Favorites** | ✅ Complete | Toggle, filter, priority sort, optimistic updates |
 | **AI Setup** | ⚠️ Partial | Code exists, not integrated into UI |
 | **Database** | ❌ Missing | Using localStorage instead of Supabase |
 | **AI Organization** | ❌ Missing | Not wired to save flow |
