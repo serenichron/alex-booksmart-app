@@ -406,9 +406,11 @@ export async function prefetchBoard(boardId: string): Promise<void> {
 
 export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' | 'updated_at'>): Promise<Bookmark> {
   const userId = await getCurrentUserId()
-  const currentBoardId = getCurrentBoardId()
 
-  if (!currentBoardId) throw new Error('No current board selected')
+  // Use board_id from bookmark if provided, otherwise use current board
+  const boardId = bookmark.board_id || getCurrentBoardId()
+
+  if (!boardId) throw new Error('No current board selected')
 
   const { data, error} = await supabase
     .from('bookmarks')
@@ -424,7 +426,7 @@ export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' 
       meta_description: bookmark.meta_description,
       show_meta_description: bookmark.show_meta_description,
       user_id: userId,
-      board_id: currentBoardId,
+      board_id: boardId,
       folder_id: bookmark.folder_id || null
     }])
     .select()
@@ -456,8 +458,8 @@ export async function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'created_at' 
   }
 
   // Invalidate cache for this board (v2 cache keys)
-  invalidateCache(`bookmarks_v2_${currentBoardId}_all`)
-  invalidateCache(`count_${currentBoardId}`)
+  invalidateCache(`bookmarks_v2_${boardId}_all`)
+  invalidateCache(`count_${boardId}`)
 
   return newBookmark
 }
