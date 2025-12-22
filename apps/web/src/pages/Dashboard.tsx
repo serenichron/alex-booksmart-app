@@ -1348,7 +1348,7 @@ export function Dashboard() {
                           {/* Favicon for URL bookmarks */}
                           {bookmark.favicon && bookmark.url && !isTextBookmark && !isTodoBookmark && (
                             <img
-                              src={bookmark.favicon}
+                              src={`https://corsproxy.io/?${encodeURIComponent(bookmark.favicon)}`}
                               alt=""
                               className="w-4 h-4 mt-0.5 flex-shrink-0"
                               onError={(e) => {
