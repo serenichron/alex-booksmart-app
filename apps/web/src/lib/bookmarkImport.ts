@@ -128,13 +128,13 @@ export async function importBrowserBookmarks(
 
     await Promise.all(
       batch.map(async (bookmark) => {
-        try {
-          onProgress?.({
-            total,
-            processed: i + batch.indexOf(bookmark),
-            current: bookmark.title
-          })
+        onProgress?.({
+          total,
+          processed: i + batch.indexOf(bookmark),
+          current: bookmark.title
+        })
 
+        try {
           const metadata = await fetchURLMetadata(bookmark.url)
 
           results.push({
@@ -145,12 +145,25 @@ export async function importBrowserBookmarks(
           })
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-          console.warn(`⚠️ Skipping ${bookmark.url}: ${errorMessage}`)
+          console.warn(`⚠️ Metadata fetch failed for ${bookmark.url}: ${errorMessage}. Importing with basic info.`)
+
+          // Import bookmark anyway with basic info (no metadata)
+          results.push({
+            title: bookmark.title,
+            url: bookmark.url,
+            folder: bookmark.folder,
+            metadata: {
+              title: bookmark.title,
+              description: '',
+              image: null,
+              favicon: null
+            }
+          })
+
           errors.push({
             url: bookmark.url,
             error: errorMessage
           })
-          // Skip this bookmark - don't add it to results
         }
       })
     )
