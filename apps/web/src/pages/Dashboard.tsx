@@ -685,7 +685,7 @@ export function Dashboard() {
       <div className="bg-blob absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-300 dark:bg-teal-500 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 dark:opacity-30 animate-blob animation-delay-2000"></div>
 
       {/* Header - Full Width */}
-      <header className="dashboard-header bg-white/80 dark:bg-slate-900/95 border-b border-gray-200 dark:border-white/20 sticky top-0 z-50 backdrop-blur-sm">
+      <header className="dashboard-header bg-white/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-white/20 sticky top-0 z-50 backdrop-blur-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="brand-section flex items-center gap-3">
