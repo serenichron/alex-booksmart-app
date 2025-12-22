@@ -56,6 +56,7 @@ export function AddBookmarkDialog({
   // Auto-fetched metadata
   const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+  const [favicon, setFavicon] = useState('')
   const [metaDescription, setMetaDescription] = useState('')
   const [showMetaDescription, setShowMetaDescription] = useState(true)
 
@@ -111,6 +112,7 @@ export function AddBookmarkDialog({
     setTodoItemsInput('')
     setTitle('')
     setImageUrl('')
+    setFavicon('')
     setMetaDescription('')
     setShowMetaDescription(true)
     setSelectedCategories([])
@@ -174,6 +176,7 @@ export function AddBookmarkDialog({
       setTitle(metadata.title)
       setMetaDescription(metadata.description)
       if (metadata.image) setImageUrl(metadata.image)
+      if (metadata.favicon) setFavicon(metadata.favicon)
       lastFetchedUrlRef.current = urlToFetch
     } catch (err) {
       console.error('Failed to fetch metadata:', err)
@@ -189,6 +192,7 @@ export function AddBookmarkDialog({
     if (lastFetchedUrlRef.current && !newUrl.startsWith(lastFetchedUrlRef.current.substring(0, 20))) {
       setTitle('')
       setImageUrl('')
+      setFavicon('')
       setMetaDescription('')
       lastFetchedUrlRef.current = ''
     }
@@ -393,6 +397,7 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: imageUrl || null,
           meta_description: metaDescription || null,
+          favicon: favicon || null,
           show_meta_description: showMetaDescription,
           folder_id: selectedFolder,
         })
@@ -411,6 +416,7 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: null,
           meta_description: null,
+          favicon: null,
           folder_id: selectedFolder,
         })
       } else if (mode === 'todo') {
@@ -437,13 +443,14 @@ export function AddBookmarkDialog({
           tags: [],
           image_url: null,
           meta_description: null,
+          favicon: null,
           todo_items: todoItems,
           folder_id: selectedFolder,
         })
       } else if (mode === 'multi-url') {
         // Save all URLs as separate bookmarks
         for (const url of multiUrlParsed) {
-          const metadata = multiUrlMetadata.get(url) || { title: url, description: '', image: null }
+          const metadata = multiUrlMetadata.get(url) || { title: url, description: '', image: null, favicon: null }
           const bookmarkType = isImageUrl(url) ? 'image' : 'link'
 
           await saveBookmark({
@@ -457,6 +464,7 @@ export function AddBookmarkDialog({
             tags: [],
             image_url: metadata.image || null,
             meta_description: metadata.description || null,
+            favicon: metadata.favicon || null,
             show_meta_description: true,
             folder_id: selectedFolder,
           })

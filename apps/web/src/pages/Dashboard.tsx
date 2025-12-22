@@ -9,7 +9,7 @@ import { NoteDialog } from '@/components/NoteDialog'
 import { BoardManagementDialog } from '@/components/BoardManagementDialog'
 import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, Link2, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Heart, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Download, Upload, AlertTriangle, LogOut, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -1542,7 +1542,7 @@ export function Dashboard() {
                   )}
 
                   {/* Categorized Sections */}
-                  {sortedCategories.map((category, idx) => (
+                  {sortedCategories.map((category) => (
                     <div key={category} className="category-section mb-16">
                       <div className="mb-8 pt-3 border-t-2 border-gray-300 dark:border-slate-600">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
