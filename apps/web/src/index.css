@@ -69,7 +69,7 @@
   .stats-card,
   button,
   a {
-    will-change: transform, box-shadow, opacity;
+    will-change: box-shadow, opacity;
     backface-visibility: hidden;
   }
 
