@@ -11,8 +11,7 @@ import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
 import { UserSettingsDialog } from '@/components/UserSettingsDialog'
 import { UserAvatar } from '@/components/UserAvatar'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Clock, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
-import { format } from 'date-fns'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
