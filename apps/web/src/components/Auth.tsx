@@ -198,7 +198,7 @@ export function Auth({ mode = 'signup', onBack }: AuthProps = {}) {
 
             <Button
               type="submit"
-              className={`w-full text-white ${primaryColor} transition-all duration-300`}
+              className={`w-full text-white ${primaryColor} transition-all`}
               disabled={loading}
               size="lg"
             >

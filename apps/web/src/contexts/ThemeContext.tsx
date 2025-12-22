@@ -28,7 +28,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme])
 
   const toggleTheme = () => {
+    // Disable transitions during theme change for instant switch
+    document.documentElement.classList.add('theme-transitioning')
+
     setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+
+    // Re-enable transitions after theme has been applied
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning')
+    }, 0)
   }
 
   return (
