@@ -1109,9 +1109,9 @@ export function Dashboard() {
                   key={bookmark.id}
                   className={`bookmark-card rounded-xl overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-150 break-inside-avoid mb-6 relative group ${
                     isTodoBookmark
-                      ? 'bg-[rgb(235,223,247)] dark:bg-slate-800/60 shadow-md border border-[rgb(223,211,235)] dark:border-slate-700/50'
+                      ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(80,51,84)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
-                      ? 'bg-[rgb(255,255,230)] dark:bg-slate-800/60 shadow-md border border-[rgb(241,240,175)] dark:border-slate-700/50'
+                      ? 'bg-[rgb(255,255,230)] dark:bg-[rgb(37,67,44)] shadow-md border border-[rgb(241,240,175)] dark:border-[rgb(48,76,55)]'
                       : isImageBookmark
                       ? 'bg-black shadow-lg'
                       : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-slate-700/50'
@@ -1211,7 +1211,7 @@ export function Dashboard() {
                       href={bookmark.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bookmark-image-container block border-b border-[#eaeaea]"
+                      className="bookmark-image-container block border-b border-[#eaeaea]/40 dark:border-white/40"
                     >
                       <img
                         src={bookmark.image_url}
