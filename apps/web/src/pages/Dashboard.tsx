@@ -1139,7 +1139,7 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-800 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
+                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-150"
                       title="Edit bookmark"
                     >
                       <Pencil className="w-3.5 h-3.5" />
@@ -1211,7 +1211,7 @@ export function Dashboard() {
                       href={bookmark.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bookmark-image-container block border-b border-[#eaeaea]/40 dark:border-white/40"
+                      className="bookmark-image-container block border-b border-[#d3d3d3] dark:border-white/40"
                     >
                       <img
                         src={bookmark.image_url}
