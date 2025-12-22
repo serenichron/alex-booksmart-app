@@ -523,7 +523,7 @@ export function EditBookmarkDialog({
                           >
                             {item.text}
                           </span>
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100">
                             <button
                               type="button"
                               onClick={() => handleStartEditTodo(item)}

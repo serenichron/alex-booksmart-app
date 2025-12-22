@@ -80,7 +80,7 @@ export function ImageViewerDialog({
             {imageUrl && (
               <button
                 onClick={() => window.open(imageUrl, '_blank')}
-                className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg transition-all backdrop-blur-sm"
+                className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg backdrop-blur-sm"
                 title="Open in new tab"
               >
                 <ExternalLink className="w-5 h-5" />
@@ -89,7 +89,7 @@ export function ImageViewerDialog({
             {onShare && (
               <button
                 onClick={() => onShare(bookmark)}
-                className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg transition-all backdrop-blur-sm"
+                className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg backdrop-blur-sm"
                 title="Share"
               >
                 <Share2 className="w-5 h-5" />
@@ -101,7 +101,7 @@ export function ImageViewerDialog({
                   onEdit(bookmark)
                   onOpenChange(false)
                 }}
-                className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg transition-all backdrop-blur-sm"
+                className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg backdrop-blur-sm"
                 title="Edit"
               >
                 <Pencil className="w-5 h-5" />
@@ -109,7 +109,7 @@ export function ImageViewerDialog({
             )}
             <button
               onClick={() => onOpenChange(false)}
-              className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg transition-all backdrop-blur-sm"
+              className="w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-lg backdrop-blur-sm"
               title="Close"
             >
               <X className="w-5 h-5" />

@@ -11,7 +11,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-0">
       <div
         className="fixed inset-0 bg-black/70 dark:bg-black/85"
         onClick={() => onOpenChange(false)}

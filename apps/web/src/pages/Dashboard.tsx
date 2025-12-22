@@ -709,7 +709,7 @@ export function Dashboard() {
                   <div className="search-mode-toggle flex items-center border border-gray-300 dark:border-white/30 rounded-md overflow-hidden bg-gray-100 dark:bg-white/10">
                     <button
                       onClick={() => setSearchMode('board')}
-                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      className={`px-3 py-1.5 text-xs font-medium ${
                         searchMode === 'board'
                           ? 'bg-[#0D7D81] dark:bg-cyan-500 text-white'
                           : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -720,7 +720,7 @@ export function Dashboard() {
                     <div className="w-px h-5 bg-gray-300 dark:bg-white/30" />
                     <button
                       onClick={() => setSearchMode('global')}
-                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      className={`px-3 py-1.5 text-xs font-medium ${
                         searchMode === 'global'
                           ? 'bg-[#0D7D81] dark:bg-cyan-500 text-white'
                           : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
@@ -976,7 +976,7 @@ export function Dashboard() {
             <Layers className="w-4 h-4 text-[#0D7D81] dark:text-cyan-400" />
             <button
               onClick={() => handleSwitchFolder(null)}
-              className={`font-semibold transition-colors ${
+              className={`font-semibold ${
                 currentFolderId === null
                   ? 'text-gray-900 dark:text-white'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -998,19 +998,19 @@ export function Dashboard() {
 
         {/* Quick Stats - Calmer design with emphasis on numbers */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-slate-700/50 hover:border-[#0D7D81] dark:hover:border-cyan-500/50">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md border border-gray-200 dark:border-slate-700/50 hover:border-[#0D7D81] dark:hover:border-cyan-500/50">
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total Bookmarks</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">{stats.total}</div>
           </div>
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-slate-700/50 hover:border-rose-500 dark:hover:border-rose-400/50">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md border border-gray-200 dark:border-slate-700/50 hover:border-rose-500 dark:hover:border-rose-400/50">
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Categories</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 dark:from-rose-400 dark:to-pink-400 bg-clip-text text-transparent">{stats.categories}</div>
           </div>
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-slate-700/50 hover:border-emerald-500 dark:hover:border-emerald-400/50">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md border border-gray-200 dark:border-slate-700/50 hover:border-emerald-500 dark:hover:border-emerald-400/50">
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Folders</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">{folders.length}</div>
           </div>
-          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200 dark:border-slate-700/50 hover:border-amber-500 dark:hover:border-amber-400/50">
+          <div className="stats-card bg-white dark:bg-slate-800/40 p-5 rounded-xl shadow-sm hover:shadow-md border border-gray-200 dark:border-slate-700/50 hover:border-amber-500 dark:hover:border-amber-400/50">
             <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Starred</div>
             <div className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 dark:from-amber-400 dark:to-yellow-400 bg-clip-text text-transparent">{bookmarks.filter(b => b.is_favorite).length}</div>
           </div>
@@ -1033,7 +1033,7 @@ export function Dashboard() {
             <p className="text-base text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto leading-relaxed">
               Save your first bookmark and organize it with categories and tags
             </p>
-            <Button size="lg" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-[#0D7D81] to-cyan-600 dark:from-cyan-500 dark:to-teal-600 hover:from-teal-700 hover:to-cyan-700 dark:hover:from-cyan-600 dark:hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-all px-8 py-6 text-base">
+            <Button size="lg" onClick={() => setShowAddDialog(true)} className="bg-gradient-to-r from-[#0D7D81] to-cyan-600 dark:from-cyan-500 dark:to-teal-600 hover:from-teal-700 hover:to-cyan-700 dark:hover:from-cyan-600 dark:hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl px-8 py-6 text-base">
               <Plus className="w-5 h-5 mr-2" />
               Add Your First Bookmark
             </Button>
@@ -1086,7 +1086,7 @@ export function Dashboard() {
                 return (
                 <div
                   key={bookmark.id}
-                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all break-inside-avoid mb-[10px] relative group ${
+                  className={`bookmark-card rounded-[0.3rem] overflow-hidden hover:shadow-xl hover:-translate-y-0.5 break-inside-avoid mb-[10px] relative group ${
                     isTodoBookmark
                       ? 'bg-[rgb(235,223,247)] dark:bg-[rgb(55,47,77)] shadow-md border border-[rgb(223,211,235)] dark:border-[rgb(89,61,93)]'
                       : isTextBookmark
@@ -1098,17 +1098,17 @@ export function Dashboard() {
                 >
                   {/* Starred Badge - Always visible on starred items, hides on hover */}
                   {bookmark.is_favorite && (
-                    <div className="absolute top-3 right-3 z-10 opacity-100 group-hover:opacity-0 transition-all">
+                    <div className="absolute top-3 right-3 z-10 opacity-100 group-hover:opacity-0">
                       <Star className="w-4 h-4 fill-amber-500/30 stroke-amber-600/40 stroke-1" />
                     </div>
                   )}
 
                   {/* Action Buttons - Cleaner design */}
-                  <div className="absolute top-3 right-3 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                  <div className="absolute top-3 right-3 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100">
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
-                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+                        className="bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg"
                         title="Open in new tab"
                       >
                         <ExternalLink className="w-3 h-3" />
@@ -1117,7 +1117,7 @@ export function Dashboard() {
                     {bookmark.url && (
                       <button
                         onClick={() => handleShare(bookmark)}
-                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+                        className="bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg"
                         title="Share bookmark"
                       >
                         <Share2 className="w-3 h-3" />
@@ -1125,21 +1125,21 @@ export function Dashboard() {
                     )}
                     <button
                       onClick={() => handleToggleFavorite(bookmark.id)}
-                      className={`${bookmark.is_favorite ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all`}
+                      className={`${bookmark.is_favorite ? 'bg-amber-500 hover:bg-amber-600' : 'bg-gray-500 hover:bg-gray-600'} text-white p-1.5 rounded-lg shadow-md hover:shadow-lg`}
                       title={bookmark.is_favorite ? 'Remove from starred' : 'Add to starred'}
                     >
                       <Star className={`w-3 h-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
                     </button>
                     <button
                       onClick={() => handleEdit(bookmark)}
-                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+                      className="bg-slate-600 dark:bg-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg"
                       title="Edit bookmark"
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+                      className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg shadow-md hover:shadow-lg"
                       title="Delete bookmark"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -1209,7 +1209,7 @@ export function Dashboard() {
                       <img
                         src={bookmark.image_url}
                         alt={bookmark.title}
-                        className="bookmark-image w-full h-36 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                        className="bookmark-image w-full h-36 object-cover hover:opacity-90 cursor-pointer"
                         loading="lazy"
                         onError={(e) => {
                           e.currentTarget.parentElement!.parentElement!.style.display = 'none'
@@ -1243,7 +1243,7 @@ export function Dashboard() {
                           </div>
                           <div className="w-full bg-emerald-100/50 dark:bg-[rgb(135,98,148)]/20 rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-[#0B8594] h-full transition-all duration-300 rounded-full"
+                              className="bg-[#0B8594] h-full rounded-full"
                               style={{ width: `${todoCompletion.percentage}%` }}
                             />
                           </div>
@@ -1256,7 +1256,7 @@ export function Dashboard() {
                           {bookmark.todo_items.map((item) => (
                             <label
                               key={item.id}
-                              className="flex items-start gap-2 cursor-pointer group hover:bg-emerald-100/40 dark:hover:bg-emerald-900/10 p-0.5 rounded transition-colors"
+                              className="flex items-start gap-2 cursor-pointer group hover:bg-emerald-100/40 dark:hover:bg-emerald-900/10 p-0.5 rounded"
                             >
                               <Checkbox
                                 checked={item.completed}
@@ -1288,7 +1288,7 @@ export function Dashboard() {
                             ).map((note) => (
                               <div
                                 key={note.id}
-                                className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                                className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm"
                                 onClick={() => handleNoteClick(note, bookmark.id)}
                               >
                                 <p className="text-[11px] text-gray-800 dark:text-gray-200 line-clamp-3 leading-relaxed pr-1">
@@ -1353,7 +1353,7 @@ export function Dashboard() {
                               href={bookmark.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-400 transition-colors cursor-pointer leading-snug min-w-0"
+                              className="bookmark-title text-base font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 hover:text-[#0D7D81] dark:hover:text-cyan-400 cursor-pointer leading-snug min-w-0"
                             >
                               {bookmark.title}
                             </a>
@@ -1405,7 +1405,7 @@ export function Dashboard() {
                           ).map((note) => (
                             <div
                               key={note.id}
-                              className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm transition-shadow"
+                              className="bookmark-note bg-[rgba(9,163,171,0.1)] dark:bg-[rgba(9,163,171,0.1)] border-l-3 border-[#0D7D81] dark:border-cyan-400 p-2 rounded-r relative group cursor-pointer hover:shadow-sm"
                               onClick={() => handleNoteClick(note, bookmark.id)}
                               title="Click to view full note"
                             >
@@ -1482,14 +1482,14 @@ export function Dashboard() {
                               <div
                                 key={folder.id}
                                 onClick={() => handleSwitchFolder(folder.id)}
-                                className={`folder-item cursor-pointer p-5 rounded-xl transition-all hover:-translate-y-0.5 ${
+                                className={`folder-item cursor-pointer p-5 rounded-xl hover:-translate-y-0.5 ${
                                   folder.id === currentFolderId
                                     ? 'bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-cyan-900/40 dark:to-teal-900/40 shadow-lg shadow-teal-200/50 dark:shadow-cyan-900/30 ring-2 ring-[#0D7D81] dark:ring-cyan-400'
                                     : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 hover:shadow-xl hover:ring-2 hover:ring-[#0D7D81]/50 dark:hover:ring-cyan-400/50'
                                 }`}
                               >
                                 <div className="flex flex-col items-center text-center gap-3">
-                                  <Folder className={`w-16 h-16 transition-colors ${
+                                  <Folder className={`w-16 h-16 ${
                                     folder.id === currentFolderId ? 'text-[#0D7D81] dark:text-cyan-400' : 'text-gray-400 dark:text-gray-500'
                                   }`} />
                                   <div className="w-full">

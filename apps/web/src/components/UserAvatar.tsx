@@ -80,7 +80,7 @@ export function UserAvatar({ onSettingsClick }: UserAvatarProps) {
       {/* Avatar Button */}
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0D7D81] to-teal-600 dark:from-cyan-500 dark:to-teal-500 text-white font-semibold flex items-center justify-center hover:shadow-lg transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#0D7D81] dark:focus:ring-cyan-400 focus:ring-offset-2"
+        className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0D7D81] to-teal-600 dark:from-cyan-500 dark:to-teal-500 text-white font-semibold flex items-center justify-center hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#0D7D81] dark:focus:ring-cyan-400 focus:ring-offset-2"
         aria-label="User menu"
       >
         <span className="text-lg">{getInitial()}</span>
