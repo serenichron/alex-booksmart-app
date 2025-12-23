@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -8,10 +8,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { User, KeyRound, Database, Mail, AlertCircle, CheckCircle, Download, Upload, Trash2 } from 'lucide-react'
+import { User, KeyRound, Database, Mail, AlertCircle, CheckCircle, Download, Upload, Trash2, FileUp } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { exportAllData, importAllData, clearAllData } from '@/lib/storage'
+import { exportAllData, importAllData, clearAllData, createBoard, createFolder, saveBookmark } from '@/lib/storage'
+import { parseBookmarkHTML, importBrowserBookmarks, type ImportProgress } from '@/lib/bookmarkImport'
 
 interface UserSettingsDialogProps {
   open: boolean
@@ -33,6 +34,11 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
   // Password state
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
+  // Browser bookmark import state
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load profile data on mount
   useEffect(() => {
@@ -227,6 +233,157 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
     }
   }
 
+  const handleBrowserBookmarkImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      setIsImporting(true)
+      setImportProgress({ total: 0, processed: 0, current: 'Reading file...' })
+
+      // Read and parse the HTML file
+      const htmlContent = await file.text()
+      const parsedBookmarks = parseBookmarkHTML(htmlContent)
+
+      if (parsedBookmarks.length === 0) {
+        setMessage({ type: 'error', text: 'No bookmarks found in the file' })
+        setIsImporting(false)
+        setImportProgress(null)
+        return
+      }
+
+      setImportProgress({ total: parsedBookmarks.length, processed: 0, current: 'Creating board...' })
+
+      // Create "Browser Bookmarks" board
+      const board = await createBoard('Browser Bookmarks')
+
+      // Create a map to track folders by their path
+      const folderMap = new Map<string, string>() // path -> folderId
+
+      // Helper to get or create folder
+      const getOrCreateFolder = async (folderPath: string[]): Promise<string | null> => {
+        if (folderPath.length === 0) return null
+
+        const pathKey = folderPath.join('/')
+        if (folderMap.has(pathKey)) {
+          return folderMap.get(pathKey)!
+        }
+
+        // Create folders recursively
+        let parentFolderId: string | null = null
+        for (let i = 0; i < folderPath.length; i++) {
+          const currentPath = folderPath.slice(0, i + 1)
+          const currentPathKey = currentPath.join('/')
+
+          if (!folderMap.has(currentPathKey)) {
+            const folderName = currentPath[i]
+            console.log(`Creating folder: ${folderName} (path: ${currentPathKey}, parent: ${parentFolderId})`)
+            const folder = await createFolder(board.id, folderName, parentFolderId)
+            console.log(`Created folder ${folder.name} with ID ${folder.id}`)
+            folderMap.set(currentPathKey, folder.id)
+            parentFolderId = folder.id
+          } else {
+            parentFolderId = folderMap.get(currentPathKey)!
+          }
+        }
+
+        return parentFolderId
+      }
+
+      // Import bookmarks with metadata
+      setImportProgress({ total: parsedBookmarks.length, processed: 0, current: 'Fetching metadata...' })
+
+      const result = await importBrowserBookmarks(parsedBookmarks, (progress) => {
+        setImportProgress(progress)
+      })
+
+      // Save bookmarks to storage
+      setImportProgress({
+        total: result.bookmarks.length,
+        processed: 0,
+        current: 'Saving bookmarks...'
+      })
+
+      console.log(`Saving ${result.bookmarks.length} bookmarks to board ${board.id}`)
+
+      for (let i = 0; i < result.bookmarks.length; i++) {
+        const item = result.bookmarks[i]
+        const folderId = await getOrCreateFolder(item.folder)
+
+        console.log(`Saving bookmark ${i + 1}/${result.bookmarks.length}:`, {
+          title: item.title,
+          folder: item.folder,
+          folderId,
+          url: item.url
+        })
+
+        await saveBookmark({
+          title: item.title || item.metadata.title,  // Prefer original browser bookmark title
+          summary: item.metadata.description || '',
+          url: item.url,
+          type: 'link',
+          is_favorite: false,
+          categories: [],
+          tags: [],
+          image_url: item.metadata.image,
+          meta_description: item.metadata.description,
+          favicon: item.metadata.favicon,
+          show_meta_description: true,
+          board_id: board.id,
+          folder_id: folderId,
+          notes: []
+        })
+
+        setImportProgress({
+          total: result.bookmarks.length,
+          processed: i + 1,
+          current: item.title
+        })
+      }
+
+      console.log(`✅ All ${result.bookmarks.length} bookmarks saved successfully!`)
+      console.log(`📊 Import Summary:`)
+      console.log(`   - Total parsed: ${parsedBookmarks.length}`)
+      console.log(`   - Successfully imported: ${result.bookmarks.length}`)
+      console.log(`   - Failed: ${result.errors.length}`)
+      console.log(`   - Board ID: ${board.id}`)
+      console.log(`   - Folders created: ${folderMap.size}`)
+
+      // Log folder structure
+      if (folderMap.size > 0) {
+        console.log('📁 Folder structure:')
+        Array.from(folderMap.entries()).forEach(([path, id]) => {
+          console.log(`   ${path} → ${id}`)
+        })
+      }
+
+      setIsImporting(false)
+      setImportProgress(null)
+
+      const errorMessage = result.errors.length > 0
+        ? ` (${result.errors.length} failed)`
+        : ''
+
+      setMessage({
+        type: 'success',
+        text: `Imported ${result.bookmarks.length} bookmarks${errorMessage}! Please refresh the page.`
+      })
+
+      // Don't auto-reload - let user manually refresh to check console
+      console.log('✅ Import complete! Please manually refresh the page or check the Browser Bookmarks board.')
+    } catch (error: any) {
+      console.error('Browser bookmark import error:', error)
+      setIsImporting(false)
+      setImportProgress(null)
+      setMessage({ type: 'error', text: error.message || 'Failed to import browser bookmarks' })
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-6">
@@ -398,6 +555,42 @@ export function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogPro
                   Import Data
                 </Button>
               </div>
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+                disabled={isImporting}
+                className="w-full border-[#0D7D81] dark:border-cyan-500 text-[#0D7D81] dark:text-cyan-400 hover:bg-[#0D7D81]/10 dark:hover:bg-cyan-500/10"
+              >
+                <FileUp className="w-4 h-4 mr-2" />
+                {isImporting ? 'Importing...' : 'Import Browser Bookmarks'}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="text/html"
+                onChange={handleBrowserBookmarkImport}
+                className="hidden"
+              />
+              {importProgress && (
+                <div className="bg-[#0D7D81]/5 dark:bg-cyan-500/5 border border-[#0D7D81]/20 dark:border-cyan-500/20 rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {importProgress.current}
+                    </span>
+                    <span className="text-[#0D7D81] dark:text-cyan-400 font-medium">
+                      {importProgress.processed} / {importProgress.total}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-[#0D7D81] to-teal-600 dark:from-cyan-400 dark:to-teal-400 h-full rounded-full"
+                      style={{
+                        width: `${importProgress.total > 0 ? (importProgress.processed / importProgress.total) * 100 : 0}%`
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
               <Button
                 onClick={handleClearAll}
                 variant="outline"

@@ -58,7 +58,10 @@ apps/web/src/
 ### Key Patterns
 - **State**: React Context for auth, component state for UI
 - **Styling**: Tailwind CSS + Shadcn/ui components
-- **Performance**: Infinite scroll, board prefetching on hover, lazy image loading
+- **Performance**: Infinite scroll, board prefetching on hover, lazy image loading, hardware acceleration for smooth hover effects
+- **Theming**: Instant theme switching with disabled transitions, consistent glassy header (80% opacity both themes)
+- **Favicons**: Google favicon service for general URLs, specific Google Workspace icons (Docs/Sheets/Slides/Forms) using original Google CDN assets
+- **Card Types**: Type-specific classes (bookmark-card-link, bookmark-card-text, bookmark-card-todo, bookmark-card-image) with min-height for text/todo cards (200px)
 
 ## Tech Stack
 
@@ -83,7 +86,17 @@ VITE_APP_URL=http://localhost:5173
 
 ## Implementation Status
 
-**Working**: Authentication (email/password + Google OAuth), bookmark saving (URL/text), URL metadata fetching, dashboard UI with boards/folders/categories, starred/favorites system with optimistic updates, performance optimizations
+**Working**:
+- Authentication (email/password + Google OAuth)
+- Bookmark saving (URL/text/image/todo)
+- URL metadata fetching with corsproxy.io
+- Favicon display (Google favicon service + specific Google Workspace icons)
+- Dashboard UI with boards/folders/categories
+- Starred/favorites system with optimistic updates
+- Theme system (light/dark with instant switching)
+- Performance optimizations (hardware acceleration, smooth hovers, 60fps)
+- User settings (profile management, theme toggle)
+- Type-specific bookmark cards with custom styling
 
 **Partial**: AI integration (code exists in `lib/ai.ts` but not called from UI)
 
@@ -91,12 +104,38 @@ VITE_APP_URL=http://localhost:5173
 
 See `FEATURES_COVERAGE.md` for detailed status.
 
+## UI/UX Optimizations
+
+### Performance
+- **Hardware Acceleration**: GPU-accelerated hover effects with `will-change: box-shadow, opacity`
+- **No Transition Delays**: Removed all `duration-*` classes for instant hover responses
+- **Smooth Hover**: 60fps performance on rapid hover movements over cards
+- **Theme Switching**: Instant theme changes with temporarily disabled transitions (`.theme-transitioning` class)
+
+### Visual Design
+- **Favicons**:
+  - Google favicon service for general websites
+  - Original Google icons for Workspace documents (Docs, Sheets, Slides, Forms)
+  - 0.25rem margin-top for alignment with titles
+- **Card Styling**:
+  - Type-specific classes: `.bookmark-card-link`, `.bookmark-card-text`, `.bookmark-card-todo`, `.bookmark-card-image`
+  - Min-height of 200px for text and todo cards
+  - Timestamps removed from image cards (only in edit dialog)
+  - Action buttons with 0.5rem gap for compact layout
+- **Theme Consistency**: Header transparency at 80% for both light/dark themes with backdrop blur
+
+### CSS Performance Notes
+- Text elements avoid `transform: translateZ(0)` to prevent blur
+- Images use `transform: translateZ(0)` for smooth rendering
+- `backface-visibility: hidden` prevents flicker on animations
+
 ## Key Files for Common Tasks
 
 - **Add bookmark feature**: `components/AddBookmarkDialog.tsx`
-- **Dashboard/display**: `pages/Dashboard.tsx`
+- **Dashboard/display**: `pages/Dashboard.tsx` (includes `getGoogleDocIcon()` helper for favicon detection)
 - **Data operations**: `lib/storage.ts` (localStorage CRUD with caching)
 - **AI integration**: `lib/ai.ts` (Claude API, ready to wire)
 - **Auth flow**: `hooks/useAuth.tsx`, `contexts/AuthContext.tsx`
-- **Theme system**: `contexts/ThemeContext.tsx` (default: light mode)
+- **Theme system**: `contexts/ThemeContext.tsx` (instant switching, default: light mode)
+- **Global styles**: `index.css` (hardware acceleration, theme transitions, card min-heights)
 - **Supabase types**: `lib/supabase.ts` (Database interface definitions)
