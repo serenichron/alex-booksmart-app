@@ -11,6 +11,7 @@ import { FolderManagementDialog } from '@/components/FolderManagementDialog'
 import { ImageViewerDialog } from '@/components/ImageViewerDialog'
 import { UserSettingsDialog } from '@/components/UserSettingsDialog'
 import { UserAvatar } from '@/components/UserAvatar'
+import { FeedbackButton } from '@/components/FeedbackButton'
 import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import {
@@ -1658,6 +1659,9 @@ export function Dashboard() {
         open={showUserSettings}
         onOpenChange={setShowUserSettings}
       />
+
+      {/* Floating Feedback Button */}
+      <FeedbackButton />
 
       <style>{`
         @keyframes blob {
