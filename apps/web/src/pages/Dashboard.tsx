@@ -136,8 +136,13 @@ export function Dashboard() {
 
       // If no board is selected but boards exist, select the first one
       if (!currentId && boardsData.length > 0) {
+        console.log('[Dashboard] No board selected, auto-selecting first board:', boardsData[0].name)
         currentId = boardsData[0].id
         setCurrentBoardId(currentId)
+      } else if (currentId) {
+        console.log('[Dashboard] Board already selected from localStorage:', currentId)
+      } else {
+        console.log('[Dashboard] No boards available')
       }
 
       setBookmarks(bookmarksData)
