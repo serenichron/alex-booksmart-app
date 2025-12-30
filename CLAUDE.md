@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-BookSmart is an AI-powered bookmark manager built as a React SPA with Supabase backend. Currently in **Phase 1: Foundation (71% complete)** - using localStorage for storage (database migration pending).
+BookSmart is a smart bookmark manager built as a React SPA with Supabase backend. Currently in **Phase 1: Foundation (71% complete)** - using localStorage for storage (database migration pending). AI features are planned for future phases.
 
 ## Commands
 
