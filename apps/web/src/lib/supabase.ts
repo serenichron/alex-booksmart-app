@@ -158,6 +158,47 @@ export interface Database {
           created_at?: string
         }
       }
+      feedback: {
+        Row: {
+          id: string
+          user_id: string
+          user_email: string
+          type: 'bug' | 'feature' | 'feedback'
+          message: string
+          screenshot_url: string | null
+          page_url: string | null
+          browser_info: Record<string, any> | null
+          status: 'new' | 'reviewed' | 'resolved'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          user_email: string
+          type: 'bug' | 'feature' | 'feedback'
+          message: string
+          screenshot_url?: string | null
+          page_url?: string | null
+          browser_info?: Record<string, any> | null
+          status?: 'new' | 'reviewed' | 'resolved'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          user_email?: string
+          type?: 'bug' | 'feature' | 'feedback'
+          message?: string
+          screenshot_url?: string | null
+          page_url?: string | null
+          browser_info?: Record<string, any> | null
+          status?: 'new' | 'reviewed' | 'resolved'
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
