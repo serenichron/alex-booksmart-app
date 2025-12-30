@@ -27,7 +27,7 @@ export function AddBookmarkDialog({
   onOpenChange,
   onSuccess,
 }: AddBookmarkDialogProps) {
-  const [mode, setMode] = useState<'url' | 'text' | 'todo' | 'multi-url'>('url')
+  const [mode, setMode] = useState<'url' | 'text' | 'todo' | 'multi-url' | 'location'>('url')
   const [loading, setLoading] = useState(false)
   const [fetchingMetadata, setFetchingMetadata] = useState(false)
   const [error, setError] = useState('')
@@ -52,6 +52,13 @@ export function AddBookmarkDialog({
   const [multiUrlParsed, setMultiUrlParsed] = useState<string[]>([])
   const [multiUrlFetchProgress, setMultiUrlFetchProgress] = useState<number>(0)
   const [multiUrlMetadata, setMultiUrlMetadata] = useState<Map<string, any>>(new Map())
+
+  // Location state
+  const [locationUrl, setLocationUrl] = useState('')
+  const [locationName, setLocationName] = useState('')
+  const [locationAddress, setLocationAddress] = useState('')
+  const [latitude, setLatitude] = useState('')
+  const [longitude, setLongitude] = useState('')
 
   // Auto-fetched metadata
   const [title, setTitle] = useState('')
