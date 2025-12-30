@@ -31,8 +31,8 @@ A modern bookmark manager with unlimited nested organization, multiple content t
 - **Performance**: Caching, prefetching, lazy loading
 - **Responsive Design**: Mobile-friendly UI
 
-### 🚧 Not Yet Implemented
-- AI-powered auto-categorization (code exists, not integrated)
+### 🚧 Planned for Future
+- AI-powered features (auto-categorization, semantic search)
 - Browser extension
 - Mobile app
 - Content discovery features
