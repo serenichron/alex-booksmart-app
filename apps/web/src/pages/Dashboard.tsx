@@ -12,7 +12,7 @@ import { ImageViewerDialog } from '@/components/ImageViewerDialog'
 import { UserSettingsDialog } from '@/components/UserSettingsDialog'
 import { UserAvatar } from '@/components/UserAvatar'
 import { FeedbackButton } from '@/components/FeedbackButton'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun, Loader2 } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
@@ -111,6 +111,7 @@ export function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
   const [searchMode, setSearchMode] = useState<SearchMode>('board')
+  const [isLoadingSearchMode, setIsLoadingSearchMode] = useState(false)
 
   // Board management state
   const [boards, setBoards] = useState<Board[]>([])
@@ -699,6 +700,7 @@ export function Dashboard() {
   useEffect(() => {
     const loadGlobalBookmarks = async () => {
       if (searchMode === 'global' && searchQuery.trim()) {
+        setIsLoadingSearchMode(true)
         try {
           const allBookmarksWithBoard = await getAllBookmarksWithBoard()
           // Add folder names to bookmarks
@@ -721,10 +723,17 @@ export function Dashboard() {
           setBookmarks(enrichedBookmarks as BookmarkWithDetails[])
         } catch (error) {
           console.error('Failed to load global bookmarks:', error)
+        } finally {
+          setIsLoadingSearchMode(false)
         }
       } else if (searchMode === 'board') {
-        // Switch back to board bookmarks
-        await fetchBookmarks()
+        setIsLoadingSearchMode(true)
+        try {
+          // Switch back to board bookmarks
+          await fetchBookmarks()
+        } finally {
+          setIsLoadingSearchMode(false)
+        }
       }
     }
 
@@ -1188,6 +1197,14 @@ export function Dashboard() {
               <Plus className="w-5 h-5 mr-2" />
               Add Your First Bookmark
             </Button>
+          </div>
+        ) : isLoadingSearchMode ? (
+          /* Loading indicator when switching search modes */
+          <div className="loading-search-mode flex flex-col items-center justify-center py-24">
+            <Loader2 className="w-12 h-12 text-[#0D7D81] dark:text-cyan-400 animate-spin mb-4" />
+            <p className="text-base text-gray-600 dark:text-gray-400">
+              {searchMode === 'global' ? 'Loading bookmarks from all boards...' : 'Loading board bookmarks...'}
+            </p>
           </div>
         ) : filteredBookmarks.length === 0 ? (
           /* No results for current filter or search - Improved design */
