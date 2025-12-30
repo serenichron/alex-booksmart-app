@@ -8,7 +8,7 @@ interface LandingProps {
 
 export function Landing({ onGetStarted, onSignIn }: LandingProps) {
   return (
-    <div className="landing-container h-screen bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900 relative overflow-hidden flex flex-col">
+    <div className="landing-container min-h-screen bg-gradient-to-br from-slate-900 via-cyan-900 to-slate-900 relative overflow-hidden flex flex-col">
       {/* Animated gradient shapes - variety of forms */}
       <div className="bg-blob bg-blob-1 absolute top-0 -left-4 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
       <div className="bg-blob bg-blob-2 absolute top-0 -right-4 w-96 h-96 bg-teal-500 rounded-[30%_70%_70%_30%/30%_30%_70%_70%] mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
