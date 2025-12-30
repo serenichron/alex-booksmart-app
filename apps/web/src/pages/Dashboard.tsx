@@ -41,7 +41,7 @@ interface BookmarkWithDetails extends BookmarkType {
   folderName?: string
 }
 
-type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo'
+type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo' | 'location'
 type SearchMode = 'board' | 'global'
 
 // Helper function to detect Google document types and render appropriate icons
@@ -106,7 +106,7 @@ export function Dashboard() {
     tags: 0,
     thisWeek: 0,
   })
-  const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image', 'todo']))
+  const [selectedTypes, setSelectedTypes] = useState<Set<BookmarkTypeFilter>>(new Set(['text', 'link', 'image', 'todo', 'location']))
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
