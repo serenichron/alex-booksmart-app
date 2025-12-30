@@ -16,6 +16,7 @@ import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, S
 import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
+  getAllBookmarksWithBoard,
   getStats,
   deleteBookmark,
   toggleTodoItem,
@@ -35,7 +36,10 @@ import {
   type Folder as FolderType
 } from '@/lib/storage'
 
-interface BookmarkWithDetails extends BookmarkType {}
+interface BookmarkWithDetails extends BookmarkType {
+  boardName?: string
+  folderName?: string
+}
 
 type BookmarkTypeFilter = 'text' | 'link' | 'image' | 'todo'
 type SearchMode = 'board' | 'global'
@@ -592,27 +596,48 @@ export function Dashboard() {
   const filteredBookmarks = useMemo(() => {
     let filtered: BookmarkWithDetails[]
 
-    // Board-wise search (global search not implemented in this version)
-    // First filter by folder if one is selected
-    let folderFiltered = bookmarks
-    if (currentFolderId) {
-      folderFiltered = bookmarks.filter(bookmark => bookmark.folder_id === currentFolderId)
-    }
+    // Handle search mode
+    if (searchMode === 'global' && searchQuery.trim()) {
+      // Global search: fetch all bookmarks across all boards (done in useEffect)
+      // Use the global bookmarks if available
+      const allBookmarks = bookmarks.filter(b => 'boardName' in b) as BookmarkWithDetails[]
 
-    // Then filter by type
-    filtered = folderFiltered.filter(bookmark => {
-      if (selectedTypes.size === 0) return false
-      return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
-    })
+      // Filter by type
+      filtered = allBookmarks.filter(bookmark => {
+        if (selectedTypes.size === 0) return false
+        return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
+      })
 
-    // Then filter by favorites if enabled
-    if (showFavoritesOnly) {
-      filtered = filtered.filter(bookmark => bookmark.is_favorite)
-    }
+      // Filter by favorites if enabled
+      if (showFavoritesOnly) {
+        filtered = filtered.filter(bookmark => bookmark.is_favorite)
+      }
 
-    // Then apply search
-    if (searchQuery.trim()) {
+      // Apply search
       filtered = searchBookmarks(filtered, searchQuery)
+    } else {
+      // Board-scoped search
+      // First filter by folder if one is selected
+      let folderFiltered = bookmarks
+      if (currentFolderId) {
+        folderFiltered = bookmarks.filter(bookmark => bookmark.folder_id === currentFolderId)
+      }
+
+      // Then filter by type
+      filtered = folderFiltered.filter(bookmark => {
+        if (selectedTypes.size === 0) return false
+        return selectedTypes.has(bookmark.type as BookmarkTypeFilter)
+      })
+
+      // Then filter by favorites if enabled
+      if (showFavoritesOnly) {
+        filtered = filtered.filter(bookmark => bookmark.is_favorite)
+      }
+
+      // Then apply search
+      if (searchQuery.trim()) {
+        filtered = searchBookmarks(filtered, searchQuery)
+      }
     }
 
     // Sort to prioritize favorites (favorites first)
@@ -623,7 +648,7 @@ export function Dashboard() {
     })
 
     return filtered
-  }, [bookmarks, selectedTypes, showFavoritesOnly, searchQuery, currentFolderId])
+  }, [bookmarks, selectedTypes, showFavoritesOnly, searchQuery, currentFolderId, searchMode])
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -635,6 +660,42 @@ export function Dashboard() {
     }
     loadInitialData()
   }, [])
+
+  // Load all bookmarks when switching to global search mode
+  useEffect(() => {
+    const loadGlobalBookmarks = async () => {
+      if (searchMode === 'global' && searchQuery.trim()) {
+        try {
+          const allBookmarksWithBoard = await getAllBookmarksWithBoard()
+          // Add folder names to bookmarks
+          const allBoardsData = await getBoards()
+          const allFoldersMap = new Map<string, string>()
+
+          // Fetch folders for all boards and build a map
+          for (const board of allBoardsData) {
+            const boardFolders = await getFolders(board.id)
+            boardFolders.forEach(f => allFoldersMap.set(f.id, f.name))
+          }
+
+          // Enrich bookmarks with folder names
+          const enrichedBookmarks = allBookmarksWithBoard.map(b => ({
+            ...b,
+            folderName: b.folder_id ? allFoldersMap.get(b.folder_id) : undefined
+          }))
+
+          // Merge with current bookmarks (global bookmarks will have boardName)
+          setBookmarks(enrichedBookmarks as BookmarkWithDetails[])
+        } catch (error) {
+          console.error('Failed to load global bookmarks:', error)
+        }
+      } else if (searchMode === 'board') {
+        // Switch back to board bookmarks
+        await fetchBookmarks()
+      }
+    }
+
+    loadGlobalBookmarks()
+  }, [searchMode, searchQuery])
 
   // Recursive folder tree item component
   const FolderTreeItem = ({ folderNode, level }: { folderNode: FolderNode; level: number }) => {
@@ -1243,6 +1304,24 @@ export function Dashboard() {
                           </h3>
                         </div>
                       )}
+
+                      {/* Board and Folder badges at bottom - global search */}
+                      {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent pt-6 pb-3 px-3">
+                          <div className="flex flex-wrap gap-1.5">
+                            <Badge variant="outline" className="text-[10px] py-0 h-5 bg-teal-50/90 dark:bg-cyan-500/30 text-[#0D7D81] dark:text-cyan-100 border-[#0D7D81]/40 dark:border-cyan-300/50 backdrop-blur-sm">
+                              <Layers className="w-2.5 h-2.5 mr-1" />
+                              {(bookmark as any).boardName}
+                            </Badge>
+                            {(bookmark as any).folderName && (
+                              <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50/90 dark:bg-purple-500/30 text-purple-700 dark:text-purple-200 border-purple-300/40 dark:border-purple-300/50 backdrop-blur-sm">
+                                <Folder className="w-2.5 h-2.5 mr-1" />
+                                {(bookmark as any).folderName}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : bookmark.image_url && !isImageBookmark && (
                     <a
@@ -1366,13 +1445,19 @@ export function Dashboard() {
                         </div>
                       )}
 
-                      {/* Board badge in global search */}
+                      {/* Board and Folder badges in global search */}
                       {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
-                        <div className="mb-2">
+                        <div className="flex flex-wrap gap-1.5 mb-2">
                           <Badge variant="outline" className="text-[10px] py-0 h-5 bg-teal-50 dark:bg-cyan-500/20 text-[#0D7D81] dark:text-cyan-200 border-[#0D7D81]/30 dark:border-cyan-400/50">
                             <Layers className="w-2.5 h-2.5 mr-1" />
                             {(bookmark as any).boardName}
                           </Badge>
+                          {(bookmark as any).folderName && (
+                            <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-400/50">
+                              <Folder className="w-2.5 h-2.5 mr-1" />
+                              {(bookmark as any).folderName}
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1503,13 +1588,19 @@ export function Dashboard() {
                       </div>
                     )}
 
-                    {/* Board badge in global search */}
+                    {/* Board and Folder badges in global search */}
                     {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
-                      <div className="mb-2">
+                      <div className="flex flex-wrap gap-1.5 mb-2">
                         <Badge variant="outline" className="text-[10px] py-0 h-5 bg-teal-50 dark:bg-cyan-500/20 text-[#0D7D81] dark:text-cyan-200 border-[#0D7D81]/30 dark:border-cyan-400/50">
                           <Layers className="w-2.5 h-2.5 mr-1" />
                           {(bookmark as any).boardName}
                         </Badge>
+                        {(bookmark as any).folderName && (
+                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-400/50">
+                            <Folder className="w-2.5 h-2.5 mr-1" />
+                            {(bookmark as any).folderName}
+                          </Badge>
+                        )}
                       </div>
                     )}
                   </div>
