@@ -70,7 +70,7 @@ export interface Database {
           title: string
           summary: string
           url: string | null
-          type: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'other'
+          type: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'location' | 'other'
           created_at: string
           updated_at: string
           is_favorite: boolean
@@ -79,6 +79,12 @@ export interface Database {
           image_url: string | null
           meta_description: string | null
           show_meta_description: boolean
+          latitude: number | null
+          longitude: number | null
+          location_name: string | null
+          place_id: string | null
+          location_source: string | null
+          location_address: string | null
         }
         Insert: {
           id?: string
@@ -87,7 +93,7 @@ export interface Database {
           title: string
           summary?: string
           url?: string | null
-          type: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'other'
+          type: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'location' | 'other'
           created_at?: string
           updated_at?: string
           is_favorite?: boolean
@@ -96,6 +102,12 @@ export interface Database {
           image_url?: string | null
           meta_description?: string | null
           show_meta_description?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          location_name?: string | null
+          place_id?: string | null
+          location_source?: string | null
+          location_address?: string | null
         }
         Update: {
           id?: string
@@ -104,7 +116,7 @@ export interface Database {
           title?: string
           summary?: string
           url?: string | null
-          type?: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'other'
+          type?: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'location' | 'other'
           created_at?: string
           updated_at?: string
           is_favorite?: boolean
@@ -113,6 +125,12 @@ export interface Database {
           image_url?: string | null
           meta_description?: string | null
           show_meta_description?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          location_name?: string | null
+          place_id?: string | null
+          location_source?: string | null
+          location_address?: string | null
         }
       }
       notes: {
