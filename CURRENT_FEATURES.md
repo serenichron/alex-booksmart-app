@@ -1,6 +1,6 @@
 # BookSmart - Current Features Documentation
 
-**Last Updated:** 2025-12-19
+**Last Updated:** 2025-12-30
 **Status:** Production-ready web application with Supabase backend
 
 ---
@@ -723,39 +723,53 @@ BookSmart is a fully functional bookmark manager built with React, TypeScript, V
 
 ## 🚀 Recent Major Features (Last 30 Days)
 
-1. **Unlimited Nested Subfolders** (Dec 19)
+1. **In-App Feedback System** (Dec 30, 2025)
+   - Floating feedback button (bottom-right corner)
+   - Bug reports, feature requests, and general feedback
+   - Screenshot capture (auto or upload)
+   - Supabase integration with feedback table
+   - Auto-captured context (URL, browser info, user email)
+   - Email notifications to admin
+
+2. **Auto-Select First Board** (Dec 30, 2025)
+   - New users/browsers automatically see first board
+   - Eliminates "limbo" state on first visit
+   - Seamless cross-device experience
+
+3. **Unlimited Nested Subfolders** (Dec 19)
    - Complete folder hierarchy support
    - Recursive tree UI
    - Database migration with indexes
+   - Duplicate folder name validation
 
-2. **Breadcrumb Navigation** (Dec 19)
+4. **Breadcrumb Navigation** (Dec 19)
    - Board → Folder path display
    - Clickable breadcrumbs
    - Visual hierarchy
 
-3. **To-Do List Bookmarks** (Recent)
+5. **To-Do List Bookmarks** (Recent)
    - Full checklist functionality
    - Progress tracking
    - Individual item management
 
-4. **Multi-URL Bulk Import** (Recent)
+6. **Multi-URL Bulk Import** (Recent)
    - Import up to 20 URLs at once
    - Batch metadata fetching
    - Progress indicators
 
-5. **Google Drive-Style Folder Grid** (Recent)
+7. **Google Drive-Style Folder Grid** (Recent)
    - Icon-based folder display
    - Responsive grid layout
    - Item counts per folder
 
-6. **Dark/Light Theme System** (Dec 20, 2025)
+8. **Dark/Light Theme System** (Dec 20, 2025)
    - Complete theme toggle implementation
    - Custom #0D7D81 teal color scheme for light mode
    - Optimized text readability across both themes
    - Unified design elements (buttons, badges, cards)
    - Theme preference persisted in localStorage
 
-7. **Premium UI Redesign** (Dec 20, 2025)
+9. **Premium UI Redesign** (Dec 20, 2025)
    - Implemented depth system: background → sections → cards → hover
    - Reduced borders by ~50%, replaced with shadow system
    - Calmer stat cards with gradient text emphasis
