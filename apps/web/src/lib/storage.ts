@@ -19,7 +19,7 @@ export interface Bookmark {
   title: string
   summary: string
   url: string | null
-  type: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'other'
+  type: 'link' | 'image' | 'text' | 'todo' | 'document' | 'video' | 'location' | 'other'
   created_at: string
   updated_at: string
   is_favorite: boolean
@@ -33,6 +33,12 @@ export interface Bookmark {
   folder_id?: string | null
   notes: Note[]
   todo_items?: TodoItem[]
+  latitude?: number | null
+  longitude?: number | null
+  location_name?: string | null
+  place_id?: string | null
+  location_source?: string | null
+  location_address?: string | null
 }
 
 export interface Board {

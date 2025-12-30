@@ -12,7 +12,7 @@ import { ImageViewerDialog } from '@/components/ImageViewerDialog'
 import { UserSettingsDialog } from '@/components/UserSettingsDialog'
 import { UserAvatar } from '@/components/UserAvatar'
 import { FeedbackButton } from '@/components/FeedbackButton'
-import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun, Loader2 } from 'lucide-react'
+import { Bookmark, Plus, Search, Sparkles, ExternalLink, Star, Trash2, Pencil, Share2, Link as LinkIcon, FileText, Image as ImageIcon, Filter, X, CheckSquare, Edit, Layers, MessageSquare, Folder, FolderOpen, ChevronRight, ChevronDown, Moon, Sun, Loader2, MapPin } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import {
   getBookmarks,
@@ -35,6 +35,7 @@ import {
   type Board,
   type Folder as FolderType
 } from '@/lib/storage'
+import { generateGoogleMapsURL, generateStaticMapURL } from '@/lib/location'
 
 interface BookmarkWithDetails extends BookmarkType {
   boardName?: string
@@ -1243,6 +1244,7 @@ export function Dashboard() {
                 const isTextBookmark = !bookmark.url && bookmark.type === 'text'
                 const isImageBookmark = bookmark.type === 'image'
                 const isTodoBookmark = bookmark.type === 'todo'
+                const isLocationBookmark = bookmark.type === 'location'
 
                 // Calculate completion percentage for todos
                 const todoCompletion = isTodoBookmark && bookmark.todo_items
@@ -1263,6 +1265,8 @@ export function Dashboard() {
                       ? 'bookmark-card-text'
                       : isImageBookmark
                       ? 'bookmark-card-image'
+                      : isLocationBookmark
+                      ? 'bookmark-card-location'
                       : 'bookmark-card-link'
                   } rounded-[0.3rem] overflow-visible hover:shadow-xl hover:-translate-y-0.5 break-inside-avoid mb-[10px] relative group ${
                     isTodoBookmark
@@ -1271,6 +1275,8 @@ export function Dashboard() {
                       ? 'bg-[rgb(255,255,230)] dark:bg-[rgb(60,104,70)] shadow-md border border-[rgb(241,240,175)] dark:border-[rgb(83,122,93)]'
                       : isImageBookmark
                       ? 'bg-black shadow-lg'
+                      : isLocationBookmark
+                      ? 'bg-[rgb(224,242,254)] dark:bg-[rgb(12,74,110)] shadow-md border border-[rgb(186,230,253)] dark:border-[rgb(14,116,144)]'
                       : 'bg-white dark:bg-slate-800/60 shadow-md dark:shadow-slate-900/30 border border-gray-200/60 dark:border-[rgb(66,83,108)]/50'
                   }`}
                 >
@@ -1323,6 +1329,85 @@ export function Dashboard() {
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
+
+                  {/* Location Bookmark - Special Design */}
+                  {isLocationBookmark && bookmark.latitude && bookmark.longitude ? (
+                    <div className="location-bookmark-content">
+                      {/* Static Map Preview */}
+                      <div className="relative w-full h-48 overflow-hidden">
+                        <img
+                          src={generateStaticMapURL(bookmark.latitude, bookmark.longitude, 15, 600, 300)}
+                          alt={bookmark.location_name || 'Location'}
+                          className="w-full h-full object-cover cursor-pointer hover:opacity-90"
+                          onClick={() => window.open(generateGoogleMapsURL(bookmark.latitude!, bookmark.longitude!, bookmark.location_name || undefined), '_blank')}
+                          loading="lazy"
+                        />
+                        {/* Map Pin overlay */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full pointer-events-none">
+                          <MapPin className="w-10 h-10 text-red-500 fill-red-500 drop-shadow-lg" />
+                        </div>
+                      </div>
+
+                      {/* Location Details */}
+                      <div className="px-4 pt-4 pb-3">
+                        {bookmark.location_name && (
+                          <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 leading-snug">
+                            {bookmark.location_name}
+                          </h3>
+                        )}
+
+                        {bookmark.location_address && (
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                            {bookmark.location_address}
+                          </p>
+                        )}
+
+                        {/* Coordinates */}
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          <MapPin className="w-3 h-3" />
+                          <span className="font-mono">
+                            {bookmark.latitude.toFixed(6)}, {bookmark.longitude.toFixed(6)}
+                          </span>
+                        </div>
+
+                        {/* Open in Google Maps button */}
+                        <button
+                          onClick={() => window.open(generateGoogleMapsURL(bookmark.latitude!, bookmark.longitude!, bookmark.location_name || undefined), '_blank')}
+                          className="w-full bg-[#0D7D81] dark:bg-cyan-500 hover:bg-teal-700 dark:hover:bg-cyan-600 text-white py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 mb-3"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          Open in Google Maps
+                        </button>
+
+                        {/* Categories */}
+                        {bookmark.categories.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {bookmark.categories.map((cat, idx) => (
+                              <Badge key={idx} variant="secondary" className="text-[10px] py-0 h-5 bg-sky-100 dark:bg-sky-900/60 text-sky-900 dark:text-sky-200 border-sky-200 dark:border-sky-700">
+                                {cat}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Folder badge in global search */}
+                        {searchMode === 'global' && searchQuery.trim() && 'folderName' in bookmark && (bookmark as any).folderName && (
+                          <div className="mb-2">
+                            <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-400/50">
+                              <Folder className="w-2.5 h-2.5 mr-1" />
+                              {(bookmark as any).folderName}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : isLocationBookmark ? (
+                    <div className="px-4 pt-4 pb-3">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Location coordinates not available
+                      </p>
+                    </div>
+                  ) : null}
 
                   {/* Image Bookmark - Special Design */}
                   {isImageBookmark && bookmark.url ? (
