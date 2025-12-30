@@ -266,6 +266,11 @@ export function generateStaticMapURL(latitude: number, longitude: number, zoom: 
     return ''
   }
 
-  // Use OpenStreetMap static map service (free, no API key required)
-  return `https://staticmap.openstreetmap.de/staticmap.php?center=${latitude},${longitude}&zoom=${zoom}&size=${width}x${height}&markers=${latitude},${longitude},red`
+  // Use MapTiler free tier (generous limits, requires API key)
+  // Get API key from environment variable or use demo key for testing
+  const mapTilerKey = import.meta.env.VITE_MAPTILER_API_KEY || 'get_your_own_key'
+
+  // MapTiler Static Maps API
+  // Format: https://api.maptiler.com/maps/basic/static/lng,lat,zoom/widthxheight.png?key=YOUR_KEY&markers=lng,lat,red
+  return `https://api.maptiler.com/maps/basic/static/${longitude},${latitude},${zoom}/${width}x${height}.png?key=${mapTilerKey}&markers=${longitude},${latitude},red`
 }
