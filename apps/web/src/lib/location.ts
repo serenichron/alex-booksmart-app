@@ -64,10 +64,11 @@ export async function extractLocationFromURL(url: string): Promise<LocationData 
   try {
     const urlObj = new URL(url)
     const hostname = urlObj.hostname.toLowerCase()
+    const path = urlObj.pathname.toLowerCase()
     const searchParams = urlObj.searchParams
 
     // Google Maps
-    if (hostname.includes('google.com') && hostname.includes('maps') || hostname.includes('maps.google')) {
+    if ((hostname.includes('google.com') && path.includes('/maps')) || hostname.includes('maps.google')) {
       return extractFromGoogleMaps(urlObj, searchParams)
     }
 
@@ -265,7 +266,6 @@ export function generateStaticMapURL(latitude: number, longitude: number, zoom: 
     return ''
   }
 
-  // Use MapQuest Open Static Map API (more reliable than OSM staticmap)
-  // Free tier, no API key required for basic usage
-  return `https://www.mapquestapi.com/staticmap/v5/map?center=${latitude},${longitude}&zoom=${zoom}&size=${width},${height}&locations=${latitude},${longitude}|marker-sm-red`
+  // Use OpenStreetMap static map service (free, no API key required)
+  return `https://staticmap.openstreetmap.de/staticmap.php?center=${latitude},${longitude}&zoom=${zoom}&size=${width}x${height}&markers=${latitude},${longitude},red`
 }

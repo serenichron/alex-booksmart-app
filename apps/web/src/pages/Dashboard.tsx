@@ -534,10 +534,16 @@ export function Dashboard() {
   }
 
   // Handler for dialog success callbacks - always skip cache for fresh data
-  const handleDialogSuccess = async () => {
+  const handleDialogSuccess = async (newBoard?: any) => {
     await fetchBookmarks(true)
+    // If a new board was created, automatically select it
+    if (newBoard) {
+      setCurrentBoardId(newBoard.id)
+      setCurrentFolderId(null)
+      setExpandedBoards(new Set([newBoard.id]))
+    }
     // Keep current board expanded after folder operations
-    if (currentBoardId) {
+    else if (currentBoardId) {
       setExpandedBoards(new Set([currentBoardId]))
     }
   }

@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 interface BoardManagementDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+  onSuccess: (newBoard?: Board) => void
   mode: 'create' | 'rename'
   board?: Board | null
 }
@@ -65,13 +65,14 @@ export function BoardManagementDialog({
     }
 
     try {
+      let newBoard: Board | undefined
       if (mode === 'create') {
-        await createBoard(boardName.trim())
+        newBoard = await createBoard(boardName.trim())
       } else if (mode === 'rename' && board) {
         await renameBoard(board.id, boardName.trim())
       }
 
-      onSuccess()
+      onSuccess(newBoard)
       onOpenChange(false)
       setBoardName('')
     } catch (err) {
