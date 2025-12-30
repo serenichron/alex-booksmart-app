@@ -53,12 +53,12 @@ export function AddBookmarkDialog({
   const [multiUrlFetchProgress, setMultiUrlFetchProgress] = useState<number>(0)
   const [multiUrlMetadata, setMultiUrlMetadata] = useState<Map<string, any>>(new Map())
 
-  // Location state
-  const [locationUrl, setLocationUrl] = useState('')
-  const [locationName, setLocationName] = useState('')
-  const [locationAddress, setLocationAddress] = useState('')
-  const [latitude, setLatitude] = useState('')
-  const [longitude, setLongitude] = useState('')
+  // Location state (to be implemented)
+  // const [locationUrl, setLocationUrl] = useState('')
+  // const [locationName, setLocationName] = useState('')
+  // const [locationAddress, setLocationAddress] = useState('')
+  // const [latitude, setLatitude] = useState('')
+  // const [longitude, setLongitude] = useState('')
 
   // Auto-fetched metadata
   const [title, setTitle] = useState('')

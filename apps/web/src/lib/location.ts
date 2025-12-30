@@ -257,9 +257,15 @@ export function generateGoogleMapsURL(latitude: number, longitude: number, locat
 }
 
 /**
- * Generates a static map image URL (using OpenStreetMap tiles)
+ * Generates a static map image URL (using multiple fallbacks for reliability)
  */
 export function generateStaticMapURL(latitude: number, longitude: number, zoom: number = 15, width: number = 600, height: number = 300): string {
-  // Using Staticmap service with OpenStreetMap tiles
-  return `https://staticmap.openstreetmap.de/staticmap.php?center=${latitude},${longitude}&zoom=${zoom}&size=${width}x${height}&markers=${latitude},${longitude},red-pushpin`
+  // Don't generate map for invalid coordinates
+  if (latitude === 0 && longitude === 0) {
+    return ''
+  }
+
+  // Use MapQuest Open Static Map API (more reliable than OSM staticmap)
+  // Free tier, no API key required for basic usage
+  return `https://www.mapquestapi.com/staticmap/v5/map?center=${latitude},${longitude}&zoom=${zoom}&size=${width},${height}&locations=${latitude},${longitude}|marker-sm-red`
 }

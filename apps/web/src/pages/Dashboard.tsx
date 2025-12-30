@@ -1331,14 +1331,14 @@ export function Dashboard() {
                   </div>
 
                   {/* Location Bookmark - Special Design */}
-                  {isLocationBookmark && bookmark.latitude && bookmark.longitude ? (
+                  {isLocationBookmark && bookmark.latitude && bookmark.longitude && bookmark.latitude !== 0 && bookmark.longitude !== 0 ? (
                     <div className="location-bookmark-content">
                       {/* Static Map Preview */}
-                      <div className="relative w-full h-48 overflow-hidden">
+                      <div className="relative w-full h-48 overflow-hidden rounded-t-[0.3rem]">
                         <img
                           src={generateStaticMapURL(bookmark.latitude, bookmark.longitude, 15, 600, 300)}
                           alt={bookmark.location_name || 'Location'}
-                          className="w-full h-full object-cover cursor-pointer hover:opacity-90"
+                          className="w-full h-full object-cover cursor-pointer hover:opacity-90 rounded-t-[0.3rem]"
                           onClick={() => window.open(generateGoogleMapsURL(bookmark.latitude!, bookmark.longitude!, bookmark.location_name || undefined), '_blank')}
                           loading="lazy"
                         />
@@ -1412,13 +1412,13 @@ export function Dashboard() {
                   {/* Image Bookmark - Special Design */}
                   {isImageBookmark && bookmark.url ? (
                     <div
-                      className="block relative cursor-pointer"
+                      className="block relative cursor-pointer overflow-hidden rounded-[0.3rem]"
                       onClick={() => handleViewImage(bookmark)}
                     >
                       <img
                         src={bookmark.url}
                         alt={bookmark.title}
-                        className="w-full h-auto object-contain"
+                        className="w-full h-auto object-contain rounded-[0.3rem]"
                         style={{ maxHeight: '600px' }}
                         loading="lazy"
                         onError={(e) => {
@@ -1453,17 +1453,17 @@ export function Dashboard() {
                         </div>
                       )}
                     </div>
-                  ) : bookmark.image_url && !isImageBookmark && (
+                  ) : bookmark.image_url && !isImageBookmark && !isLocationBookmark && (
                     <a
                       href={bookmark.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bookmark-image-container block border-b border-[#d3d3d3] dark:border-white/40"
+                      className="bookmark-image-container block border-b border-[#d3d3d3] dark:border-white/40 overflow-hidden rounded-t-[0.3rem]"
                     >
                       <img
                         src={bookmark.image_url}
                         alt={bookmark.title}
-                        className="bookmark-image w-full h-36 object-cover hover:opacity-90 cursor-pointer"
+                        className="bookmark-image w-full h-36 object-cover hover:opacity-90 cursor-pointer rounded-t-[0.3rem]"
                         loading="lazy"
                         onError={(e) => {
                           e.currentTarget.parentElement!.parentElement!.style.display = 'none'
