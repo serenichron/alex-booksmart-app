@@ -297,6 +297,40 @@ export function Dashboard() {
     setShowImageViewer(true)
   }
 
+  // Group bookmarks by board (for global search)
+  const groupedByBoard = () => {
+    const boardMap = new Map<string, BookmarkWithDetails[]>()
+    const noBoard: BookmarkWithDetails[] = []
+
+    filteredBookmarks.forEach(bookmark => {
+      if ('boardName' in bookmark && bookmark.boardName) {
+        if (!boardMap.has(bookmark.boardName)) {
+          boardMap.set(bookmark.boardName, [])
+        }
+        boardMap.get(bookmark.boardName)!.push(bookmark)
+      } else {
+        noBoard.push(bookmark)
+      }
+    })
+
+    // Sort bookmarks within each board by created_at (newest first)
+    boardMap.forEach((bookmarks) => {
+      bookmarks.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+    })
+
+    noBoard.sort((a, b) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+
+    const sortedBoards = Array.from(boardMap.keys()).sort((boardA, boardB) => {
+      return boardA.localeCompare(boardB)
+    })
+
+    return { uncategorized: noBoard, categorizedMap: boardMap, sortedCategories: sortedBoards, folders: [], folderMap: new Map() }
+  }
+
   // Group bookmarks by folder and category
   const groupedByCategory = () => {
     // If a folder is selected, use simpler category grouping
@@ -1181,10 +1215,12 @@ export function Dashboard() {
             )}
           </div>
         ) : (
-          /* Bookmarks Organized by Category */
+          /* Bookmarks Organized by Category or Board */
           <div className="bookmarks-by-category space-y-10">
             {(() => {
-              const { uncategorized, categorizedMap, sortedCategories, folders: boardFolders, folderMap } = groupedByCategory()
+              // Use board grouping for global search, category grouping otherwise
+              const { uncategorized, categorizedMap, sortedCategories, folders: boardFolders, folderMap } =
+                searchMode === 'global' && searchQuery.trim() ? groupedByBoard() : groupedByCategory()
 
               const renderBookmarkCard = (bookmark: BookmarkWithDetails) => {
                 const isTextBookmark = !bookmark.url && bookmark.type === 'text'
@@ -1305,21 +1341,13 @@ export function Dashboard() {
                         </div>
                       )}
 
-                      {/* Board and Folder badges at bottom - global search */}
-                      {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
+                      {/* Folder badge at bottom - global search */}
+                      {searchMode === 'global' && searchQuery.trim() && 'folderName' in bookmark && (bookmark as any).folderName && (
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent pt-6 pb-3 px-3">
-                          <div className="flex flex-wrap gap-1.5">
-                            <Badge variant="outline" className="text-[10px] py-0 h-5 bg-teal-50/90 dark:bg-cyan-500/30 text-[#0D7D81] dark:text-cyan-100 border-[#0D7D81]/40 dark:border-cyan-300/50 backdrop-blur-sm">
-                              <Layers className="w-2.5 h-2.5 mr-1" />
-                              {(bookmark as any).boardName}
-                            </Badge>
-                            {(bookmark as any).folderName && (
-                              <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50/90 dark:bg-purple-500/30 text-purple-700 dark:text-purple-200 border-purple-300/40 dark:border-purple-300/50 backdrop-blur-sm">
-                                <Folder className="w-2.5 h-2.5 mr-1" />
-                                {(bookmark as any).folderName}
-                              </Badge>
-                            )}
-                          </div>
+                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50/90 dark:bg-purple-500/30 text-purple-700 dark:text-purple-200 border-purple-300/40 dark:border-purple-300/50 backdrop-blur-sm">
+                            <Folder className="w-2.5 h-2.5 mr-1" />
+                            {(bookmark as any).folderName}
+                          </Badge>
                         </div>
                       )}
                     </div>
@@ -1445,19 +1473,13 @@ export function Dashboard() {
                         </div>
                       )}
 
-                      {/* Board and Folder badges in global search */}
-                      {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
-                        <div className="flex flex-wrap gap-1.5 mb-2">
-                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-teal-50 dark:bg-cyan-500/20 text-[#0D7D81] dark:text-cyan-200 border-[#0D7D81]/30 dark:border-cyan-400/50">
-                            <Layers className="w-2.5 h-2.5 mr-1" />
-                            {(bookmark as any).boardName}
+                      {/* Folder badge in global search */}
+                      {searchMode === 'global' && searchQuery.trim() && 'folderName' in bookmark && (bookmark as any).folderName && (
+                        <div className="mb-2">
+                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-400/50">
+                            <Folder className="w-2.5 h-2.5 mr-1" />
+                            {(bookmark as any).folderName}
                           </Badge>
-                          {(bookmark as any).folderName && (
-                            <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-400/50">
-                              <Folder className="w-2.5 h-2.5 mr-1" />
-                              {(bookmark as any).folderName}
-                            </Badge>
-                          )}
                         </div>
                       )}
                     </div>
@@ -1588,19 +1610,13 @@ export function Dashboard() {
                       </div>
                     )}
 
-                    {/* Board and Folder badges in global search */}
-                    {searchMode === 'global' && searchQuery.trim() && 'boardName' in bookmark && (
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        <Badge variant="outline" className="text-[10px] py-0 h-5 bg-teal-50 dark:bg-cyan-500/20 text-[#0D7D81] dark:text-cyan-200 border-[#0D7D81]/30 dark:border-cyan-400/50">
-                          <Layers className="w-2.5 h-2.5 mr-1" />
-                          {(bookmark as any).boardName}
+                    {/* Folder badge in global search */}
+                    {searchMode === 'global' && searchQuery.trim() && 'folderName' in bookmark && (bookmark as any).folderName && (
+                      <div className="mb-2">
+                        <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-400/50">
+                          <Folder className="w-2.5 h-2.5 mr-1" />
+                          {(bookmark as any).folderName}
                         </Badge>
-                        {(bookmark as any).folderName && (
-                          <Badge variant="outline" className="text-[10px] py-0 h-5 bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-400/50">
-                            <Folder className="w-2.5 h-2.5 mr-1" />
-                            {(bookmark as any).folderName}
-                          </Badge>
-                        )}
                       </div>
                     )}
                   </div>
