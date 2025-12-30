@@ -1,14 +1,27 @@
 // Fetch metadata from URLs using CORS proxy
+import { isLocationURL, extractLocationFromURL, type LocationData } from './location'
 
 export interface URLMetadata {
   title: string
   description: string
   image: string | null
   favicon: string | null
+  isLocation?: boolean
+  locationData?: LocationData | null
 }
 
 export async function fetchURLMetadata(url: string): Promise<URLMetadata> {
   console.log('🔍 Starting metadata fetch for:', url)
+
+  // Check if this is a location URL first
+  const isLocation = isLocationURL(url)
+  let locationData: LocationData | null = null
+
+  if (isLocation) {
+    console.log('📍 Detected location URL')
+    locationData = await extractLocationFromURL(url)
+    console.log('📍 Location data extracted:', locationData)
+  }
 
   try {
     // Use corsproxy.io (same as your working HTML example)
@@ -95,10 +108,12 @@ export async function fetchURLMetadata(url: string): Promise<URLMetadata> {
 
     // Build final result (prefer OpenGraph, fallback to basic meta)
     const result: URLMetadata = {
-      title: meta.openGraph['og:title'] || meta.title || url,
-      description: meta.openGraph['og:description'] || meta.description || '',
+      title: meta.openGraph['og:title'] || meta.title || locationData?.locationName || url,
+      description: meta.openGraph['og:description'] || meta.description || locationData?.address || '',
       image: meta.openGraph['og:image'] || meta.twitter['twitter:image'] || null,
       favicon: favicon,
+      isLocation: isLocation,
+      locationData: locationData,
     }
 
     console.log('✅ Final metadata result:', result)
@@ -112,19 +127,23 @@ export async function fetchURLMetadata(url: string): Promise<URLMetadata> {
     try {
       const urlObj = new URL(url)
       const fallback = {
-        title: urlObj.hostname,
-        description: '',
+        title: locationData?.locationName || urlObj.hostname,
+        description: locationData?.address || '',
         image: null,
         favicon: `${urlObj.origin}/favicon.ico`,
+        isLocation: isLocation,
+        locationData: locationData,
       }
       console.log('🔄 Using fallback metadata:', fallback)
       return fallback
     } catch {
       const fallback = {
-        title: url,
-        description: '',
+        title: locationData?.locationName || url,
+        description: locationData?.address || '',
         image: null,
         favicon: null,
+        isLocation: isLocation,
+        locationData: locationData,
       }
       console.log('🔄 Using minimal fallback:', fallback)
       return fallback
