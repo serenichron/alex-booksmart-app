@@ -1282,7 +1282,7 @@ export function Dashboard() {
                   )}
 
                   {/* Action Buttons - Cleaner design */}
-                  <div className="absolute -top-[13px] right-3 z-10 flex gap-0.5 opacity-0 group-hover:opacity-100">
+                  <div className="absolute top-0 right-3 z-10 flex gap-0.5 opacity-0 group-hover:opacity-100 -translate-y-[calc(100%-8px)]">
                     {bookmark.url && (
                       <button
                         onClick={() => window.open(bookmark.url!, '_blank')}
